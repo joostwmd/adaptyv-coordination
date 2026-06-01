@@ -1,0 +1,35 @@
+{
+  "name": "adaptyv-coordination",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check-types": "turbo check-types",
+    "dev:web": "turbo -F web dev",
+    "dev:server": "turbo -F server dev",
+    "db:push": "turbo -F @adaptyv-coordination/db db:push",
+    "db:studio": "turbo -F @adaptyv-coordination/db db:studio",
+    "db:generate": "turbo -F @adaptyv-coordination/db db:generate",
+    "db:migrate": "turbo -F @adaptyv-coordination/db db:migrate",
+    "check": "oxlint && oxfmt --write"
+  },
+  "dependencies": {
+    "@adaptyv-coordination/env": "workspace:*",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@adaptyv-coordination/config": "workspace:*",
+    "@types/node": "catalog:",
+    "oxfmt": "^0.46.0",
+    "oxlint": "^1.61.0",
+    "turbo": "^2.8.12",
+    "typescript": "catalog:"
+  },
+  "packageManager": "pnpm@10.33.0"
+}

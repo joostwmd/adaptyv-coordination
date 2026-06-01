@@ -1,0 +1,3 @@
+{
+  "extends": "@adaptyv-coordination/config/tsconfig.base.json"
+}
