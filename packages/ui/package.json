@@ -19,6 +19,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.546.0",
     "next-themes": "catalog:",
+    "radix-ui": "^1.4.3",
     "react": "catalog:",
     "react-dom": "catalog:",
     "shadcn": "^3.6.2",
