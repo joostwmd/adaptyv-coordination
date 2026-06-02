@@ -5,8 +5,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@adaptyv-coordination/ui/components/card";
-import { Badge } from "@adaptyv-coordination/ui/components/badge";
-import { Button } from "@adaptyv-coordination/ui/components/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -29,8 +27,6 @@ type WorkUnitCardProps = {
   variant?: "default" | "suggested";
   defaultExpanded?: boolean;
   onTaskOpen: (task: Task) => void;
-  showSplitBadge?: boolean;
-  onSplit?: () => void;
   layoutId?: string;
   previewLabel?: string;
   showEyebrow?: boolean;
@@ -42,8 +38,6 @@ export function WorkUnitCard({
   variant = "default",
   defaultExpanded = false,
   onTaskOpen,
-  showSplitBadge = false,
-  onSplit,
   layoutId,
   previewLabel,
   showEyebrow = true,
@@ -60,8 +54,8 @@ export function WorkUnitCard({
   const card = (
     <Card
       className={cn(
-        isSuggested &&
-          "border-dashed border-muted-foreground/35 bg-muted/15 shadow-none",
+        isSuggested && "border-border/60 bg-background/50 shadow-none",
+        isSuggested && previewLabel && "border-dashed border-muted-foreground/30",
       )}
     >
       <CardHeader className="gap-2 pb-3">
@@ -91,20 +85,7 @@ export function WorkUnitCard({
               <span>
                 {view.tasks.length} task{view.tasks.length === 1 ? "" : "s"}
               </span>
-              {showSplitBadge ? (
-                <>
-                  <span aria-hidden>·</span>
-                  <Badge variant="destructive" className="text-[10px]">
-                    Over capacity — split
-                  </Badge>
-                </>
-              ) : null}
             </p>
-            {showSplitBadge && onSplit ? (
-              <Button type="button" size="xs" variant="outline" onClick={onSplit}>
-                Split unit
-              </Button>
-            ) : null}
           </div>
           {view.priority ? (
             <PriorityIndicator priority={view.priority} context="workUnit" />

@@ -52,6 +52,9 @@ interface PlanningState {
 
   groupReadyIntoWorkUnits: () => WorkUnit[];
   createWorkUnitFromReadyTasks: (taskIds: string[]) => WorkUnit | null;
+  createSplitUnitsFromReadyTasks: (
+    taskIds: string[],
+  ) => { primary: WorkUnit; secondary: WorkUnit } | null;
   addTaskToWorkUnit: (taskId: string, workUnitId: string) => void;
   removeTaskFromWorkUnit: (taskId: string) => void;
   splitWorkUnit: (workUnitId: string) => { primary: WorkUnit; secondary: WorkUnit } | null;
@@ -63,6 +66,9 @@ interface PlanningState {
   ) => Ticket | null;
   updateTicket: (ticketId: string, updates: Partial<Ticket>) => void;
   deleteTicket: (ticketId: string) => void;
+  unscheduleTicket: (ticketId: string) => void;
+  revertTicketToQueue: (ticketId: string) => void;
+  dissolveWorkUnit: (workUnitId: string) => void;
 
   updateWorkUnit: (workUnitId: string, updates: Partial<WorkUnit>) => void;
 
@@ -201,6 +207,28 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     return newWorkUnit;
   },
 
+  createSplitUnitsFromReadyTasks: (taskIds) => {
+    const state = get();
+    const selected = state.tasks.filter((task) => taskIds.includes(task.id));
+    if (selected.length === 0) return null;
+
+    const experiments = usePrototypeStore.getState().experiments;
+    const experimentsById = Object.fromEntries(experiments.map((e) => [e.id, e]));
+    const { primary, secondary } = suggestSplit(
+      selected,
+      experimentsById,
+      state.weights,
+    );
+    if (secondary.length === 0) return null;
+
+    const primaryWorkUnit = createWorkUnitFromTasks(primary);
+    const secondaryWorkUnit = createWorkUnitFromTasks(secondary);
+    const workUnits = [...state.workUnits, primaryWorkUnit, secondaryWorkUnit];
+    const tasks = attachTasksToWorkUnits(state.tasks, workUnits);
+    set({ workUnits, tasks });
+    return { primary: primaryWorkUnit, secondary: secondaryWorkUnit };
+  },
+
   addTaskToWorkUnit: (taskId, workUnitId) =>
     set((state) => {
       const workUnits = state.workUnits.map((wu) =>
@@ -304,6 +332,55 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     set((state) => ({
       tickets: state.tickets.filter((t) => t.id !== ticketId),
     })),
+
+  unscheduleTicket: (ticketId) => {
+    get().deleteTicket(ticketId);
+  },
+
+  revertTicketToQueue: (ticketId) =>
+    set((state) => {
+      const ticket = state.tickets.find((t) => t.id === ticketId);
+      if (!ticket) return state;
+
+      const workUnit = state.workUnits.find((wu) => wu.id === ticket.workUnitId);
+      if (!workUnit) {
+        return { tickets: state.tickets.filter((t) => t.id !== ticketId) };
+      }
+
+      const taskIds = new Set(workUnit.taskIds);
+      return {
+        tickets: state.tickets.filter((t) => t.id !== ticketId),
+        workUnits: state.workUnits.filter((wu) => wu.id !== workUnit.id),
+        tasks: syncReadiness(
+          state.tasks.map((task) => {
+            if (!taskIds.has(task.id)) return task;
+            const { workUnitId: _removed, ...rest } = task;
+            return { ...rest, readiness: "ready" as const };
+          }),
+        ),
+      };
+    }),
+
+  dissolveWorkUnit: (workUnitId) =>
+    set((state) => {
+      const workUnit = state.workUnits.find((wu) => wu.id === workUnitId);
+      if (!workUnit) return state;
+
+      const isScheduled = state.tickets.some((ticket) => ticket.workUnitId === workUnitId);
+      if (isScheduled) return state;
+
+      const taskIds = new Set(workUnit.taskIds);
+      return {
+        workUnits: state.workUnits.filter((wu) => wu.id !== workUnitId),
+        tasks: syncReadiness(
+          state.tasks.map((task) => {
+            if (!taskIds.has(task.id)) return task;
+            const { workUnitId: _removed, ...rest } = task;
+            return { ...rest, readiness: "ready" as const };
+          }),
+        ),
+      };
+    }),
 
   updateWorkUnit: (workUnitId, updates) =>
     set((state) => ({

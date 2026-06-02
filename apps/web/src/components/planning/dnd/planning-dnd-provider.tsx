@@ -11,7 +11,9 @@ import { WorkUnitCard } from "../work-unit-card";
 import {
   isKanbanDropData,
   isPlanningDragData,
+  isQueueZoneDropData,
   isSiblingDropData,
+  isUnitsZoneDropData,
   type PlanningDropData,
   type PlanningDragData,
 } from "./types";
@@ -27,6 +29,9 @@ export function PlanningDndProvider({
 }: PlanningDndProviderProps) {
   const createTicket = usePlanningStore((state) => state.createTicket);
   const updateTicket = usePlanningStore((state) => state.updateTicket);
+  const unscheduleTicket = usePlanningStore((state) => state.unscheduleTicket);
+  const revertTicketToQueue = usePlanningStore((state) => state.revertTicketToQueue);
+  const dissolveWorkUnit = usePlanningStore((state) => state.dissolveWorkUnit);
   const addTaskToWorkUnit = usePlanningStore((state) => state.addTaskToWorkUnit);
   const removeTaskFromWorkUnit = usePlanningStore(
     (state) => state.removeTaskFromWorkUnit,
@@ -56,10 +61,11 @@ export function PlanningDndProvider({
         }
 
         if (sourceData.kind === "ticket") {
-          const ticket = usePlanningStore
-            .getState()
-            .tickets.find((item) => item.id === event.operation.source?.id);
-          setActiveDrag({ kind: "ticket", ticket });
+          const sourceId = String(event.operation.source?.id ?? "");
+          const ticket =
+            usePlanningStore.getState().tickets.find((item) => item.id === sourceId) ??
+            null;
+          setActiveDrag({ kind: "ticket", ticket: ticket ?? undefined });
           return;
         }
 
@@ -87,6 +93,22 @@ export function PlanningDndProvider({
             assigneeId: targetData.staffId,
             scheduledDay: targetData.day,
           });
+          return;
+        }
+
+        if (sourceData?.kind === "ticket" && isUnitsZoneDropData(targetData)) {
+          unscheduleTicket(String(source.id));
+          return;
+        }
+
+        if (sourceData?.kind === "ticket" && isQueueZoneDropData(targetData)) {
+          revertTicketToQueue(String(source.id));
+          return;
+        }
+
+        if (sourceData?.kind === "unit" && isQueueZoneDropData(targetData)) {
+          if (!sourceData.workUnitId) return;
+          dissolveWorkUnit(sourceData.workUnitId);
           return;
         }
 

@@ -13,7 +13,8 @@ import { usePlanningBoard } from "@/hooks/usePlanningBoard";
 import { usePlanningStore } from "@/stores/usePlanningStore";
 import { usePrototypeStore } from "@/stores/usePrototypeStore";
 
-import { SuggestedUnitShell } from "../primitives/suggested-unit-shell";
+import { PlanningSuggestionShell } from "../primitives/planning-suggestion-shell";
+import { ZoneDropTarget } from "../dnd/zone-drop-target";
 import { WorkUnitCard } from "../work-unit-card";
 import { TaskCard } from "../task-card";
 import {
@@ -30,6 +31,9 @@ export function QueueZone({ onTaskOpen }: QueueZoneProps) {
   const board = usePlanningBoard();
   const createWorkUnitFromReadyTasks = usePlanningStore(
     (state) => state.createWorkUnitFromReadyTasks,
+  );
+  const createSplitUnitsFromReadyTasks = usePlanningStore(
+    (state) => state.createSplitUnitsFromReadyTasks,
   );
   const addTaskToWorkUnit = usePlanningStore((state) => state.addTaskToWorkUnit);
   const weights = usePlanningStore((state) => state.weights);
@@ -57,6 +61,11 @@ export function QueueZone({ onTaskOpen }: QueueZoneProps) {
       description="What could run together?"
       count={queueCount}
     >
+      <ZoneDropTarget
+        zone="queue-zone"
+        accept={(source) => source.type === "unit" || source.type === "ticket"}
+        activeHint="Drop to return tasks to the queue"
+      >
       <div className="space-y-3">
         <QueueSubzone title="Pool" count={board.queue.pool.length}>
           <AnimatedBoardList className="space-y-3">
@@ -74,20 +83,36 @@ export function QueueZone({ onTaskOpen }: QueueZoneProps) {
                     id={`pool-${group.workUnitKey}`}
                     layoutId={`pool-${group.workUnitKey}`}
                   >
-                    <SuggestedUnitShell
-                      createPoolAction={
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            createWorkUnitFromReadyTasks(
-                              group.tasks.map((task) => task.id),
-                            )
-                          }
-                        >
-                          Create unit
-                        </Button>
+                    <PlanningSuggestionShell
+                      label={showSplitPreview ? "Over capacity — split" : undefined}
+                      action={
+                        showSplitPreview ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              createSplitUnitsFromReadyTasks(
+                                group.tasks.map((task) => task.id),
+                              )
+                            }
+                          >
+                            Split unit
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              createWorkUnitFromReadyTasks(
+                                group.tasks.map((task) => task.id),
+                              )
+                            }
+                          >
+                            Create unit
+                          </Button>
+                        )
                       }
                     >
                       <WorkUnitCard
@@ -113,7 +138,7 @@ export function QueueZone({ onTaskOpen }: QueueZoneProps) {
                           />
                         </div>
                       ) : null}
-                    </SuggestedUnitShell>
+                    </PlanningSuggestionShell>
                   </AnimatedBoardItem>
                 );
               })
@@ -130,9 +155,9 @@ export function QueueZone({ onTaskOpen }: QueueZoneProps) {
             ) : (
               board.queue.attach.map(({ task, candidateUnits }) => (
                 <AnimatedBoardItem key={task.id} id={task.id} layoutId={`task-${task.id}`}>
-                  <SuggestedUnitShell
+                  <PlanningSuggestionShell
                     label="Attach to unit"
-                    attachAction={
+                    action={
                       candidateUnits.length === 1 ? (
                         <Button
                           type="button"
@@ -164,7 +189,7 @@ export function QueueZone({ onTaskOpen }: QueueZoneProps) {
                     }
                   >
                     <TaskCard task={task} onOpen={onTaskOpen} variant="compact" />
-                  </SuggestedUnitShell>
+                  </PlanningSuggestionShell>
                 </AnimatedBoardItem>
               ))
             )}
@@ -178,9 +203,9 @@ export function QueueZone({ onTaskOpen }: QueueZoneProps) {
             ) : (
               board.queue.alone.map((task) => (
                 <AnimatedBoardItem key={task.id} id={task.id} layoutId={`task-${task.id}`}>
-                  <SuggestedUnitShell
+                  <PlanningSuggestionShell
                     label="Solo unit"
-                    createAloneAction={
+                    action={
                       <Button
                         type="button"
                         size="sm"
@@ -198,13 +223,14 @@ export function QueueZone({ onTaskOpen }: QueueZoneProps) {
                       defaultExpanded
                       onTaskOpen={onTaskOpen}
                     />
-                  </SuggestedUnitShell>
+                  </PlanningSuggestionShell>
                 </AnimatedBoardItem>
               ))
             )}
           </AnimatedBoardList>
         </QueueSubzone>
       </div>
+      </ZoneDropTarget>
     </ZoneShell>
   );
 }

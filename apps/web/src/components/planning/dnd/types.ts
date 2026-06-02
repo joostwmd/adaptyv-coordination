@@ -14,19 +14,19 @@ export type KanbanDropData = {
   day: string;
 };
 
-export type UnitDropData = {
-  kind: "unit-dropzone";
-  workUnitId: string;
-  workUnitKey: string;
-};
-
 export type SiblingDropData = {
   kind: "sibling-unit";
   workUnitId: string;
   workUnitKey: string;
 };
 
-export type PlanningDropData = KanbanDropData | UnitDropData | SiblingDropData;
+export type ZoneDropKind = "units-zone" | "queue-zone";
+
+export type ZoneDropData = {
+  kind: ZoneDropKind;
+};
+
+export type PlanningDropData = KanbanDropData | SiblingDropData | ZoneDropData;
 
 export function isKanbanDropData(
   data: PlanningDragData | PlanningDropData | undefined,
@@ -48,4 +48,16 @@ export function isSiblingDropData(
   data: PlanningDragData | PlanningDropData | undefined,
 ): data is SiblingDropData {
   return data?.kind === "sibling-unit";
+}
+
+export function isUnitsZoneDropData(
+  data: PlanningDragData | PlanningDropData | undefined,
+): data is ZoneDropData {
+  return data?.kind === "units-zone";
+}
+
+export function isQueueZoneDropData(
+  data: PlanningDragData | PlanningDropData | undefined,
+): data is ZoneDropData {
+  return data?.kind === "queue-zone";
 }

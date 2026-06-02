@@ -6,7 +6,7 @@ import { cn } from "@adaptyv-coordination/ui/lib/utils";
 import type { Task } from "@/domain/task/types";
 
 import { TaskCard } from "../task-card";
-import type { PlanningDragData, SiblingDropData } from "../dnd/types";
+import type { PlanningDragData, SiblingDropData } from "./types";
 
 type DraggableTaskRowProps = {
   task: Task;
@@ -25,6 +25,7 @@ export function DraggableTaskRow({
 }: DraggableTaskRowProps) {
   const { ref: dragRef, isDragging } = useDraggable({
     id: task.id,
+    type: "task",
     disabled: dragDisabled,
     data: {
       kind: "task",
@@ -33,7 +34,13 @@ export function DraggableTaskRow({
   });
 
   return (
-    <div ref={dragRef} className={cn(isDragging && "opacity-40")}>
+    <div
+      ref={dragRef}
+      className={cn(
+        !dragDisabled && "cursor-grab active:cursor-grabbing",
+        isDragging && "cursor-grabbing opacity-40",
+      )}
+    >
       <TaskCard
         task={task}
         onOpen={onOpen}
@@ -60,8 +67,9 @@ export function SiblingUnitDropZone({
   const { ref, isDropTarget } = useDroppable({
     id: `sibling-unit:${workUnitId}`,
     accept: (source) => {
+      if (source.type !== "task") return false;
       const data = source.data as PlanningDragData | undefined;
-      return data?.kind === "task" && data.workUnitKey === workUnitKey;
+      return data?.workUnitKey === workUnitKey;
     },
     data: {
       kind: "sibling-unit",

@@ -4,16 +4,14 @@ import { cn } from "@adaptyv-coordination/ui/lib/utils";
 import type { Task } from "@/domain/task/types";
 import type { WorkUnit } from "@/domain/work-unit/types";
 
-import { DraggableTaskRow } from "./draggable-task-row";
 import { WorkUnitCard } from "../work-unit-card";
+import { DraggableTaskRow } from "./draggable-task-row";
 import type { PlanningDragData } from "./types";
 
 type DraggableWorkUnitProps = {
   workUnit: WorkUnit;
   onTaskOpen: (task: Task) => void;
   variant?: "default" | "suggested";
-  showSplitBadge?: boolean;
-  onSplit?: () => void;
   className?: string;
   dragDisabled?: boolean;
   layoutId?: string;
@@ -24,16 +22,16 @@ export function DraggableWorkUnit({
   workUnit,
   onTaskOpen,
   variant = "default",
-  showSplitBadge,
-  onSplit,
   className,
   dragDisabled = false,
   layoutId,
   enableSiblingTaskDrag = false,
 }: DraggableWorkUnitProps) {
+  const isDraggable = !dragDisabled && variant !== "suggested";
   const { ref, isDragging } = useDraggable({
     id: `unit:${workUnit.id}`,
-    disabled: dragDisabled || variant === "suggested",
+    type: "unit",
+    disabled: !isDraggable,
     data: {
       kind: "unit",
       workUnitId: workUnit.id,
@@ -42,13 +40,18 @@ export function DraggableWorkUnit({
   });
 
   return (
-    <div ref={ref} className={cn(isDragging && "opacity-40", className)}>
+    <div
+      ref={ref}
+      className={cn(
+        isDraggable && "cursor-grab active:cursor-grabbing",
+        isDragging && "cursor-grabbing opacity-40",
+        className,
+      )}
+    >
       <WorkUnitCard
         workUnit={workUnit}
         variant={variant}
         onTaskOpen={onTaskOpen}
-        showSplitBadge={showSplitBadge}
-        onSplit={onSplit}
         layoutId={layoutId ?? `unit-${workUnit.id}`}
         renderTask={
           enableSiblingTaskDrag

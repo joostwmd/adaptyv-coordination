@@ -5,7 +5,7 @@ import type { Task } from "@/domain/task/types";
 import type { Ticket } from "@/domain/ticket/types";
 
 import { TicketCard } from "../ticket-card";
-import type { PlanningDragData } from "../dnd/types";
+import type { PlanningDragData } from "./types";
 
 type DraggableTicketProps = {
   ticket: Ticket;
@@ -20,6 +20,7 @@ export function DraggableTicket({
 }: DraggableTicketProps) {
   const { ref, isDragging } = useDraggable({
     id: ticket.id,
+    type: "ticket",
     data: {
       kind: "ticket",
       workUnitId: ticket.workUnitId,
@@ -27,7 +28,13 @@ export function DraggableTicket({
   });
 
   return (
-    <div ref={ref} className={cn(isDragging && "opacity-40")}>
+    <div
+      ref={ref}
+      className={cn(
+        "cursor-grab active:cursor-grabbing",
+        isDragging && "cursor-grabbing opacity-40",
+      )}
+    >
       <TicketCard
         ticket={ticket}
         onTaskOpen={onTaskOpen}

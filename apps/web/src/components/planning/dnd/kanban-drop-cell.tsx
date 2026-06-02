@@ -18,7 +18,7 @@ export function KanbanDropCell({
 }: KanbanDropCellProps) {
   const { ref, isDropTarget } = useDroppable({
     id: `kanban:${staffId}:${day}`,
-    accept: ["unit", "ticket"],
+    accept: (source) => source.type === "unit" || source.type === "ticket",
     data: {
       kind: "kanban-cell",
       staffId,

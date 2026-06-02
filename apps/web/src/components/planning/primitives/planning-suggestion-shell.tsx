@@ -2,36 +2,19 @@ import type { ReactNode } from "react";
 
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
-type SuggestedUnitShellProps = {
+type PlanningSuggestionShellProps = {
   label?: string;
-  /** Fallback for custom action layouts. */
-  actions?: ReactNode;
-  createAloneAction?: ReactNode;
-  attachAction?: ReactNode;
-  createPoolAction?: ReactNode;
+  action?: ReactNode;
   className?: string;
   children: ReactNode;
 };
 
-export function SuggestedUnitShell({
+export function PlanningSuggestionShell({
   label = "Suggested unit",
-  actions,
-  createAloneAction,
-  attachAction,
-  createPoolAction,
+  action,
   className,
   children,
-}: SuggestedUnitShellProps) {
-  const headerActions =
-    actions ??
-    (createAloneAction || attachAction || createPoolAction ? (
-      <>
-        {createAloneAction}
-        {attachAction}
-        {createPoolAction}
-      </>
-    ) : null);
-
+}: PlanningSuggestionShellProps) {
   return (
     <div
       className={cn(
@@ -43,9 +26,9 @@ export function SuggestedUnitShell({
         <p className="pt-0.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
           {label}
         </p>
-        {headerActions ? (
+        {action ? (
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-            {headerActions}
+            {action}
           </div>
         ) : null}
       </header>
