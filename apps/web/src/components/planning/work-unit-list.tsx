@@ -1,14 +1,24 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import type { Task } from "@/domain/task/types";
-import { usePlanningWorkUnits } from "@/stores/usePlanningStore";
+import { usePlanningStore, usePlanningWorkUnits } from "@/stores/usePlanningStore";
 
 import { TaskDetailDialog } from "./task-detail-dialog";
 import { WorkUnitCard } from "./work-unit-card";
 
 export function WorkUnitList() {
   const workUnits = usePlanningWorkUnits();
+  const getWorkUnitPriority = usePlanningStore((s) => s.getWorkUnitPriority);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+  const sortedWorkUnits = useMemo(() => {
+    return [...workUnits].sort((a, b) => {
+      const scoreA = getWorkUnitPriority(a.id)?.score ?? 0;
+      const scoreB = getWorkUnitPriority(b.id)?.score ?? 0;
+      if (scoreB !== scoreA) return scoreB - scoreA;
+      return (a.scheduledDay ?? "").localeCompare(b.scheduledDay ?? "");
+    });
+  }, [workUnits, getWorkUnitPriority]);
 
   if (workUnits.length === 0) {
     return (
@@ -21,7 +31,7 @@ export function WorkUnitList() {
   return (
     <>
       <div className="grid gap-4">
-        {workUnits.map((workUnit) => (
+        {sortedWorkUnits.map((workUnit) => (
           <WorkUnitCard
             key={workUnit.id}
             workUnit={workUnit}

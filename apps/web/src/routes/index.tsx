@@ -1,6 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 
-import { WorkUnitList } from "@/components/planning";
 import { usePlanningTasks, usePlanningWorkUnits } from "@/stores/usePlanningStore";
 
 export const Route = createFileRoute("/")({
@@ -12,27 +11,25 @@ function HomeComponent() {
   const workUnits = usePlanningWorkUnits();
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">Lab planning (prototype)</h2>
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-            <span className="text-sm text-muted-foreground">
-              {tasks.length} tasks · {workUnits.length} work units
-            </span>
-          </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Each card is a work unit (shared assignees, schedule, and notes). Expand to see
-            the tasks inside. Priority info is on the badge — hover the icon for details.
-          </p>
-        </section>
+    <div className="container mx-auto max-w-3xl px-4 py-8">
+      <h1 className="text-lg font-semibold tracking-tight">Adaptyv coordination</h1>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Prototype workspace for lab planning and experiment coordination.
+      </p>
 
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-4 font-medium">Work units ({workUnits.length})</h2>
-          <WorkUnitList />
-        </section>
-      </div>
+      <section className="mt-8 rounded-lg border p-4">
+        <h2 className="font-medium">Lab planning</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {tasks.length} tasks · {workUnits.length} work units in the current prototype
+          dataset.
+        </p>
+        <Link
+          to="/planning"
+          className="mt-4 inline-flex text-sm font-medium underline-offset-4 hover:underline"
+        >
+          Open planning screen
+        </Link>
+      </section>
     </div>
   );
 }
