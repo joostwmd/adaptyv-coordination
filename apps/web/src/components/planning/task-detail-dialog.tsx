@@ -10,6 +10,7 @@ import { ExperimentLink } from "@/components/task/primitives/experiment-link";
 import { BLOCKED_REASON_LABEL } from "@/domain/blocked-reason";
 import type { Task } from "@/domain/task/types";
 import { useEnrichedTask } from "@/hooks/usePlanningTask";
+import { useTicketView } from "@/hooks/useTicket";
 import { useWorkUnitView } from "@/hooks/useWorkUnit";
 import { usePlanningStore } from "@/stores/usePlanningStore";
 
@@ -32,7 +33,13 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
   const workUnit = usePlanningStore((s) =>
     task?.workUnitId ? s.workUnits.find((wu) => wu.id === task.workUnitId) : undefined,
   );
+  const ticket = usePlanningStore((s) =>
+    task?.workUnitId
+      ? s.tickets.find((t) => t.workUnitId === task.workUnitId)
+      : undefined,
+  );
   const workUnitView = useWorkUnitView(workUnit ?? null);
+  const ticketView = useTicketView(ticket ?? null);
 
   const experiment = enriched?.experiment;
   const showReadiness = task && task.readiness !== "batched";
@@ -89,13 +96,22 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
                   <span className="font-medium text-foreground">{workUnitView.templateLabel}</span>
                   <span aria-hidden>·</span>
                   <span>{statusConfig.label}</span>
-                  <span aria-hidden>·</span>
-                  <ScheduledTime
-                    scheduledDay={workUnitView.workUnit.scheduledDay}
-                    className="h-auto p-0 text-xs font-normal text-muted-foreground"
-                  />
+                  {ticketView ? (
+                    <>
+                      <span aria-hidden>·</span>
+                      <span className="inline-flex items-center gap-1">
+                        <span>Scheduled</span>
+                        <ScheduledTime
+                          scheduledDay={ticketView.ticket.scheduledDay}
+                          className="h-auto p-0 text-xs font-normal text-muted-foreground"
+                        />
+                      </span>
+                    </>
+                  ) : null}
                 </p>
-                <AssigneesRow assignees={workUnitView.assignees} />
+                {ticketView?.assignee ? (
+                  <AssigneesRow assignees={[ticketView.assignee]} />
+                ) : null}
               </div>
             ) : null}
           </div>

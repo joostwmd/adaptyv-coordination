@@ -51,8 +51,6 @@ export function createWorkUnitFromTasks(
     taskTemplateId: tasks[0]!.taskTemplateId,
     workUnitKey: key,
     taskIds: tasks.map((t) => t.id),
-    assigneeIds: [],
-    notes: [],
     status: options.status ?? "draft",
   };
 }

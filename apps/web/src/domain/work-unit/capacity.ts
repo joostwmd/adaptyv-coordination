@@ -45,8 +45,6 @@ function emptyWorkUnitStub(taskTemplateId: string): WorkUnit {
     taskTemplateId,
     workUnitKey: "",
     taskIds: [],
-    assigneeIds: [],
-    notes: [],
     status: "draft",
   };
 }

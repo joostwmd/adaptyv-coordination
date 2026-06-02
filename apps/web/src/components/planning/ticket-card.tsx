@@ -14,69 +14,53 @@ import { cn } from "@adaptyv-coordination/ui/lib/utils";
 import { ChevronDownIcon } from "lucide-react";
 
 import type { Task } from "@/domain/task/types";
-import type { WorkUnit } from "@/domain/work-unit/types";
-import { useWorkUnitView } from "@/hooks/useWorkUnit";
+import type { Ticket } from "@/domain/ticket/types";
+import { useTicketView } from "@/hooks/useTicket";
 
-import { WORK_UNIT_STATUS_CONFIG } from "./constants";
 import { PriorityIndicator } from "./priority-indicator";
+import { AssigneesRow } from "./primitives/assignees-row";
+import { ScheduledTime } from "./primitives/scheduled-time";
 import { TaskCard } from "./task-card";
 
-type WorkUnitCardProps = {
-  workUnit: WorkUnit;
-  variant?: "default" | "suggested";
+type TicketCardProps = {
+  ticket: Ticket;
   defaultExpanded?: boolean;
   onTaskOpen: (task: Task) => void;
 };
 
-export function WorkUnitCard({
-  workUnit,
-  variant = "default",
+export function TicketCard({
+  ticket,
   defaultExpanded = false,
   onTaskOpen,
-}: WorkUnitCardProps) {
+}: TicketCardProps) {
   const [open, setOpen] = useState(defaultExpanded);
-  const view = useWorkUnitView(workUnit);
+  const view = useTicketView(ticket);
 
   if (!view) return null;
 
-  const isSuggested = variant === "suggested";
-  const statusConfig = WORK_UNIT_STATUS_CONFIG[workUnit.status];
+  const assignees = view.assignee ? [view.assignee] : [];
 
   return (
-    <Card
-      className={cn(
-        isSuggested &&
-          "border-dashed border-muted-foreground/35 bg-muted/15 shadow-none",
-      )}
-    >
+    <Card>
       <CardHeader className="gap-2 pb-3">
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1 space-y-1">
-            {isSuggested ? (
-              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                Suggested unit
-              </p>
-            ) : null}
-            <CardTitle
-              className={cn(
-                "text-base leading-snug",
-                isSuggested && "text-muted-foreground",
-              )}
-            >
-              {view.templateLabel}
-            </CardTitle>
+          <div className="min-w-0 flex-1 space-y-2">
+            <CardTitle className="text-base leading-snug">{view.templateLabel}</CardTitle>
             <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
-              <span>{statusConfig.label}</span>
-              <span aria-hidden>·</span>
               <span>
                 {view.experimentCount} experiment
                 {view.experimentCount === 1 ? "" : "s"}
               </span>
               <span aria-hidden>·</span>
-              <span>
-                {view.tasks.length} task{view.tasks.length === 1 ? "" : "s"}
+              <span className="inline-flex items-center gap-1">
+                <span>Scheduled</span>
+                <ScheduledTime
+                  scheduledDay={ticket.scheduledDay}
+                  className="h-auto p-0 text-xs font-normal text-muted-foreground"
+                />
               </span>
             </p>
+            <AssigneesRow assignees={assignees} />
           </div>
           {view.priority ? (
             <PriorityIndicator priority={view.priority} context="workUnit" />
@@ -88,10 +72,8 @@ export function WorkUnitCard({
         <Collapsible open={open} onOpenChange={setOpen}>
           <CollapsibleTrigger
             className={cn(
-              "flex w-full items-center justify-between rounded-md border px-3 py-2.5 text-xs font-medium transition-colors",
-              isSuggested
-                ? "border-dashed border-muted-foreground/30 bg-muted/20 hover:bg-muted/35"
-                : "bg-muted/30 hover:bg-muted/50",
+              "flex w-full items-center justify-between rounded-md border bg-muted/30 px-3 py-2.5 text-xs font-medium",
+              "hover:bg-muted/50 transition-colors",
             )}
           >
             <span>

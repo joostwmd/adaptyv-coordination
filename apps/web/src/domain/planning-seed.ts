@@ -7,18 +7,20 @@ import {
 } from "@/domain/task";
 import { resetTaskIdCounter } from "@/domain/task/scaffold";
 import type { Task } from "@/domain/task/types";
+import type { Ticket } from "@/domain/ticket/types";
 import {
   createWorkUnitFromTasks,
   groupIntoDraftWorkUnits,
   resetWorkUnitIdCounter,
 } from "@/domain/work-unit";
-import type { WorkUnit, WorkUnitNote, WorkUnitStatus } from "@/domain/work-unit/types";
+import type { WorkUnit } from "@/domain/work-unit/types";
 import { getWorkflowTemplate } from "@/domain/workflow";
-import type { ExperimentDetail, StaffMember } from "@/types";
+import type { ExperimentDetail } from "@/types";
 
 export type PlanningSeedData = {
   tasks: Task[];
   workUnits: WorkUnit[];
+  tickets: Ticket[];
 };
 
 const BUFFER_PREP_TEMPLATE = "01944581-afc2-2a97-3ba6-14b9cbc54691";
@@ -36,13 +38,16 @@ const SCHEDULE_DAYS = [
   "2026-06-11",
 ];
 
-const NOTE_BODIES = [
-  "Run expression batch before overnight BLI window.",
-  "Confirm plate map with Marcus before loading the reader.",
-  "Client asked for earlier readout — keep Tuesday slot if possible.",
-  "Use backup antigen lot if primary QC fails.",
-  "Split load across two operators if queue backs up.",
-];
+let ticketIdCounter = 0;
+
+function resetTicketIdCounter(seed = 0): void {
+  ticketIdCounter = seed;
+}
+
+function nextTicketId(): string {
+  ticketIdCounter += 1;
+  return `ticket-${ticketIdCounter}`;
+}
 
 function toSummary(experiment: ExperimentDetail) {
   const { runs: _runs, ...summary } = experiment;
@@ -136,9 +141,9 @@ function applyPlanningScenarios(tasks: Task[]): Task[] {
   }
 
   const acmeTasks = byExperiment("exp-acme-expression");
-  const acmeReview = acmeTasks.find((t) => t.name?.includes("review") || t.dependsOn.length > 0);
   const acmeRerunSource =
-    acmeTasks.find((t) => t.taskTemplateId === EXPR_RUN_TEMPLATE) ?? acmeReview;
+    acmeTasks.find((t) => t.taskTemplateId === EXPR_RUN_TEMPLATE) ??
+    acmeTasks.find((t) => t.dependsOn.length > 0);
   if (acmeRerunSource) {
     result.push(
       ...createRerunTasks([acmeRerunSource]).map((t) => ({
@@ -169,44 +174,24 @@ function applyPlanningScenarios(tasks: Task[]): Task[] {
   return refreshAllTaskReadiness(result);
 }
 
-function enrichWorkUnit(
-  workUnit: WorkUnit,
-  index: number,
-  staff: StaffMember[],
-): WorkUnit {
-  const assigneeCount = 1 + (index % 2);
-  const assigneeIds = Array.from({ length: assigneeCount }, (_, i) => {
-    return staff[(index + i) % staff.length]!.id;
-  });
+function buildTicketsForWorkUnits(workUnits: WorkUnit[]): Ticket[] {
+  const scheduledCount = Math.max(1, Math.floor(workUnits.length * 0.65));
+  const tickets: Ticket[] = [];
 
-  const status: WorkUnitStatus = index % 5 === 0 ? "draft" : index % 3 === 0 ? "ready" : "draft";
-  const scheduledDay = SCHEDULE_DAYS[index % SCHEDULE_DAYS.length];
+  for (let index = 0; index < scheduledCount; index++) {
+    const workUnit = workUnits[index];
+    if (!workUnit) break;
 
-  const notes: WorkUnitNote[] = [];
-  if (index % 2 === 0) {
-    notes.push({
-      id: `work-unit-note-${workUnit.id}-1`,
-      author: staff[index % staff.length] as StaffMember,
-      body: NOTE_BODIES[index % NOTE_BODIES.length]!,
-      createdAt: daysAgo(1),
-    });
-  }
-  if (index % 4 === 0) {
-    notes.push({
-      id: `work-unit-note-${workUnit.id}-2`,
-      author: staff[(index + 1) % staff.length] as StaffMember,
-      body: NOTE_BODIES[(index + 2) % NOTE_BODIES.length]!,
-      createdAt: daysAgo(0),
+    tickets.push({
+      id: nextTicketId(),
+      workUnitId: workUnit.id,
+      assigneeId: seedStaff[index % seedStaff.length]!.id,
+      scheduledDay: SCHEDULE_DAYS[index % SCHEDULE_DAYS.length]!,
+      status: "scheduled",
     });
   }
 
-  return {
-    ...workUnit,
-    assigneeIds,
-    scheduledDay,
-    status,
-    notes,
-  };
+  return tickets;
 }
 
 function attachTasksToWorkUnits(tasks: Task[], workUnits: WorkUnit[]): Task[] {
@@ -231,6 +216,7 @@ function attachTasksToWorkUnits(tasks: Task[], workUnits: WorkUnit[]): Task[] {
 export function buildPlanningSeedData(): PlanningSeedData {
   resetTaskIdCounter(1000);
   resetWorkUnitIdCounter(2000);
+  resetTicketIdCounter(3000);
 
   let tasks = scaffoldAllExperiments();
   tasks = addStandaloneTasks(tasks);
@@ -262,13 +248,15 @@ export function buildPlanningSeedData(): PlanningSeedData {
     batchedWorkUnits.push(createWorkUnitFromTasks(overflowExpr));
   }
 
-  const workUnits = batchedWorkUnits.map((wu, index) =>
-    enrichWorkUnit(wu, index, seedStaff),
-  );
+  const workUnits: WorkUnit[] = batchedWorkUnits.map((wu) => ({
+    ...wu,
+    status: "draft" as const,
+  }));
 
+  const tickets = buildTicketsForWorkUnits(workUnits);
   tasks = attachTasksToWorkUnits(tasks, workUnits);
 
-  return { tasks, workUnits };
+  return { tasks, workUnits, tickets };
 }
 
 export function validatePlanningSeed(data: PlanningSeedData): boolean {

@@ -45,11 +45,12 @@ export {
   scaffoldTasks,
 } from "./task";
 
+export type { Ticket, TicketStatus } from "./ticket/types";
+
 export type {
   AggregatedResources,
   CapacityStatus,
   WorkUnit,
-  WorkUnitNote,
   WorkUnitPriority,
   WorkUnitStatus,
 } from "./work-unit/types";

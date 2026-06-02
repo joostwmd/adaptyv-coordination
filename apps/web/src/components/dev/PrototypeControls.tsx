@@ -10,6 +10,7 @@ import {
 import {
   usePlanningStore,
   usePlanningTasks,
+  usePlanningTickets,
   usePlanningWorkUnits,
 } from "@/stores/usePlanningStore";
 import { useState } from "react";
@@ -22,6 +23,7 @@ export function PrototypeControls() {
   const staffCount = useStaffCount();
   const planningTaskCount = usePlanningTasks().length;
   const workUnitCount = usePlanningWorkUnits().length;
+  const ticketCount = usePlanningTickets().length;
   
   // Hide in production
   if (import.meta.env.PROD) return null;
@@ -87,6 +89,14 @@ export function PrototypeControls() {
             <span className="text-muted-foreground">Work units:</span>
             <Badge variant="secondary" className="h-5 text-xs">
               {workUnitCount}
+            </Badge>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs">
+            <FileText className="h-3 w-3 text-amber-500" />
+            <span className="text-muted-foreground">Tickets:</span>
+            <Badge variant="secondary" className="h-5 text-xs">
+              {ticketCount}
             </Badge>
           </div>
           

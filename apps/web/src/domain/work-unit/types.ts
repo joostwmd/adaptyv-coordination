@@ -1,12 +1,3 @@
-import type { StaffMember } from "@/types";
-
-export type WorkUnitNote = {
-  id: string;
-  author: StaffMember;
-  body: string;
-  createdAt: string;
-};
-
 export type WorkUnitStatus = "draft" | "ready" | "sent";
 
 export type WorkUnit = {
@@ -14,9 +5,6 @@ export type WorkUnit = {
   taskTemplateId: string;
   workUnitKey: string;
   taskIds: string[];
-  assigneeIds: string[];
-  scheduledDay?: string;
-  notes: WorkUnitNote[];
   status: WorkUnitStatus;
 };
 

@@ -1,13 +1,20 @@
 import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 
-import { usePlanningTasks, usePlanningWorkUnits } from "@/stores/usePlanningStore";
+import {
+  usePlanningStore,
+  usePlanningTasks,
+  usePlanningTickets,
+  usePlanningWorkUnits,
+} from "@/stores/usePlanningStore";
 
 import { WorkUnitList } from "./work-unit-list";
 
 function PlanningStats() {
   const tasks = usePlanningTasks();
   const workUnits = usePlanningWorkUnits();
+  const tickets = usePlanningTickets();
+  const unscheduledCount = usePlanningStore((s) => s.getUnscheduledWorkUnits().length);
 
   const counts = useMemo(() => {
     const byReadiness: Record<string, number> = {};
@@ -17,9 +24,6 @@ function PlanningStats() {
     return byReadiness;
   }, [tasks]);
 
-  const draftUnits = workUnits.filter((wu) => wu.status === "draft").length;
-  const readyUnits = workUnits.filter((wu) => wu.status === "ready").length;
-
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
       <span>
@@ -28,7 +32,11 @@ function PlanningStats() {
       <span aria-hidden>·</span>
       <span>
         <span className="font-medium text-foreground">{workUnits.length}</span> work units
-        {workUnits.length > 0 ? ` (${draftUnits} draft, ${readyUnits} ready)` : null}
+        {workUnits.length > 0 ? ` (${unscheduledCount} unscheduled)` : null}
+      </span>
+      <span aria-hidden>·</span>
+      <span>
+        <span className="font-medium text-foreground">{tickets.length}</span> tickets
       </span>
       <span aria-hidden>·</span>
       <span>{counts.ready ?? 0} ready</span>

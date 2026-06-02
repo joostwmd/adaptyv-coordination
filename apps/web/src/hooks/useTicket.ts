@@ -2,6 +2,7 @@ import { useMemo } from "react";
 
 import type { PriorityScore } from "@/domain/priority";
 import type { Task } from "@/domain/task/types";
+import type { Ticket } from "@/domain/ticket/types";
 import type { WorkUnit } from "@/domain/work-unit/types";
 import {
   countExperimentsInWorkUnit,
@@ -13,22 +14,31 @@ import {
   type EnrichedPlanningTask,
 } from "@/hooks/usePlanningTask";
 import { usePlanningStore } from "@/stores/usePlanningStore";
+import { usePrototypeStore } from "@/stores/usePrototypeStore";
+import type { StaffMember } from "@/types";
 
-export type EnrichedWorkUnit = {
+export type EnrichedTicket = {
+  ticket: Ticket;
   workUnit: WorkUnit;
   tasks: Task[];
   enrichedTasks: EnrichedPlanningTask[];
+  assignee: StaffMember | null;
   experimentCount: number;
   templateLabel: string;
-  /** Driver task priority (work unit score = max of member tasks). */
   priority: PriorityScore | null;
-  driverTaskTitle: string | null;
 };
 
-export function useWorkUnitView(workUnit: WorkUnit | null): EnrichedWorkUnit | null {
+export function useTicketView(ticket: Ticket | null): EnrichedTicket | null {
   const allTasks = usePlanningStore((s) => s.tasks);
+  const workUnits = usePlanningStore((s) => s.workUnits);
+  const staff = usePrototypeStore((s) => s.staff);
   const experimentsById = useExperimentsById();
   const getWorkUnitPriority = usePlanningStore((s) => s.getWorkUnitPriority);
+
+  const workUnit = useMemo(() => {
+    if (!ticket) return null;
+    return workUnits.find((wu) => wu.id === ticket.workUnitId) ?? null;
+  }, [ticket, workUnits]);
 
   const tasks = useMemo(() => {
     if (!workUnit) return [];
@@ -38,21 +48,31 @@ export function useWorkUnitView(workUnit: WorkUnit | null): EnrichedWorkUnit | n
   const enrichedTasks = useEnrichedTasks(tasks);
 
   return useMemo(() => {
-    if (!workUnit) return null;
+    if (!ticket || !workUnit) return null;
 
+    const assignee = staff.find((m) => m.id === ticket.assigneeId) ?? null;
     const priority = getWorkUnitPriority(workUnit.id);
     const driver = priority
       ? enrichedTasks.find((e) => e.task.id === priority.driverTaskId)
       : undefined;
 
     return {
+      ticket,
       workUnit,
       tasks,
       enrichedTasks,
+      assignee,
       experimentCount: countExperimentsInWorkUnit(tasks, experimentsById),
       templateLabel: getWorkUnitTemplateLabel(workUnit),
       priority: driver?.priority ?? null,
-      driverTaskTitle: driver?.title ?? null,
     };
-  }, [workUnit, tasks, enrichedTasks, experimentsById, getWorkUnitPriority]);
+  }, [
+    ticket,
+    workUnit,
+    tasks,
+    enrichedTasks,
+    staff,
+    experimentsById,
+    getWorkUnitPriority,
+  ]);
 }

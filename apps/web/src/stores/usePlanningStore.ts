@@ -1,18 +1,19 @@
 import { create } from "zustand";
 import type { BlockedReason } from "@/domain/blocked-reason";
-import {
-  computeWorkUnitPriority,
-  createWorkUnitFromTasks,
-  groupIntoDraftWorkUnits,
-  suggestSplit,
-} from "@/domain/work-unit";
-import type { WorkUnit, WorkUnitNote } from "@/domain/work-unit/types";
 import { buildPlanningSeedData } from "@/domain/seed";
 import {
   DEFAULT_PRIORITY_WEIGHTS,
   PRIORITY_WEIGHT_PRESETS,
   type PriorityWeights,
 } from "@/domain/priority";
+import type { Ticket } from "@/domain/ticket/types";
+import {
+  computeWorkUnitPriority,
+  createWorkUnitFromTasks,
+  groupIntoDraftWorkUnits,
+  suggestSplit,
+} from "@/domain/work-unit";
+import type { WorkUnit } from "@/domain/work-unit/types";
 import {
   createRerunTasks,
   createStandaloneTask,
@@ -28,6 +29,7 @@ const initialSeed = buildPlanningSeedData();
 interface PlanningState {
   tasks: Task[];
   workUnits: WorkUnit[];
+  tickets: Ticket[];
   weights: PriorityWeights;
 
   addTask: (task: Omit<Task, "id"> & { id?: string }) => void;
@@ -47,9 +49,14 @@ interface PlanningState {
   removeTaskFromWorkUnit: (taskId: string) => void;
   splitWorkUnit: (workUnitId: string) => { primary: WorkUnit; secondary: WorkUnit } | null;
 
-  assignWorkUnit: (workUnitId: string, assigneeIds: string[]) => void;
-  scheduleWorkUnit: (workUnitId: string, scheduledDay: string) => void;
-  addWorkUnitNote: (workUnitId: string, note: Omit<WorkUnitNote, "id">) => void;
+  createTicket: (
+    workUnitId: string,
+    assigneeId: string,
+    scheduledDay: string,
+  ) => Ticket | null;
+  updateTicket: (ticketId: string, updates: Partial<Ticket>) => void;
+  deleteTicket: (ticketId: string) => void;
+
   updateWorkUnit: (workUnitId: string, updates: Partial<WorkUnit>) => void;
 
   setWeights: (weights: PriorityWeights) => void;
@@ -59,6 +66,8 @@ interface PlanningState {
 
   getTasksByExperiment: (experimentId: string) => Task[];
   getTasksByWorkUnit: (workUnitId: string) => Task[];
+  getTicketByWorkUnitId: (workUnitId: string) => Ticket | undefined;
+  getUnscheduledWorkUnits: () => WorkUnit[];
   getWorkUnitPriority: (workUnitId: string) => ReturnType<typeof computeWorkUnitPriority>;
 
   resetToSeed: () => void;
@@ -71,8 +80,8 @@ function syncReadiness(tasks: Task[]): Task[] {
 function attachTasksToWorkUnits(tasks: Task[], workUnits: WorkUnit[]): Task[] {
   const workUnitByTask = new Map<string, string>();
   for (const workUnit of workUnits) {
-    for (const tid of workUnit.taskIds) {
-      workUnitByTask.set(tid, workUnit.id);
+    for (const taskId of workUnit.taskIds) {
+      workUnitByTask.set(taskId, workUnit.id);
     }
   }
   return syncReadiness(
@@ -93,6 +102,7 @@ function attachTasksToWorkUnits(tasks: Task[], workUnits: WorkUnit[]): Task[] {
 export const usePlanningStore = create<PlanningState>((set, get) => ({
   tasks: initialSeed.tasks,
   workUnits: initialSeed.workUnits,
+  tickets: initialSeed.tickets,
   weights: DEFAULT_PRIORITY_WEIGHTS,
 
   addTask: (taskData) =>
@@ -230,37 +240,46 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     return { primary: primaryWorkUnit, secondary: secondaryWorkUnit };
   },
 
-  assignWorkUnit: (workUnitId, assigneeIds) =>
+  createTicket: (workUnitId, assigneeId, scheduledDay) => {
+    const state = get();
+    const workUnit = state.workUnits.find((wu) => wu.id === workUnitId);
+    if (!workUnit) return null;
+
+    const existing = state.tickets.find((t) => t.workUnitId === workUnitId);
+    if (existing) {
+      const updated: Ticket = {
+        ...existing,
+        assigneeId,
+        scheduledDay,
+        status: "scheduled",
+      };
+      set({
+        tickets: state.tickets.map((t) => (t.id === existing.id ? updated : t)),
+      });
+      return updated;
+    }
+
+    const ticket: Ticket = {
+      id: `ticket-${Date.now()}`,
+      workUnitId,
+      assigneeId,
+      scheduledDay,
+      status: "scheduled",
+    };
+    set({ tickets: [...state.tickets, ticket] });
+    return ticket;
+  },
+
+  updateTicket: (ticketId, updates) =>
     set((state) => ({
-      workUnits: state.workUnits.map((wu) =>
-        wu.id === workUnitId ? { ...wu, assigneeIds } : wu,
+      tickets: state.tickets.map((t) =>
+        t.id === ticketId ? { ...t, ...updates } : t,
       ),
     })),
 
-  scheduleWorkUnit: (workUnitId, scheduledDay) =>
+  deleteTicket: (ticketId) =>
     set((state) => ({
-      workUnits: state.workUnits.map((wu) =>
-        wu.id === workUnitId ? { ...wu, scheduledDay, status: "ready" } : wu,
-      ),
-    })),
-
-  addWorkUnitNote: (workUnitId, noteData) =>
-    set((state) => ({
-      workUnits: state.workUnits.map((wu) =>
-        wu.id === workUnitId
-          ? {
-              ...wu,
-              notes: [
-                ...wu.notes,
-                {
-                  ...noteData,
-                  id: `work-unit-note-${Date.now()}`,
-                  createdAt: noteData.createdAt ?? new Date().toISOString(),
-                },
-              ],
-            }
-          : wu,
-      ),
+      tickets: state.tickets.filter((t) => t.id !== ticketId),
     })),
 
   updateWorkUnit: (workUnitId, updates) =>
@@ -295,6 +314,15 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     return get().tasks.filter((t) => workUnit.taskIds.includes(t.id));
   },
 
+  getTicketByWorkUnitId: (workUnitId) =>
+    get().tickets.find((t) => t.workUnitId === workUnitId),
+
+  getUnscheduledWorkUnits: () => {
+    const state = get();
+    const scheduledIds = new Set(state.tickets.map((t) => t.workUnitId));
+    return state.workUnits.filter((wu) => !scheduledIds.has(wu.id));
+  },
+
   getWorkUnitPriority: (workUnitId) => {
     const state = get();
     const workUnit = state.workUnits.find((wu) => wu.id === workUnitId);
@@ -319,6 +347,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     set({
       tasks: seed.tasks,
       workUnits: seed.workUnits,
+      tickets: seed.tickets,
       weights: DEFAULT_PRIORITY_WEIGHTS,
     });
   },
@@ -326,6 +355,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
 
 export const usePlanningTasks = () => usePlanningStore((s) => s.tasks);
 export const usePlanningWorkUnits = () => usePlanningStore((s) => s.workUnits);
+export const usePlanningTickets = () => usePlanningStore((s) => s.tickets);
 export const usePlanningWeights = () => usePlanningStore((s) => s.weights);
 
 export type { BlockedReason };

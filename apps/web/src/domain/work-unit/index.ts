@@ -3,7 +3,6 @@ export type {
   CapacityOverflow,
   CapacityStatus,
   WorkUnit,
-  WorkUnitNote,
   WorkUnitPriority,
   WorkUnitStatus,
 } from "./types";
