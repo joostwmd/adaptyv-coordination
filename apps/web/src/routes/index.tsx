@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { ContextList, MOCK_CONTEXT_ITEMS } from "@/components/context";
+import { TaskList, MOCK_TASKS } from "@/components/task";
 import { trpc } from "@/utils/trpc";
 
 export const Route = createFileRoute("/")({
@@ -49,6 +50,10 @@ function HomeComponent() {
         <section className="rounded-lg border p-4">
           <h2 className="mb-4 font-medium">Experiment context (demo)</h2>
           <ContextList items={MOCK_CONTEXT_ITEMS} />
+        </section>
+        <section className="rounded-lg border p-4">
+          <h2 className="mb-4 font-medium">Tasks (demo)</h2>
+          <TaskList items={MOCK_TASKS} />
         </section>
       </div>
     </div>
