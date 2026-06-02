@@ -16,7 +16,8 @@
     "db:studio": "turbo -F @adaptyv-coordination/db db:studio",
     "db:generate": "turbo -F @adaptyv-coordination/db db:generate",
     "db:migrate": "turbo -F @adaptyv-coordination/db db:migrate",
-    "check": "oxlint && oxfmt --write"
+    "check": "oxlint && oxfmt --write",
+    "ship": "docker buildx build --platform linux/amd64 -t joostwmd/adaptyv-coordination:latest --push -f apps/server/Dockerfile ."
   },
   "dependencies": {
     "@adaptyv-coordination/env": "workspace:*",
