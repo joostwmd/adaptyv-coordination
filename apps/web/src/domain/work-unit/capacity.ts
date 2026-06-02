@@ -1,26 +1,20 @@
 import { getTaskTemplate } from "@/domain/task-template/catalog";
 import { getResourceDefinition } from "@/domain/resource/resources";
-import type { Ticket } from "@/domain/ticket/types";
-import type {
-  AggregatedResources,
-  Batch,
-  CapacityStatus,
-} from "./types";
+import type { Task } from "@/domain/task/types";
+import type { AggregatedResources, CapacityStatus, WorkUnit } from "./types";
 import {
-  buildTicketPriorityContext,
-  scoreTicket,
+  buildTaskPriorityContext,
+  scoreTask,
   type PriorityWeights,
 } from "@/domain/priority";
 import type { ExperimentSummary } from "@/types";
 import { DEFAULT_PRIORITY_WEIGHTS } from "@/domain/priority/weights";
 
-export function aggregateResources(
-  tickets: Ticket[],
-): AggregatedResources {
+export function aggregateResources(tasks: Task[]): AggregatedResources {
   const totals: AggregatedResources = {};
 
-  for (const ticket of tickets) {
-    const template = getTaskTemplate(ticket.taskTemplateId);
+  for (const task of tasks) {
+    const template = getTaskTemplate(task.taskTemplateId);
     if (!template) continue;
 
     for (const req of template.resourceProfile) {
@@ -45,11 +39,20 @@ export function aggregateResources(
   return totals;
 }
 
-export function getCapacityStatus(
-  batch: Batch,
-  tickets: Ticket[],
-): CapacityStatus {
-  const aggregated = aggregateResources(tickets);
+function emptyWorkUnitStub(taskTemplateId: string): WorkUnit {
+  return {
+    id: "",
+    taskTemplateId,
+    workUnitKey: "",
+    taskIds: [],
+    assigneeIds: [],
+    notes: [],
+    status: "draft",
+  };
+}
+
+export function getCapacityStatus(workUnit: WorkUnit, tasks: Task[]): CapacityStatus {
+  const aggregated = aggregateResources(tasks);
   const overflows: CapacityStatus["overflows"] = [];
 
   for (const [resourceType, used] of Object.entries(aggregated)) {
@@ -66,10 +69,10 @@ export function getCapacityStatus(
   };
 }
 
-export function computeFillRatio(batch: Batch, tickets: Ticket[]): number {
-  const status = getCapacityStatus(batch, tickets);
+export function computeFillRatio(workUnit: WorkUnit, tasks: Task[]): number {
+  const status = getCapacityStatus(workUnit, tasks);
   if (status.overflows.length > 0) return 1;
-  const aggregated = aggregateResources(tickets);
+  const aggregated = aggregateResources(tasks);
   const ratios: number[] = [];
   for (const [resourceType, used] of Object.entries(aggregated)) {
     const def = getResourceDefinition(resourceType);
@@ -81,46 +84,46 @@ export function computeFillRatio(batch: Batch, tickets: Ticket[]): number {
 }
 
 export type SplitSuggestion = {
-  primary: Ticket[];
-  secondary: Ticket[];
+  primary: Task[];
+  secondary: Task[];
   overflows: CapacityStatus["overflows"];
 };
 
 export function suggestSplit(
-  tickets: Ticket[],
+  tasks: Task[],
   experimentsById: Record<string, ExperimentSummary>,
   weights: PriorityWeights = DEFAULT_PRIORITY_WEIGHTS,
 ): SplitSuggestion {
   const status = getCapacityStatus(
-    { id: "", taskTemplateId: tickets[0]?.taskTemplateId ?? "", batchKey: "", ticketIds: [], assigneeIds: [], notes: [], status: "draft" },
-    tickets,
+    emptyWorkUnitStub(tasks[0]?.taskTemplateId ?? ""),
+    tasks,
   );
 
-  const scored = tickets.map((ticket) => {
-    const exp = experimentsById[ticket.experimentIds[0] ?? ""];
-    const ctx = buildTicketPriorityContext(
+  const scored = tasks.map((task) => {
+    const exp = experimentsById[task.experimentIds[0] ?? ""];
+    const ctx = buildTaskPriorityContext(
       exp?.priority ?? 0,
       exp?.category ?? "rd",
-      { customerTier: exp?.category === "production" ? 4 : 2, createdAt: ticket.createdAt },
+      { customerTier: exp?.category === "production" ? 4 : 2, createdAt: task.createdAt },
     );
-    return { ticket, score: scoreTicket(ticket, ctx, weights).total };
+    return { task, score: scoreTask(task, ctx, weights).total };
   });
 
   scored.sort((a, b) => b.score - a.score);
 
-  const primary: Ticket[] = [];
-  const secondary: Ticket[] = [];
+  const primary: Task[] = [];
+  const secondary: Task[] = [];
 
-  for (const { ticket } of scored) {
-    const candidate = [...primary, ticket];
+  for (const { task } of scored) {
+    const candidate = [...primary, task];
     const candidateStatus = getCapacityStatus(
-      { id: "", taskTemplateId: ticket.taskTemplateId, batchKey: "", ticketIds: [], assigneeIds: [], notes: [], status: "draft" },
+      emptyWorkUnitStub(task.taskTemplateId),
       candidate,
     );
     if (candidateStatus.withinCapacity) {
-      primary.push(ticket);
+      primary.push(task);
     } else {
-      secondary.push(ticket);
+      secondary.push(task);
     }
   }
 

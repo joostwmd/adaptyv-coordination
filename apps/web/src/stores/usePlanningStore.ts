@@ -1,12 +1,12 @@
 import { create } from "zustand";
 import type { BlockedReason } from "@/domain/blocked-reason";
 import {
-  computeBatchPriority,
-  createBatchFromTickets,
-  groupIntoDraftBatches,
+  computeWorkUnitPriority,
+  createWorkUnitFromTasks,
+  groupIntoDraftWorkUnits,
   suggestSplit,
-} from "@/domain/batch";
-import type { Batch, BatchNote } from "@/domain/batch/types";
+} from "@/domain/work-unit";
+import type { WorkUnit, WorkUnitNote } from "@/domain/work-unit/types";
 import { buildPlanningSeedData } from "@/domain/seed";
 import {
   DEFAULT_PRIORITY_WEIGHTS,
@@ -14,77 +14,76 @@ import {
   type PriorityWeights,
 } from "@/domain/priority";
 import {
-  createRerunTickets,
-  createStandaloneTicket,
-  refreshAllTicketReadiness,
-  scaffoldTickets,
-} from "@/domain/ticket";
-import type { Ticket } from "@/domain/ticket/types";
+  createRerunTasks,
+  createStandaloneTask,
+  refreshAllTaskReadiness,
+  scaffoldTasks,
+} from "@/domain/task";
+import type { Task } from "@/domain/task/types";
 import { getWorkflowTemplate } from "@/domain/workflow";
-import type { StaffMember } from "@/types";
 import { usePrototypeStore } from "./usePrototypeStore";
 
 const initialSeed = buildPlanningSeedData();
 
 interface PlanningState {
-  tickets: Ticket[];
-  batches: Batch[];
+  tasks: Task[];
+  workUnits: WorkUnit[];
   weights: PriorityWeights;
 
-  addTicket: (ticket: Omit<Ticket, "id"> & { id?: string }) => void;
-  updateTicket: (id: string, updates: Partial<Ticket>) => void;
-  deleteTicket: (id: string) => void;
+  addTask: (task: Omit<Task, "id"> & { id?: string }) => void;
+  updateTask: (id: string, updates: Partial<Task>) => void;
+  deleteTask: (id: string) => void;
 
-  scaffoldFromExperiment: (experimentId: string) => Ticket[];
-  createStandaloneTicket: (
+  scaffoldFromExperiment: (experimentId: string) => Task[];
+  createStandaloneTask: (
     taskTemplateId: string,
     params?: Record<string, unknown>,
     experimentIds?: string[],
-  ) => Ticket;
-  createRerunFromTickets: (ticketIds: string[]) => Ticket[];
+  ) => Task;
+  createRerunFromTasks: (taskIds: string[]) => Task[];
 
-  groupReadyIntoBatches: () => Batch[];
-  addTicketToBatch: (ticketId: string, batchId: string) => void;
-  removeTicketFromBatch: (ticketId: string) => void;
-  splitBatch: (batchId: string) => { primary: Batch; secondary: Batch } | null;
+  groupReadyIntoWorkUnits: () => WorkUnit[];
+  addTaskToWorkUnit: (taskId: string, workUnitId: string) => void;
+  removeTaskFromWorkUnit: (taskId: string) => void;
+  splitWorkUnit: (workUnitId: string) => { primary: WorkUnit; secondary: WorkUnit } | null;
 
-  assignBatch: (batchId: string, assigneeIds: string[]) => void;
-  scheduleBatch: (batchId: string, scheduledDay: string) => void;
-  addBatchNote: (batchId: string, note: Omit<BatchNote, "id">) => void;
-  updateBatch: (batchId: string, updates: Partial<Batch>) => void;
+  assignWorkUnit: (workUnitId: string, assigneeIds: string[]) => void;
+  scheduleWorkUnit: (workUnitId: string, scheduledDay: string) => void;
+  addWorkUnitNote: (workUnitId: string, note: Omit<WorkUnitNote, "id">) => void;
+  updateWorkUnit: (workUnitId: string, updates: Partial<WorkUnit>) => void;
 
   setWeights: (weights: PriorityWeights) => void;
   applyWeightPreset: (presetName: keyof typeof PRIORITY_WEIGHT_PRESETS) => void;
 
-  markTicketInLabos: (ticketId: string) => void;
+  markTaskInLabos: (taskId: string) => void;
 
-  getTicketsByExperiment: (experimentId: string) => Ticket[];
-  getTicketsByBatch: (batchId: string) => Ticket[];
-  getBatchPriority: (batchId: string) => ReturnType<typeof computeBatchPriority>;
+  getTasksByExperiment: (experimentId: string) => Task[];
+  getTasksByWorkUnit: (workUnitId: string) => Task[];
+  getWorkUnitPriority: (workUnitId: string) => ReturnType<typeof computeWorkUnitPriority>;
 
   resetToSeed: () => void;
 }
 
-function syncReadiness(tickets: Ticket[]): Ticket[] {
-  return refreshAllTicketReadiness(tickets);
+function syncReadiness(tasks: Task[]): Task[] {
+  return refreshAllTaskReadiness(tasks);
 }
 
-function attachTicketsToBatches(tickets: Ticket[], batches: Batch[]): Ticket[] {
-  const batchByTicket = new Map<string, string>();
-  for (const batch of batches) {
-    for (const tid of batch.ticketIds) {
-      batchByTicket.set(tid, batch.id);
+function attachTasksToWorkUnits(tasks: Task[], workUnits: WorkUnit[]): Task[] {
+  const workUnitByTask = new Map<string, string>();
+  for (const workUnit of workUnits) {
+    for (const tid of workUnit.taskIds) {
+      workUnitByTask.set(tid, workUnit.id);
     }
   }
   return syncReadiness(
-    tickets.map((t) => {
-      const batchId = batchByTicket.get(t.id);
-      if (batchId) {
-        return { ...t, batchId, readiness: "batched" };
+    tasks.map((t) => {
+      const workUnitId = workUnitByTask.get(t.id);
+      if (workUnitId) {
+        return { ...t, workUnitId, readiness: "batched" };
       }
-      if (t.readiness === "batched" && !batchId) {
-        const { batchId: _removed, ...rest } = t;
-        return refreshAllTicketReadiness([{ ...rest, readiness: "ready" }])[0]!;
+      if (t.readiness === "batched" && !workUnitId) {
+        const { workUnitId: _removed, ...rest } = t;
+        return refreshAllTaskReadiness([{ ...rest, readiness: "ready" }])[0]!;
       }
       return t;
     }),
@@ -92,40 +91,40 @@ function attachTicketsToBatches(tickets: Ticket[], batches: Batch[]): Ticket[] {
 }
 
 export const usePlanningStore = create<PlanningState>((set, get) => ({
-  tickets: initialSeed.tickets,
-  batches: initialSeed.batches,
+  tasks: initialSeed.tasks,
+  workUnits: initialSeed.workUnits,
   weights: DEFAULT_PRIORITY_WEIGHTS,
 
-  addTicket: (ticketData) =>
+  addTask: (taskData) =>
     set((state) => {
-      const ticket: Ticket = {
-        ...ticketData,
-        id: ticketData.id ?? `ticket-${Date.now()}`,
-        createdAt: ticketData.createdAt ?? new Date().toISOString(),
+      const task: Task = {
+        ...taskData,
+        id: taskData.id ?? `task-${Date.now()}`,
+        createdAt: taskData.createdAt ?? new Date().toISOString(),
       };
-      return { tickets: syncReadiness([...state.tickets, ticket]) };
+      return { tasks: syncReadiness([...state.tasks, task]) };
     }),
 
-  updateTicket: (id, updates) =>
+  updateTask: (id, updates) =>
     set((state) => ({
-      tickets: syncReadiness(
-        state.tickets.map((t) => (t.id === id ? { ...t, ...updates } : t)),
+      tasks: syncReadiness(
+        state.tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)),
       ),
     })),
 
-  deleteTicket: (id) =>
+  deleteTask: (id) =>
     set((state) => ({
-      tickets: state.tickets.filter((t) => t.id !== id),
-      batches: state.batches.map((b) => ({
-        ...b,
-        ticketIds: b.ticketIds.filter((tid) => tid !== id),
+      tasks: state.tasks.filter((t) => t.id !== id),
+      workUnits: state.workUnits.map((wu) => ({
+        ...wu,
+        taskIds: wu.taskIds.filter((tid) => tid !== id),
       })),
     })),
 
   scaffoldFromExperiment: (experimentId) => {
-    const experiment = usePrototypeStore.getState().experiments.find(
-      (e) => e.id === experimentId,
-    );
+    const experiment = usePrototypeStore
+      .getState()
+      .experiments.find((e) => e.id === experimentId);
     if (!experiment) return [];
 
     const { runs: _runs, ...summary } = experiment;
@@ -134,142 +133,140 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       getWorkflowTemplate(experiment.type);
     if (!wf) return [];
 
-    const newTickets = scaffoldTickets(summary, wf);
+    const newTasks = scaffoldTasks(summary, wf);
     set((state) => ({
-      tickets: syncReadiness([...state.tickets, ...newTickets]),
+      tasks: syncReadiness([...state.tasks, ...newTasks]),
     }));
-    return newTickets;
+    return newTasks;
   },
 
-  createStandaloneTicket: (taskTemplateId, params = {}, experimentIds = []) => {
-    const ticket = createStandaloneTicket(taskTemplateId, params, experimentIds);
+  createStandaloneTask: (taskTemplateId, params = {}, experimentIds = []) => {
+    const task = createStandaloneTask(taskTemplateId, params, experimentIds);
     set((state) => ({
-      tickets: syncReadiness([...state.tickets, ticket]),
+      tasks: syncReadiness([...state.tasks, task]),
     }));
-    return ticket;
+    return task;
   },
 
-  createRerunFromTickets: (ticketIds) => {
+  createRerunFromTasks: (taskIds) => {
     const state = get();
-    const sources = state.tickets.filter((t) => ticketIds.includes(t.id));
-    const reruns = createRerunTickets(sources);
-    set({ tickets: syncReadiness([...state.tickets, ...reruns]) });
+    const sources = state.tasks.filter((t) => taskIds.includes(t.id));
+    const reruns = createRerunTasks(sources);
+    set({ tasks: syncReadiness([...state.tasks, ...reruns]) });
     return reruns;
   },
 
-  groupReadyIntoBatches: () => {
+  groupReadyIntoWorkUnits: () => {
     const state = get();
-    const unbatched = state.tickets.filter(
-      (t) => t.readiness === "ready" && !t.batchId,
+    const unbatched = state.tasks.filter(
+      (t) => t.readiness === "ready" && !t.workUnitId,
     );
-    const newBatches = groupIntoDraftBatches(unbatched);
-    const batches = [...state.batches, ...newBatches];
-    const tickets = attachTicketsToBatches(state.tickets, batches);
-    set({ batches, tickets });
-    return newBatches;
+    const newWorkUnits = groupIntoDraftWorkUnits(unbatched);
+    const workUnits = [...state.workUnits, ...newWorkUnits];
+    const tasks = attachTasksToWorkUnits(state.tasks, workUnits);
+    set({ workUnits, tasks });
+    return newWorkUnits;
   },
 
-  addTicketToBatch: (ticketId, batchId) =>
+  addTaskToWorkUnit: (taskId, workUnitId) =>
     set((state) => {
-      const batches = state.batches.map((b) =>
-        b.id === batchId
-          ? { ...b, ticketIds: [...new Set([...b.ticketIds, ticketId])] }
-          : b,
+      const workUnits = state.workUnits.map((wu) =>
+        wu.id === workUnitId
+          ? { ...wu, taskIds: [...new Set([...wu.taskIds, taskId])] }
+          : wu,
       );
-      const tickets = attachTicketsToBatches(
-        state.tickets.map((t) =>
-          t.id === ticketId ? { ...t, batchId, readiness: "batched" } : t,
+      const tasks = attachTasksToWorkUnits(
+        state.tasks.map((t) =>
+          t.id === taskId ? { ...t, workUnitId, readiness: "batched" } : t,
         ),
-        batches,
+        workUnits,
       );
-      return { batches, tickets };
+      return { workUnits, tasks };
     }),
 
-  removeTicketFromBatch: (ticketId) =>
+  removeTaskFromWorkUnit: (taskId) =>
     set((state) => {
-      const batches = state.batches.map((b) => ({
-        ...b,
-        ticketIds: b.ticketIds.filter((id) => id !== ticketId),
+      const workUnits = state.workUnits.map((wu) => ({
+        ...wu,
+        taskIds: wu.taskIds.filter((id) => id !== taskId),
       }));
-      const tickets = state.tickets.map((t) => {
-        if (t.id !== ticketId) return t;
-        const { batchId: _b, ...rest } = t;
+      const tasks = state.tasks.map((t) => {
+        if (t.id !== taskId) return t;
+        const { workUnitId: _w, ...rest } = t;
         return { ...rest, readiness: "ready" as const };
       });
       return {
-        batches,
-        tickets: syncReadiness(tickets),
+        workUnits,
+        tasks: syncReadiness(tasks),
       };
     }),
 
-  splitBatch: (batchId) => {
+  splitWorkUnit: (workUnitId) => {
     const state = get();
-    const batch = state.batches.find((b) => b.id === batchId);
-    if (!batch) return null;
+    const workUnit = state.workUnits.find((wu) => wu.id === workUnitId);
+    if (!workUnit) return null;
 
-    const memberTickets = state.tickets.filter((t) =>
-      batch.ticketIds.includes(t.id),
-    );
+    const memberTasks = state.tasks.filter((t) => workUnit.taskIds.includes(t.id));
     const experiments = usePrototypeStore.getState().experiments;
     const experimentsById = Object.fromEntries(experiments.map((e) => [e.id, e]));
 
     const { primary, secondary } = suggestSplit(
-      memberTickets,
+      memberTasks,
       experimentsById,
       state.weights,
     );
     if (secondary.length === 0) return null;
 
-    const primaryBatch = createBatchFromTickets(primary, { id: batchId });
-    const secondaryBatch = createBatchFromTickets(secondary);
+    const primaryWorkUnit = createWorkUnitFromTasks(primary, { id: workUnitId });
+    const secondaryWorkUnit = createWorkUnitFromTasks(secondary);
 
-    const batches = state.batches.map((b) =>
-      b.id === batchId ? primaryBatch : b,
+    const workUnits = state.workUnits.map((wu) =>
+      wu.id === workUnitId ? primaryWorkUnit : wu,
     );
-    batches.push(secondaryBatch);
+    workUnits.push(secondaryWorkUnit);
 
-    const tickets = attachTicketsToBatches(state.tickets, batches);
-    set({ batches, tickets });
-    return { primary: primaryBatch, secondary: secondaryBatch };
+    const tasks = attachTasksToWorkUnits(state.tasks, workUnits);
+    set({ workUnits, tasks });
+    return { primary: primaryWorkUnit, secondary: secondaryWorkUnit };
   },
 
-  assignBatch: (batchId, assigneeIds) =>
+  assignWorkUnit: (workUnitId, assigneeIds) =>
     set((state) => ({
-      batches: state.batches.map((b) =>
-        b.id === batchId ? { ...b, assigneeIds } : b,
+      workUnits: state.workUnits.map((wu) =>
+        wu.id === workUnitId ? { ...wu, assigneeIds } : wu,
       ),
     })),
 
-  scheduleBatch: (batchId, scheduledDay) =>
+  scheduleWorkUnit: (workUnitId, scheduledDay) =>
     set((state) => ({
-      batches: state.batches.map((b) =>
-        b.id === batchId ? { ...b, scheduledDay, status: "ready" } : b,
+      workUnits: state.workUnits.map((wu) =>
+        wu.id === workUnitId ? { ...wu, scheduledDay, status: "ready" } : wu,
       ),
     })),
 
-  addBatchNote: (batchId, noteData) =>
+  addWorkUnitNote: (workUnitId, noteData) =>
     set((state) => ({
-      batches: state.batches.map((b) =>
-        b.id === batchId
+      workUnits: state.workUnits.map((wu) =>
+        wu.id === workUnitId
           ? {
-              ...b,
+              ...wu,
               notes: [
-                ...b.notes,
+                ...wu.notes,
                 {
                   ...noteData,
-                  id: `batch-note-${Date.now()}`,
+                  id: `work-unit-note-${Date.now()}`,
                   createdAt: noteData.createdAt ?? new Date().toISOString(),
                 },
               ],
             }
-          : b,
+          : wu,
       ),
     })),
 
-  updateBatch: (batchId, updates) =>
+  updateWorkUnit: (workUnitId, updates) =>
     set((state) => ({
-      batches: state.batches.map((b) =>
-        b.id === batchId ? { ...b, ...updates } : b,
+      workUnits: state.workUnits.map((wu) =>
+        wu.id === workUnitId ? { ...wu, ...updates } : wu,
       ),
     })),
 
@@ -280,28 +277,28 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       weights: PRIORITY_WEIGHT_PRESETS[presetName] ?? DEFAULT_PRIORITY_WEIGHTS,
     }),
 
-  markTicketInLabos: (ticketId) =>
+  markTaskInLabos: (taskId) =>
     set((state) => ({
-      tickets: syncReadiness(
-        state.tickets.map((t) =>
-          t.id === ticketId ? { ...t, readiness: "in_labos", batchId: undefined } : t,
+      tasks: syncReadiness(
+        state.tasks.map((t) =>
+          t.id === taskId ? { ...t, readiness: "in_labos", workUnitId: undefined } : t,
         ),
       ),
     })),
 
-  getTicketsByExperiment: (experimentId) =>
-    get().tickets.filter((t) => t.experimentIds.includes(experimentId)),
+  getTasksByExperiment: (experimentId) =>
+    get().tasks.filter((t) => t.experimentIds.includes(experimentId)),
 
-  getTicketsByBatch: (batchId) => {
-    const batch = get().batches.find((b) => b.id === batchId);
-    if (!batch) return [];
-    return get().tickets.filter((t) => batch.ticketIds.includes(t.id));
+  getTasksByWorkUnit: (workUnitId) => {
+    const workUnit = get().workUnits.find((wu) => wu.id === workUnitId);
+    if (!workUnit) return [];
+    return get().tasks.filter((t) => workUnit.taskIds.includes(t.id));
   },
 
-  getBatchPriority: (batchId) => {
+  getWorkUnitPriority: (workUnitId) => {
     const state = get();
-    const batch = state.batches.find((b) => b.id === batchId);
-    if (!batch) return null;
+    const workUnit = state.workUnits.find((wu) => wu.id === workUnitId);
+    if (!workUnit) return null;
     const experiments = usePrototypeStore.getState().experiments;
     const experimentsById = Object.fromEntries(
       experiments.map((e) => {
@@ -309,9 +306,9 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
         return [e.id, s];
       }),
     );
-    return computeBatchPriority(
-      batch,
-      state.tickets,
+    return computeWorkUnitPriority(
+      workUnit,
+      state.tasks,
       experimentsById,
       state.weights,
     );
@@ -320,15 +317,15 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
   resetToSeed: () => {
     const seed = buildPlanningSeedData();
     set({
-      tickets: seed.tickets,
-      batches: seed.batches,
+      tasks: seed.tasks,
+      workUnits: seed.workUnits,
       weights: DEFAULT_PRIORITY_WEIGHTS,
     });
   },
 }));
 
-export const usePlanningTickets = () => usePlanningStore((s) => s.tickets);
-export const usePlanningBatches = () => usePlanningStore((s) => s.batches);
+export const usePlanningTasks = () => usePlanningStore((s) => s.tasks);
+export const usePlanningWorkUnits = () => usePlanningStore((s) => s.workUnits);
 export const usePlanningWeights = () => usePlanningStore((s) => s.weights);
 
 export type { BlockedReason };

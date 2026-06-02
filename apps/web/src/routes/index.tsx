@@ -1,45 +1,36 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { ContextList } from "@/components/context";
-import { TaskList } from "@/components/task";
-import { useContextItems } from "@/hooks/useContextItems";
-import { useTasks } from "@/hooks/useTasks";
+import { WorkUnitList } from "@/components/planning";
+import { usePlanningTasks, usePlanningWorkUnits } from "@/stores/usePlanningStore";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-
 function HomeComponent() {
-  const { contextItems } = useContextItems();
-  const { tasks } = useTasks();
+  const tasks = usePlanningTasks();
+  const workUnits = usePlanningWorkUnits();
 
   return (
     <div className="container mx-auto max-w-3xl px-4 py-2">
       <div className="grid gap-6">
         <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">Prototype Mode</h2>
+          <h2 className="mb-2 font-medium">Lab planning (prototype)</h2>
           <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+            <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
             <span className="text-sm text-muted-foreground">
-              Using in-memory data store
+              {tasks.length} tasks · {workUnits.length} work units
             </span>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
-            Data resets on page reload. Use the prototype controls in the bottom right to reset data manually.
+            Each card is a work unit (shared assignees, schedule, and notes). Expand to see
+            the tasks inside. Priority info is on the badge — hover the icon for details.
           </p>
         </section>
+
         <section className="rounded-lg border p-4">
-          <h2 className="mb-4 font-medium">
-            Experiment context ({contextItems.length})
-          </h2>
-          <ContextList items={contextItems} />
-        </section>
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-4 font-medium">
-            Tasks ({tasks.length})
-          </h2>
-          <TaskList items={tasks} />
+          <h2 className="mb-4 font-medium">Work units ({workUnits.length})</h2>
+          <WorkUnitList />
         </section>
       </div>
     </div>

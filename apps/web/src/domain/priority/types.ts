@@ -15,7 +15,10 @@ export type PriorityBreakdownEntry = {
 };
 
 export type PriorityScore = {
+  /** Weighted sum of normalized dimensions (0–1). */
   total: number;
+  /** Same scale as UI badge (0–1000). */
+  displayScore: number;
   band: "high" | "medium" | "low";
   breakdown: PriorityBreakdownEntry[];
   topDriver: string;
@@ -23,7 +26,7 @@ export type PriorityScore = {
 
 export type PriorityWeights = Record<PriorityDimension, number>;
 
-export type TicketPriorityContext = {
+export type TaskPriorityContext = {
   experimentPriority: number;
   experimentCategory: "rd" | "production";
   customerTier: number;

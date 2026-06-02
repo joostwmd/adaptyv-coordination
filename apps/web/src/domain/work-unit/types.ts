@@ -1,23 +1,23 @@
 import type { StaffMember } from "@/types";
 
-export type BatchNote = {
+export type WorkUnitNote = {
   id: string;
   author: StaffMember;
   body: string;
   createdAt: string;
 };
 
-export type BatchStatus = "draft" | "ready" | "sent";
+export type WorkUnitStatus = "draft" | "ready" | "sent";
 
-export type Batch = {
+export type WorkUnit = {
   id: string;
   taskTemplateId: string;
-  batchKey: string;
-  ticketIds: string[];
+  workUnitKey: string;
+  taskIds: string[];
   assigneeIds: string[];
   scheduledDay?: string;
-  notes: BatchNote[];
-  status: BatchStatus;
+  notes: WorkUnitNote[];
+  status: WorkUnitStatus;
 };
 
 export type AggregatedResources = Record<string, number>;
@@ -33,7 +33,7 @@ export type CapacityStatus = {
   overflows: CapacityOverflow[];
 };
 
-export type BatchPriority = {
+export type WorkUnitPriority = {
   score: number;
-  driverTicketId: string;
+  driverTaskId: string;
 };

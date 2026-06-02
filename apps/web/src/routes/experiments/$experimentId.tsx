@@ -1,6 +1,10 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { MetaRow } from "@/components/context/primitives/meta-row";
+import {
+  EXPERIMENT_PRIORITY_LABEL,
+  formatExperimentPriority,
+} from "@/components/experiment";
 import { useExperiment } from "@/hooks/useExperiments";
 import {
   EXPERIMENT_CATEGORY_LABEL,
@@ -39,7 +43,10 @@ function ExperimentDetailPage() {
 
         <div className="mt-4 flex flex-col gap-2">
           <MetaRow label="Code" value={experiment.code} />
-          <MetaRow label="Priority" value={experiment.priority.toLocaleString()} />
+          <MetaRow
+            label={EXPERIMENT_PRIORITY_LABEL}
+            value={formatExperimentPriority(experiment.priority)}
+          />
           <MetaRow label="Type" value={EXPERIMENT_TYPE_LABEL[experiment.type]} />
           <MetaRow label="Category" value={EXPERIMENT_CATEGORY_LABEL[experiment.category]} />
           <MetaRow label="Client" value={experiment.client.name} />

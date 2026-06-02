@@ -3,12 +3,16 @@ export type {
   PriorityDimension,
   PriorityScore,
   PriorityWeights,
-  TicketPriorityContext,
+  TaskPriorityContext,
 } from "./types";
 export {
-  buildTicketPriorityContext,
-  scoreTicket,
-} from "./scoring";
+  dimensionDisplayScore,
+  getPriorityBand,
+  PRIORITY_DISPLAY_MAX,
+  sortBreakdownByDimensionScore,
+  toDisplayScore,
+} from "./display";
+export { buildTaskPriorityContext, scoreTask } from "./scoring";
 export {
   DEFAULT_PRIORITY_WEIGHTS,
   PRIORITY_WEIGHT_PRESETS,

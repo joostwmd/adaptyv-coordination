@@ -36,46 +36,50 @@ export {
 export type { WorkflowStep, WorkflowTemplate } from "./workflow/types";
 export { getWorkflowTemplate, WORKFLOW_PRESETS } from "./workflow";
 
-export type { Ticket, TicketOrigin, TicketReadiness } from "./ticket/types";
+export type { Task, TaskOrigin, TaskReadiness } from "./task/types";
 export {
   computeReadiness,
-  createRerunTickets,
-  createStandaloneTicket,
-  refreshAllTicketReadiness,
-  scaffoldTickets,
-} from "./ticket";
+  createRerunTasks,
+  createStandaloneTask,
+  refreshAllTaskReadiness,
+  scaffoldTasks,
+} from "./task";
 
 export type {
   AggregatedResources,
-  Batch,
-  BatchNote,
-  BatchPriority,
-  BatchStatus,
   CapacityStatus,
-} from "./batch/types";
+  WorkUnit,
+  WorkUnitNote,
+  WorkUnitPriority,
+  WorkUnitStatus,
+} from "./work-unit/types";
 export {
   aggregateResources,
-  computeBatchKey,
-  computeBatchPriority,
+  computeWorkUnitKey,
+  computeWorkUnitPriority,
   computeFillRatio,
-  createBatchFromTickets,
+  createWorkUnitFromTasks,
   getCapacityStatus,
-  groupIntoDraftBatches,
+  groupIntoDraftWorkUnits,
   suggestSplit,
-} from "./batch";
+} from "./work-unit";
 
 export type {
   PriorityBreakdownEntry,
   PriorityDimension,
   PriorityScore,
   PriorityWeights,
-  TicketPriorityContext,
+  TaskPriorityContext,
 } from "./priority/types";
 export {
-  buildTicketPriorityContext,
+  buildTaskPriorityContext,
   DEFAULT_PRIORITY_WEIGHTS,
+  dimensionDisplayScore,
+  getPriorityBand,
+  PRIORITY_DISPLAY_MAX,
   PRIORITY_WEIGHT_PRESETS,
-  scoreTicket,
+  scoreTask,
+  toDisplayScore,
 } from "./priority";
 
 export { buildPlanningSeedData, validatePlanningSeed } from "./seed";

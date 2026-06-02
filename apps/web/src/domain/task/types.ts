@@ -1,25 +1,25 @@
 import type { BlockedReason } from "@/domain/blocked-reason";
 
-export type TicketOrigin = "template" | "standalone" | "rerun";
+export type TaskOrigin = "template" | "standalone" | "rerun";
 
-export type TicketReadiness =
+export type TaskReadiness =
   | "blocked"
   | "waiting_upstream"
   | "ready"
   | "batched"
   | "in_labos";
 
-export type Ticket = {
+export type Task = {
   id: string;
   taskTemplateId: string;
   name?: string;
-  origin: TicketOrigin;
-  parentTicketId?: string;
+  origin: TaskOrigin;
+  parentTaskId?: string;
   experimentIds: string[];
   params: Record<string, unknown>;
   dependsOn: string[];
-  readiness: TicketReadiness;
+  readiness: TaskReadiness;
   blockedReason?: BlockedReason;
-  batchId?: string;
+  workUnitId?: string;
   createdAt: string;
 };

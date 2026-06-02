@@ -1,11 +1,12 @@
 import { getTaskTemplate } from "@/domain/task-template/catalog";
-import type { Ticket } from "@/domain/ticket/types";
+import type { Task } from "@/domain/task/types";
 import type {
   PriorityBreakdownEntry,
   PriorityScore,
   PriorityWeights,
-  TicketPriorityContext,
+  TaskPriorityContext,
 } from "./types";
+import { getPriorityBand, toDisplayScore } from "./display";
 import { DEFAULT_PRIORITY_WEIGHTS } from "./weights";
 
 function clamp01(n: number): number {
@@ -16,26 +17,18 @@ function normalizeExperimentPriority(priority: number): number {
   return clamp01(priority / 15_000_000);
 }
 
-function bandFromTotal(total: number): PriorityScore["band"] {
-  if (total >= 0.65) return "high";
-  if (total >= 0.4) return "medium";
-  return "low";
-}
-
-export function scoreTicket(
-  ticket: Ticket,
-  ctx: TicketPriorityContext,
+export function scoreTask(
+  task: Task,
+  ctx: TaskPriorityContext,
   weights: PriorityWeights = DEFAULT_PRIORITY_WEIGHTS,
 ): PriorityScore {
-  const template = getTaskTemplate(ticket.taskTemplateId);
+  const template = getTaskTemplate(task.taskTemplateId);
   const impactRaw =
-    ticket.origin === "standalone" ? 0 : clamp01((template?.impactWeight ?? 5) / 10);
+    task.origin === "standalone" ? 0 : clamp01((template?.impactWeight ?? 5) / 10);
 
   const customerTierRaw = clamp01(ctx.customerTier / 5);
   const deadlineRaw =
-    ctx.deadlineDays === undefined
-      ? 0.5
-      : clamp01(1 - ctx.deadlineDays / 30);
+    ctx.deadlineDays === undefined ? 0.5 : clamp01(1 - ctx.deadlineDays / 30);
   const categoryRaw = ctx.experimentCategory === "production" ? 1 : 0.4;
   const inheritedRaw = normalizeExperimentPriority(ctx.experimentPriority);
 
@@ -43,7 +36,7 @@ export function scoreTicket(
     (Date.now() - new Date(ctx.createdAt).getTime()) / (1000 * 60 * 60 * 24);
   const waitingRaw = clamp01(ageDays / 14);
 
-  const rerunRaw = ticket.origin === "rerun" ? 1 : 0;
+  const rerunRaw = task.origin === "rerun" ? 1 : 0;
 
   const entries: Array<{
     dimension: PriorityBreakdownEntry["dimension"];
@@ -64,18 +57,18 @@ export function scoreTicket(
     {
       dimension: "inheritedExperiment",
       raw: inheritedRaw,
-      label: "Experiment priority",
+      label: "LabOS priority",
     },
     {
       dimension: "impact",
       raw: impactRaw,
       label:
-        ticket.origin === "standalone"
+        task.origin === "standalone"
           ? "Standalone (no pipeline impact)"
-          : `Impact ${template?.impactWeight ?? 0}`,
+          : "Pipeline impact",
     },
     { dimension: "waitingAge", raw: waitingRaw, label: `Waiting ${Math.floor(ageDays)}d` },
-    { dimension: "rerunBoost", raw: rerunRaw, label: ticket.origin === "rerun" ? "Rerun" : "—" },
+    { dimension: "rerunBoost", raw: rerunRaw, label: task.origin === "rerun" ? "Rerun" : "—" },
   ];
 
   const breakdown: PriorityBreakdownEntry[] = entries.map((e) => ({
@@ -90,13 +83,14 @@ export function scoreTicket(
 
   return {
     total,
-    band: bandFromTotal(total),
+    displayScore: toDisplayScore(total),
+    band: getPriorityBand(total),
     breakdown,
     topDriver: top?.label ?? "—",
   };
 }
 
-export function buildTicketPriorityContext(
+export function buildTaskPriorityContext(
   experimentPriority: number,
   experimentCategory: "rd" | "production",
   options: {
@@ -104,7 +98,7 @@ export function buildTicketPriorityContext(
     deadlineDays?: number;
     createdAt?: string;
   } = {},
-): TicketPriorityContext {
+): TaskPriorityContext {
   return {
     experimentPriority,
     experimentCategory,

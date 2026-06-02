@@ -2,28 +2,26 @@ import { Button } from "@adaptyv-coordination/ui/components/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@adaptyv-coordination/ui/components/card";
 import { Badge } from "@adaptyv-coordination/ui/components/badge";
 import { RotateCcw, Database, Users, FlaskConical, CheckSquare, FileText } from "lucide-react";
-import { 
-  usePrototypeStore, 
-  useExperimentCount, 
-  useTaskCount, 
-  useStaffCount, 
-  useContextItemCount,
-  usePendingTaskCount,
-  useSuccessTaskCount,
-  useFailedTaskCount
+import {
+  usePrototypeStore,
+  useExperimentCount,
+  useStaffCount,
 } from "@/stores/usePrototypeStore";
+import {
+  usePlanningStore,
+  usePlanningTasks,
+  usePlanningWorkUnits,
+} from "@/stores/usePlanningStore";
 import { useState } from "react";
 
 export function PrototypeControls() {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const resetToSeeds = usePrototypeStore((state) => state.resetToSeeds);
+  const resetPrototype = usePrototypeStore((state) => state.resetToSeeds);
+  const resetPlanning = usePlanningStore((state) => state.resetToSeed);
   const experimentCount = useExperimentCount();
-  const taskCount = useTaskCount();
   const staffCount = useStaffCount();
-  const contextItemCount = useContextItemCount();
-  const pendingCount = usePendingTaskCount();
-  const successCount = useSuccessTaskCount();
-  const failedCount = useFailedTaskCount();
+  const planningTaskCount = usePlanningTasks().length;
+  const workUnitCount = usePlanningWorkUnits().length;
   
   // Hide in production
   if (import.meta.env.PROD) return null;
@@ -78,9 +76,17 @@ export function PrototypeControls() {
           
           <div className="flex items-center gap-2 text-xs">
             <CheckSquare className="h-3 w-3 text-blue-500" />
-            <span className="text-muted-foreground">Tasks:</span>
+            <span className="text-muted-foreground">Planning tasks:</span>
             <Badge variant="secondary" className="h-5 text-xs">
-              {taskCount}
+              {planningTaskCount}
+            </Badge>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs">
+            <FileText className="h-3 w-3 text-orange-500" />
+            <span className="text-muted-foreground">Work units:</span>
+            <Badge variant="secondary" className="h-5 text-xs">
+              {workUnitCount}
             </Badge>
           </div>
           
@@ -91,45 +97,15 @@ export function PrototypeControls() {
               {staffCount}
             </Badge>
           </div>
-          
-          <div className="flex items-center gap-2 text-xs">
-            <FileText className="h-3 w-3 text-orange-500" />
-            <span className="text-muted-foreground">Context:</span>
-            <Badge variant="secondary" className="h-5 text-xs">
-              {contextItemCount}
-            </Badge>
-          </div>
-        </div>
-        
-        {/* Task Status Breakdown */}
-        <div className="space-y-2">
-          <div className="text-xs font-medium text-muted-foreground">Task Status</div>
-          <div className="flex gap-2">
-            <Badge 
-              variant="outline" 
-              className="h-5 text-xs text-yellow-600 border-yellow-200 bg-yellow-50"
-            >
-              Pending: {pendingCount}
-            </Badge>
-            <Badge 
-              variant="outline" 
-              className="h-5 text-xs text-green-600 border-green-200 bg-green-50"
-            >
-              Success: {successCount}
-            </Badge>
-            <Badge 
-              variant="outline" 
-              className="h-5 text-xs text-red-600 border-red-200 bg-red-50"
-            >
-              Failed: {failedCount}
-            </Badge>
-          </div>
         </div>
         
         {/* Actions */}
         <div className="space-y-2">
-          <Button 
-            onClick={resetToSeeds} 
+          <Button
+            onClick={() => {
+              resetPrototype();
+              resetPlanning();
+            }}
             size="sm" 
             variant="outline"
             className="w-full h-8 text-xs"

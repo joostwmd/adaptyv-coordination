@@ -9,6 +9,10 @@ import { Button } from "@adaptyv-coordination/ui/components/button";
 
 import type { Task } from "@/types";
 
+import {
+  EXPERIMENT_PRIORITY_LABEL,
+  formatExperimentPriority,
+} from "@/components/experiment";
 import { AssigneeRow } from "./primitives/assignee-row";
 import { ExperimentLink } from "./primitives/experiment-link";
 import { ExperimentRunLink } from "./primitives/experiment-run-link";
@@ -33,9 +37,9 @@ export function TaskCard({ task, onView }: TaskCardProps) {
       <CardContent className="flex flex-col gap-3">
         <AssigneeRow assignee={task.assignee} />
         <p className="text-xs/relaxed">
-          <span className="text-muted-foreground">Priority </span>
-          <span className="font-medium">{task.experiment.priority.toLocaleString()}</span>
-          <span className="text-muted-foreground"> (from {task.experiment.code})</span>
+          <span className="text-muted-foreground">{EXPERIMENT_PRIORITY_LABEL} </span>
+          <span className="font-medium">{formatExperimentPriority(task.experiment.priority)}</span>
+          <span className="text-muted-foreground"> ({task.experiment.code})</span>
         </p>
         <ExperimentRunLink run={task.run} experiment={task.experiment} />
         <ExperimentLink experiment={task.experiment} />

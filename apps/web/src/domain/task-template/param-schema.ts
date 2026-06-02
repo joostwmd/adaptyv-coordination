@@ -1,5 +1,41 @@
 import type { ParamField, ParamSchema } from "./types";
 
+/** Lab-runner schema fields that are not run parameters (shown elsewhere in planning UI). */
+export const RUN_PARAM_UI_EXCLUDED = new Set(["notes"]);
+
+export function getDisplayParamFields(schema: ParamSchema): ParamField[] {
+  return schema.fields.filter((f) => !RUN_PARAM_UI_EXCLUDED.has(f.name));
+}
+
+export function formatParamValue(value: unknown): string {
+  if (value === null || value === undefined) return "—";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (Array.isArray(value)) {
+    if (value.length === 0) return "—";
+    return value.length === 1 ? formatParamValue(value[0]) : `${value.length} items`;
+  }
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+}
+
+export function paramFieldHasValue(value: unknown): boolean {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (Array.isArray(value)) return value.length > 0;
+  return true;
+}
+
+export function getSummaryParamFields(
+  schema: ParamSchema,
+  params: Record<string, unknown>,
+  maxFields: number,
+): ParamField[] {
+  const fields = getDisplayParamFields(schema);
+  const withValues = fields.filter((f) => paramFieldHasValue(params[f.name]));
+  const withoutValues = fields.filter((f) => !paramFieldHasValue(params[f.name]));
+  return [...withValues, ...withoutValues].slice(0, maxFields);
+}
+
 export function getDefaultParams(schema: ParamSchema): Record<string, unknown> {
   const params: Record<string, unknown> = {};
   for (const field of schema.fields) {
