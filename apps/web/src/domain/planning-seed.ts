@@ -1,20 +1,21 @@
 import { seedExperiments, seedStaff } from "@/data/seedData";
+import type { BlockedReason } from "@/domain/blocked-reason";
 import {
   createRerunTasks,
   createStandaloneTask,
   refreshAllTaskReadiness,
   scaffoldTasks,
 } from "@/domain/task";
-import { resetTaskIdCounter } from "@/domain/task/scaffold";
+import { nextTaskId, resetTaskIdCounter } from "@/domain/task/scaffold";
 import type { Task } from "@/domain/task/types";
 import type { Ticket } from "@/domain/ticket/types";
 import {
   createWorkUnitFromTasks,
-  groupIntoDraftWorkUnits,
   resetWorkUnitIdCounter,
 } from "@/domain/work-unit";
 import type { WorkUnit } from "@/domain/work-unit/types";
-import { getWorkflowTemplate } from "@/domain/workflow";
+import { getWorkflowTemplate, WORKFLOW_PRESETS } from "@/domain/workflow";
+import type { WorkflowTemplate } from "@/domain/workflow/types";
 import type { ExperimentDetail } from "@/types";
 
 export type PlanningSeedData = {
@@ -23,20 +24,44 @@ export type PlanningSeedData = {
   tickets: Ticket[];
 };
 
-const BUFFER_PREP_TEMPLATE = "01944581-afc2-2a97-3ba6-14b9cbc54691";
-const EXPR_RUN_TEMPLATE = "3e7749a4-d7b7-44a8-b1f3-e2e61dbba64c";
-const BLI_RUN_TEMPLATE = "1fa2fc3f-adc6-46df-96cb-cafc71f7e7c9";
+const T = {
+  dnaRecon: "01909d1c-7da1-79aa-fe76-4c350d61a79c",
+  exprPlatePrep: "a52e40c7-db76-46fe-bdc5-bf51522457c1",
+  exprRun: "3e7749a4-d7b7-44a8-b1f3-e2e61dbba64c",
+  bliRun: "1fa2fc3f-adc6-46df-96cb-cafc71f7e7c9",
+  sprPrep: "01979c72-1e66-2a8e-555b-3cf5c9f56a06",
+  thermoRun: "0196a064-9351-576b-9c4c-3b08f48f1f1e",
+  review: "01909d1e-85a5-fc3a-97f0-5a0773cfe3c9",
+  bufferPrep: "01944581-afc2-2a97-3ba6-14b9cbc54691",
+} as const;
 
-const SCHEDULE_DAYS = [
-  "2026-06-02",
-  "2026-06-03",
-  "2026-06-04",
-  "2026-06-05",
-  "2026-06-06",
-  "2026-06-09",
-  "2026-06-10",
-  "2026-06-11",
-];
+/** Shared batch key — sibling units + scheduled kanban demos. */
+const EXPR_BATCH_A = {
+  expression_temperature: 25,
+  expression_time: 12,
+  property_4: 200,
+};
+
+/** Distinct batch key — suggested pool group in queue. */
+const EXPR_BATCH_POOL = {
+  expression_temperature: 28,
+  expression_time: 10,
+  property_4: 180,
+};
+
+/** Distinct batch key — shows as a lone queue item. */
+const EXPR_BATCH_B = {
+  expression_temperature: 30,
+  expression_time: 16,
+  property_4: 220,
+};
+
+const BLI_BATCH = {
+  probes_type: "Strep-Tactin XT",
+};
+
+/** Work unit indices from buildCuratedWorkUnits — only some are scheduled. */
+const SCHEDULED_UNIT_INDICES = [4] as const;
 
 let ticketIdCounter = 0;
 
@@ -60,139 +85,160 @@ function daysAgo(days: number): string {
   return date.toISOString();
 }
 
-function scaffoldAllExperiments(): Task[] {
-  const tasks: Task[] = [];
-
-  for (const experiment of seedExperiments) {
-    const workflow =
-      getWorkflowTemplate(experiment.type, experiment.methodName) ??
-      getWorkflowTemplate(experiment.type);
-    if (!workflow) continue;
-
-    const scaffolded = scaffoldTasks(toSummary(experiment), workflow);
-    scaffolded.forEach((task, stepIndex) => {
-      tasks.push({
-        ...task,
-        createdAt: daysAgo(21 - stepIndex),
-      });
-    });
+function getExperiment(id: string): ExperimentDetail {
+  const experiment = seedExperiments.find((entry) => entry.id === id);
+  if (!experiment) {
+    throw new Error(`Seed experiment not found: ${id}`);
   }
-
-  return tasks;
+  return experiment;
 }
 
-function addStandaloneTasks(tasks: Task[]): Task[] {
-  const standalones = [
-    createStandaloneTask(BUFFER_PREP_TEMPLATE, {
-      buffer_k: 2,
-      buffer_be: 1,
-      buffer_r: 0.5,
-    }),
-    createStandaloneTask(BUFFER_PREP_TEMPLATE, {
-      buffer_k: 5,
-      buffer_be: 2,
-      buffer_r: 1,
-    }),
-    createStandaloneTask(BUFFER_PREP_TEMPLATE, {
-      buffer_k: 1.5,
-      buffer_be: 0.5,
-      buffer_r: 0.25,
-    }),
-    createStandaloneTask(BUFFER_PREP_TEMPLATE, { buffer_k: 3, buffer_r: 0.75 }),
-  ].map((task, index) => ({
+const GENERIC_BINDING_WORKFLOW = WORKFLOW_PRESETS.find(
+  (workflow) => workflow.id === "binding-screening-default",
+);
+
+function resolveWorkflow(experiment: ExperimentDetail): WorkflowTemplate | undefined {
+  return (
+    getWorkflowTemplate(experiment.type, experiment.methodName) ??
+    getWorkflowTemplate(experiment.type) ??
+    (experiment.type === "epitope_binning" ? GENERIC_BINDING_WORKFLOW : undefined)
+  );
+}
+
+function workflowSteps(workflow: WorkflowTemplate) {
+  return workflow.steps.filter((step) => !step.optional);
+}
+
+function scaffoldFirstStep(experiment: ExperimentDetail, createdDaysAgo = 12): Task[] {
+  const workflow = resolveWorkflow(experiment);
+  if (!workflow) return [];
+
+  const firstStep = workflowSteps(workflow)[0];
+  if (!firstStep) return [];
+
+  return scaffoldTasks(toSummary(experiment), {
+    ...workflow,
+    steps: [firstStep],
+  }).map((task) => ({
     ...task,
-    createdAt: daysAgo(3 + index),
+    createdAt: daysAgo(createdDaysAgo),
   }));
-
-  return [...tasks, ...standalones];
 }
 
-function applyPlanningScenarios(tasks: Task[]): Task[] {
-  let result = [...tasks];
+function scaffoldPendingSecondStep(
+  experiment: ExperimentDetail,
+  createdDaysAgo = 10,
+): Task[] {
+  const workflow = resolveWorkflow(experiment);
+  if (!workflow) return [];
 
-  const byExperiment = (experimentId: string) =>
-    result.filter((t) => t.experimentIds.includes(experimentId));
+  const steps = workflowSteps(workflow).slice(0, 2);
+  if (steps.length < 2) return scaffoldFirstStep(experiment, createdDaysAgo);
 
-  const bindingFirst = byExperiment("exp-binding-1")[0];
-  if (bindingFirst) {
-    result = result.map((t) =>
-      t.id === bindingFirst.id
-        ? { ...t, blockedReason: "missing_materials" as const }
-        : t,
-    );
-  }
-
-  const medcoreTasks = byExperiment("exp-medcore-screen");
-  const medcoreExprRuns = medcoreTasks.filter((t) => t.taskTemplateId === EXPR_RUN_TEMPLATE);
-  if (medcoreExprRuns.length >= 2) {
-    const inLabosIds = new Set(medcoreExprRuns.slice(0, 2).map((t) => t.id));
-    result = result.map((t) =>
-      inLabosIds.has(t.id) ? { ...t, readiness: "in_labos" as const } : t,
-    );
-  }
-
-  const productionTasks = byExperiment("exp-production-1");
-  if (productionTasks[0]) {
-    result = result.map((t) =>
-      t.id === productionTasks[0]!.id
-        ? { ...t, readiness: "in_labos" as const }
-        : t,
-    );
-  }
-
-  const acmeTasks = byExperiment("exp-acme-expression");
-  const acmeRerunSource =
-    acmeTasks.find((t) => t.taskTemplateId === EXPR_RUN_TEMPLATE) ??
-    acmeTasks.find((t) => t.dependsOn.length > 0);
-  if (acmeRerunSource) {
-    result.push(
-      ...createRerunTasks([acmeRerunSource]).map((t) => ({
-        ...t,
-        createdAt: daysAgo(2),
-      })),
-    );
-  }
-
-  const medcoreBli = medcoreTasks.find((t) => t.taskTemplateId === BLI_RUN_TEMPLATE);
-  if (medcoreBli) {
-    result.push(
-      ...createRerunTasks([medcoreBli]).map((t) => ({
-        ...t,
-        createdAt: daysAgo(1),
-      })),
-    );
-  }
-
-  const tnqTasks = byExperiment("100a7e4a-8521-5ce9-b22c-7c4f88922623");
-  const tnqLate = tnqTasks.at(-1);
-  if (tnqLate && tnqLate.readiness !== "in_labos") {
-    result = result.map((t) =>
-      t.id === tnqLate.id ? { ...t, blockedReason: "awaiting_client" as const } : t,
-    );
-  }
-
-  return refreshAllTaskReadiness(result);
+  return refreshAllTaskReadiness(
+    scaffoldTasks(toSummary(experiment), {
+      ...workflow,
+      steps,
+    }).map((task, index) => ({
+      ...task,
+      createdAt: daysAgo(createdDaysAgo - index),
+    })),
+  );
 }
 
-function buildTicketsForWorkUnits(workUnits: WorkUnit[]): Ticket[] {
-  const scheduledCount = Math.max(1, Math.floor(workUnits.length * 0.65));
-  const tickets: Ticket[] = [];
-  const labTechs = seedStaff.filter((member) => member.role === "lab-tech");
+type ScaffoldThroughOptions = {
+  createdDaysAgo?: number;
+  paramOverrides?: Record<string, Record<string, unknown>>;
+  blockedOn?: { templateId: string; reason: BlockedReason };
+};
 
-  for (let index = 0; index < scheduledCount; index++) {
-    const workUnit = workUnits[index];
-    if (!workUnit) break;
+function scaffoldThroughStep(
+  experiment: ExperimentDetail,
+  throughTemplateId: string,
+  options: ScaffoldThroughOptions = {},
+): Task[] {
+  const workflow = resolveWorkflow(experiment);
+  if (!workflow) return [];
 
-    tickets.push({
-      id: nextTicketId(),
-      workUnitId: workUnit.id,
-      assigneeId: labTechs[index % labTechs.length]!.id,
-      scheduledDay: SCHEDULE_DAYS[index % SCHEDULE_DAYS.length]!,
-      status: "scheduled",
-    });
+  const steps = workflowSteps(workflow);
+  const throughIndex = steps.findIndex(
+    (step) => step.taskTemplateId === throughTemplateId,
+  );
+  if (throughIndex === -1) return [];
+
+  const includedSteps = steps.slice(0, throughIndex + 1);
+  const includedIds = new Set(includedSteps.map((step) => step.taskTemplateId));
+
+  const scaffolded = scaffoldTasks(toSummary(experiment), {
+    ...workflow,
+    steps: includedSteps,
+  });
+
+  const activeTemplateId = includedSteps.at(-1)?.taskTemplateId;
+  const baseAge = options.createdDaysAgo ?? 14;
+
+  let tasks = scaffolded
+    .filter((task) => includedIds.has(task.taskTemplateId))
+    .map((task, index) => ({
+      ...task,
+      createdAt: daysAgo(baseAge - index),
+      params: {
+        ...task.params,
+        ...(options.paramOverrides?.[task.taskTemplateId] ?? {}),
+      },
+      readiness:
+        task.taskTemplateId === activeTemplateId
+          ? task.readiness
+          : ("in_labos" as const),
+    }));
+
+  if (options.blockedOn) {
+    tasks = tasks.map((task) =>
+      task.taskTemplateId === options.blockedOn!.templateId
+        ? {
+            ...task,
+            blockedReason: options.blockedOn!.reason,
+            readiness: "blocked" as const,
+          }
+        : task,
+    );
   }
 
-  return tickets;
+  return refreshAllTaskReadiness(tasks);
+}
+
+function cloneReadyTask(
+  source: Task,
+  experiment: ExperimentDetail,
+  createdDaysAgo: number,
+  nameSuffix: string,
+): Task {
+  return {
+    ...source,
+    id: nextTaskId(),
+    experimentIds: [experiment.id],
+    name: `${nameSuffix} — ${experiment.code}`,
+    dependsOn: [],
+    readiness: "ready",
+    workUnitId: undefined,
+    blockedReason: undefined,
+    createdAt: daysAgo(createdDaysAgo),
+    params: { ...source.params },
+  };
+}
+
+function buildScheduleDays(referenceDay: string): string[] {
+  const base = new Date(`${referenceDay}T12:00:00`);
+  const days: string[] = [];
+  for (let offset = 0; offset < 8; offset += 1) {
+    const date = new Date(base);
+    date.setDate(date.getDate() + offset);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    days.push(`${year}-${month}-${day}`);
+  }
+  return days;
 }
 
 function attachTasksToWorkUnits(tasks: Task[], workUnits: WorkUnit[]): Task[] {
@@ -204,14 +250,323 @@ function attachTasksToWorkUnits(tasks: Task[], workUnits: WorkUnit[]): Task[] {
   }
 
   return refreshAllTaskReadiness(
-    tasks.map((t) => {
-      const workUnitId = workUnitByTask.get(t.id);
+    tasks.map((task) => {
+      const workUnitId = workUnitByTask.get(task.id);
       if (workUnitId) {
-        return { ...t, workUnitId, readiness: "batched" as const };
+        return { ...task, workUnitId, readiness: "batched" as const };
       }
-      return t;
+      return task;
     }),
   );
+}
+
+function buildTickets(
+  workUnits: WorkUnit[],
+  scheduleDays: string[],
+): Ticket[] {
+  const labTechs = seedStaff.filter((member) => member.role === "lab-tech");
+  const tickets: Ticket[] = [];
+
+  SCHEDULED_UNIT_INDICES.forEach((unitIndex, ticketIndex) => {
+    const workUnit = workUnits[unitIndex];
+    if (!workUnit) return;
+
+    tickets.push({
+      id: nextTicketId(),
+      workUnitId: workUnit.id,
+      assigneeId: labTechs[ticketIndex % labTechs.length]!.id,
+      scheduledDay: scheduleDays[ticketIndex]!,
+      status: "scheduled",
+    });
+  });
+
+  return tickets;
+}
+
+function buildCuratedTasks(): Task[] {
+  let tasks: Task[] = [];
+
+  // --- Queue: pool (3 ready expression runs, same batch key, no unit yet) ---
+  const gentechPoolChain = scaffoldThroughStep(
+    getExperiment("exp-gentech-expression"),
+    T.exprRun,
+    {
+      createdDaysAgo: 8,
+      paramOverrides: { [T.exprRun]: EXPR_BATCH_POOL },
+    },
+  );
+  tasks.push(...gentechPoolChain);
+  const gentechPoolTemplate = gentechPoolChain.find(
+    (task) => task.taskTemplateId === T.exprRun,
+  );
+  if (gentechPoolTemplate) {
+    tasks.push(
+      cloneReadyTask(
+        gentechPoolTemplate,
+        getExperiment("exp-gentech-expression"),
+        7,
+        "Expression Run",
+      ),
+      cloneReadyTask(
+        gentechPoolTemplate,
+        getExperiment("exp-gentech-expression"),
+        6,
+        "Expression Run",
+      ),
+    );
+  }
+
+  // --- Queue: attach (1 BLI run in a unit, 2 more ready with matching key) ---
+  const medcoreBliChain = scaffoldThroughStep(
+    getExperiment("exp-medcore-screen"),
+    T.bliRun,
+    {
+      createdDaysAgo: 10,
+      paramOverrides: { [T.bliRun]: BLI_BATCH },
+    },
+  );
+  tasks.push(...medcoreBliChain);
+  const medcoreBliTemplate = medcoreBliChain.find(
+    (task) => task.taskTemplateId === T.bliRun,
+  );
+  if (medcoreBliTemplate) {
+    tasks.push(
+      cloneReadyTask(
+        medcoreBliTemplate,
+        getExperiment("exp-medcore-screen"),
+        4,
+        "BLI Run",
+      ),
+      cloneReadyTask(
+        medcoreBliTemplate,
+        getExperiment("exp-medcore-screen"),
+        3,
+        "BLI Run",
+      ),
+    );
+    tasks.push(
+      ...createRerunTasks([medcoreBliTemplate]).map((task) => ({
+        ...task,
+        createdAt: daysAgo(1),
+      })),
+    );
+  }
+
+  // --- Queue: alone (distinct batch key + SPR prep) ---
+  tasks.push(
+    ...scaffoldThroughStep(getExperiment("exp-fredy-expression"), T.exprRun, {
+      createdDaysAgo: 5,
+      paramOverrides: { [T.exprRun]: EXPR_BATCH_B },
+    }),
+  );
+  tasks.push(
+    ...scaffoldThroughStep(getExperiment("exp-medcore-affinity"), T.sprPrep, {
+      createdDaysAgo: 9,
+    }),
+  );
+
+  // --- Units: sibling set (two units, same batch key) ---
+  const acmeExprChain = scaffoldThroughStep(
+    getExperiment("exp-acme-expression"),
+    T.exprRun,
+    {
+      createdDaysAgo: 11,
+      paramOverrides: { [T.exprRun]: EXPR_BATCH_A },
+    },
+  );
+  tasks.push(...acmeExprChain);
+  const acmeExprTemplate = acmeExprChain.find(
+    (task) => task.taskTemplateId === T.exprRun,
+  );
+  if (acmeExprTemplate) {
+    tasks.push(
+      cloneReadyTask(
+        acmeExprTemplate,
+        getExperiment("exp-acme-expression"),
+        5,
+        "Expression Run",
+      ),
+      cloneReadyTask(
+        acmeExprTemplate,
+        getExperiment("exp-acme-expression"),
+        4,
+        "Expression Run",
+      ),
+      cloneReadyTask(
+        acmeExprTemplate,
+        getExperiment("exp-acme-expression"),
+        3,
+        "Expression Run",
+      ),
+    );
+    tasks.push(
+      ...createRerunTasks([acmeExprTemplate]).map((task) => ({
+        ...task,
+        createdAt: daysAgo(2),
+      })),
+    );
+  }
+
+  // --- Units: overflow split (5 plate preps exceed plate well capacity) ---
+  const thermoOverflowChain = scaffoldThroughStep(
+    getExperiment("exp-fredy-thermo"),
+    T.exprPlatePrep,
+    {
+      createdDaysAgo: 6,
+    },
+  );
+  tasks.push(...thermoOverflowChain);
+  const thermoPrepTemplate = thermoOverflowChain.find(
+    (task) => task.taskTemplateId === T.exprPlatePrep,
+  );
+  if (thermoPrepTemplate) {
+    tasks.push(
+      cloneReadyTask(
+        thermoPrepTemplate,
+        getExperiment("exp-fredy-thermo"),
+        5,
+        "Expression Plate Prep",
+      ),
+      cloneReadyTask(
+        thermoPrepTemplate,
+        getExperiment("exp-fredy-thermo"),
+        4,
+        "Expression Plate Prep",
+      ),
+      cloneReadyTask(
+        thermoPrepTemplate,
+        getExperiment("exp-fredy-thermo"),
+        3,
+        "Expression Plate Prep",
+      ),
+      cloneReadyTask(
+        thermoPrepTemplate,
+        getExperiment("exp-fredy-thermo"),
+        2,
+        "Expression Plate Prep",
+      ),
+    );
+  }
+
+  // --- Kanban: production thermo run (urgent, scheduled today) ---
+  tasks.push(
+    ...scaffoldThroughStep(getExperiment("exp-production-1"), T.thermoRun, {
+      createdDaysAgo: 4,
+    }),
+  );
+
+  // --- Blocked (varied reasons) ---
+  tasks.push(
+    ...scaffoldFirstStep(getExperiment("exp-binding-1"), 15).map((task) => ({
+      ...task,
+      blockedReason: "missing_materials" as const,
+    })),
+    ...scaffoldFirstStep(getExperiment("exp-acme-binding"), 14).map((task) => ({
+      ...task,
+      blockedReason: "missing_materials" as const,
+    })),
+    ...scaffoldFirstStep(getExperiment("exp-biopharma-binding"), 13).map((task) => ({
+      ...task,
+      blockedReason: "awaiting_client" as const,
+    })),
+    ...scaffoldThroughStep(
+      getExperiment("100a7e4a-8521-5ce9-b22c-7c4f88922623"),
+      T.review,
+      {
+        createdDaysAgo: 16,
+        blockedOn: { templateId: T.review, reason: "awaiting_client" },
+      },
+    ),
+  );
+
+  // --- Waiting upstream (step 2 blocked by incomplete step 1) ---
+  tasks.push(
+    ...scaffoldPendingSecondStep(getExperiment("exp-biopharma-epitope"), 11),
+    ...scaffoldPendingSecondStep(getExperiment("exp-gentech-stability"), 10),
+  );
+
+  // --- Standalone buffer prep (two lone items with different batch keys) ---
+  tasks.push(
+    createStandaloneTask(T.bufferPrep, {
+      buffer_k: 2,
+      buffer_be: 1,
+      buffer_r: 0.5,
+    }),
+    createStandaloneTask(T.bufferPrep, {
+      buffer_k: 5,
+      buffer_be: 2,
+      buffer_r: 1,
+    }),
+  );
+
+  tasks = tasks.map((task, index) => ({
+    ...task,
+    createdAt: task.createdAt ?? daysAgo(7 + index),
+  }));
+
+  return refreshAllTaskReadiness(tasks);
+}
+
+function buildCuratedWorkUnits(tasks: Task[]): WorkUnit[] {
+  const readyExprA = tasks.filter(
+    (task) =>
+      task.readiness === "ready" &&
+      !task.workUnitId &&
+      task.taskTemplateId === T.exprRun &&
+      task.params.expression_temperature === EXPR_BATCH_A.expression_temperature &&
+      task.params.expression_time === EXPR_BATCH_A.expression_time,
+  );
+
+  const acmeExprRuns = readyExprA.filter((task) =>
+    task.experimentIds.includes("exp-acme-expression"),
+  );
+  const thermoOverflowRuns = tasks.filter(
+    (task) =>
+      task.readiness === "ready" &&
+      !task.workUnitId &&
+      task.taskTemplateId === T.exprPlatePrep &&
+      task.experimentIds.includes("exp-fredy-thermo"),
+  );
+
+  const medcoreBliRuns = tasks.filter(
+    (task) =>
+      task.readiness === "ready" &&
+      !task.workUnitId &&
+      task.taskTemplateId === T.bliRun &&
+      task.experimentIds.includes("exp-medcore-screen"),
+  );
+
+  const productionThermo = tasks.find(
+    (task) =>
+      task.readiness === "ready" &&
+      task.taskTemplateId === T.thermoRun &&
+      task.experimentIds.includes("exp-production-1"),
+  );
+
+  const workUnits: WorkUnit[] = [];
+
+  // Index 0–1: sibling set (first one gets scheduled on kanban)
+  if (acmeExprRuns.length >= 4) {
+    workUnits.push(createWorkUnitFromTasks(acmeExprRuns.slice(0, 2)));
+    workUnits.push(createWorkUnitFromTasks(acmeExprRuns.slice(2, 4)));
+  }
+
+  // Index 2: overflow split demo
+  if (thermoOverflowRuns.length >= 5) {
+    workUnits.push(createWorkUnitFromTasks(thermoOverflowRuns.slice(0, 5)));
+  }
+
+  // Index 3: attach target unit
+  if (medcoreBliRuns.length >= 1) {
+    workUnits.push(createWorkUnitFromTasks([medcoreBliRuns[0]!]));
+  }
+
+  // Index 4: production thermo (scheduled today)
+  if (productionThermo) {
+    workUnits.push(createWorkUnitFromTasks([productionThermo]));
+  }
+
+  return workUnits.map((workUnit) => ({ ...workUnit, status: "draft" as const }));
 }
 
 export function buildPlanningSeedData(): PlanningSeedData {
@@ -219,42 +574,12 @@ export function buildPlanningSeedData(): PlanningSeedData {
   resetWorkUnitIdCounter(2000);
   resetTicketIdCounter(3000);
 
-  let tasks = scaffoldAllExperiments();
-  tasks = addStandaloneTasks(tasks);
-  tasks = applyPlanningScenarios(tasks);
+  const referenceDay = new Date().toISOString().slice(0, 10);
+  const scheduleDays = buildScheduleDays(referenceDay);
 
-  const ready = tasks.filter((t) => t.readiness === "ready");
-  const draftWorkUnits = groupIntoDraftWorkUnits(ready);
-
-  const exprRunReady = ready.filter((t) => t.taskTemplateId === EXPR_RUN_TEMPLATE);
-  if (exprRunReady.length >= 4) {
-    const exprGroup = draftWorkUnits.find(
-      (wu) => wu.taskTemplateId === EXPR_RUN_TEMPLATE,
-    );
-    if (exprGroup) {
-      exprGroup.taskIds = exprRunReady.slice(0, 4).map((t) => t.id);
-    }
-  }
-
-  const workUnitsToUse = draftWorkUnits.filter((wu) => wu.taskIds.length > 0);
-  const keepUnbatchedRatio = 0.2;
-  const splitIndex = Math.max(
-    1,
-    Math.floor(workUnitsToUse.length * (1 - keepUnbatchedRatio)),
-  );
-  const batchedWorkUnits = workUnitsToUse.slice(0, splitIndex);
-
-  const overflowExpr = exprRunReady.slice(4, 6);
-  if (overflowExpr.length >= 2) {
-    batchedWorkUnits.push(createWorkUnitFromTasks(overflowExpr));
-  }
-
-  const workUnits: WorkUnit[] = batchedWorkUnits.map((wu) => ({
-    ...wu,
-    status: "draft" as const,
-  }));
-
-  const tickets = buildTicketsForWorkUnits(workUnits);
+  let tasks = buildCuratedTasks();
+  const workUnits = buildCuratedWorkUnits(tasks);
+  const tickets = buildTickets(workUnits, scheduleDays);
   tasks = attachTasksToWorkUnits(tasks, workUnits);
 
   return { tasks, workUnits, tickets };
