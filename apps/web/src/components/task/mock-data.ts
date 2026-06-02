@@ -1,10 +1,10 @@
 import type { ExperimentDetail, ExperimentSummary, StaffMember, Task } from "@/types";
 
 export const MOCK_STAFF: StaffMember[] = [
-  { id: "staff-sarah", name: "Sarah Chen" },
-  { id: "staff-marcus", name: "Marcus Webb" },
-  { id: "staff-alice", name: "Alice Park" },
-  { id: "staff-james", name: "James Okonkwo" },
+  { id: "staff-sarah", name: "Sarah Chen", role: "lab-tech" },
+  { id: "staff-marcus", name: "Marcus Webb", role: "lab-tech" },
+  { id: "staff-alice", name: "Alice Park", role: "lab-tech" },
+  { id: "staff-james", name: "James Okonkwo", role: "lab-tech" },
 ];
 
 export const MOCK_EXPERIMENTS: ExperimentDetail[] = [

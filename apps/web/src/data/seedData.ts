@@ -19,13 +19,16 @@ export const seedClients: ClientRef[] = [
 
 // Seed staff - expanded from existing mock data
 export const seedStaff: StaffMember[] = [
-  { id: "staff-sarah", name: "Sarah Chen" },
-  { id: "staff-marcus", name: "Marcus Webb" },
-  { id: "staff-alice", name: "Alice Park" },
-  { id: "staff-james", name: "James Okonkwo" },
-  { id: "staff-elena", name: "Dr. Elena Rodriguez" },
-  { id: "staff-david", name: "David Kumar" },
-  { id: "staff-lisa", name: "Dr. Lisa Thompson" },
+  { id: "staff-sarah", name: "Sarah Chen", role: "lab-tech" },
+  { id: "staff-marcus", name: "Marcus Webb", role: "lab-tech" },
+  { id: "staff-alice", name: "Alice Park", role: "lab-tech" },
+  { id: "staff-james", name: "James Okonkwo", role: "lab-tech" },
+  { id: "staff-nina", name: "Nina Patel", role: "lab-tech" },
+  { id: "staff-tom", name: "Tom Becker", role: "lab-tech" },
+  { id: "staff-yuki", name: "Yuki Tanaka", role: "lab-tech" },
+  { id: "staff-elena", name: "Dr. Elena Rodriguez", role: "planner" },
+  { id: "staff-david", name: "David Kumar", role: "planner" },
+  { id: "staff-lisa", name: "Dr. Lisa Thompson", role: "planner" },
 ];
 
 // Seed experiments - based on existing mock data with additional experiments

@@ -6,6 +6,7 @@ export { TaskCard } from "./task-card";
 export { TaskCardCell } from "./task-card-cell";
 export { TaskDetailDialog } from "./task-detail-dialog";
 export { PlanningScreen } from "./planning-screen";
+export { PlanningBoard } from "./planning-board";
 export { TicketCard } from "./ticket-card";
 export { WorkUnitCard } from "./work-unit-card";
 export { WorkUnitList } from "./work-unit-list";

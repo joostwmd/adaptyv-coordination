@@ -1,6 +1,6 @@
-import { useMemo } from "react";
-import { Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 
+import type { Task } from "@/domain/task/types";
 import {
   usePlanningStore,
   usePlanningTasks,
@@ -8,7 +8,9 @@ import {
   usePlanningWorkUnits,
 } from "@/stores/usePlanningStore";
 
-import { WorkUnitList } from "./work-unit-list";
+import { PlanningBoard } from "./planning-board";
+import { TaskDetailDialog } from "./task-detail-dialog";
+import { BlockedFailedDrawer } from "./zones/blocked-failed-drawer";
 
 function PlanningStats() {
   const tasks = usePlanningTasks();
@@ -25,55 +27,49 @@ function PlanningStats() {
   }, [tasks]);
 
   return (
-    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-      <span>
-        <span className="font-medium text-foreground">{tasks.length}</span> tasks
-      </span>
-      <span aria-hidden>·</span>
-      <span>
-        <span className="font-medium text-foreground">{workUnits.length}</span> work units
-        {workUnits.length > 0 ? ` (${unscheduledCount} unscheduled)` : null}
-      </span>
-      <span aria-hidden>·</span>
-      <span>
-        <span className="font-medium text-foreground">{tickets.length}</span> tickets
-      </span>
-      <span aria-hidden>·</span>
-      <span>{counts.ready ?? 0} ready</span>
-      <span aria-hidden>·</span>
-      <span>{counts.batched ?? 0} batched</span>
-      <span aria-hidden>·</span>
-      <span>{counts.waiting_upstream ?? 0} waiting</span>
-      <span aria-hidden>·</span>
-      <span>{counts.blocked ?? 0} blocked</span>
-      <span aria-hidden>·</span>
-      <span>{counts.in_labos ?? 0} in LabOS</span>
-    </div>
+    <p className="text-[11px] text-muted-foreground">
+      <span className="font-medium text-foreground">{tasks.length}</span> tasks
+      <span aria-hidden> · </span>
+      <span className="font-medium text-foreground">{workUnits.length}</span> units
+      {unscheduledCount > 0 ? ` (${unscheduledCount} open)` : null}
+      <span aria-hidden> · </span>
+      <span className="font-medium text-foreground">{tickets.length}</span> tickets
+      <span aria-hidden> · </span>
+      {counts.ready ?? 0} ready
+      <span aria-hidden> · </span>
+      {counts.batched ?? 0} batched
+      <span aria-hidden> · </span>
+      {counts.waiting_upstream ?? 0} waiting
+      <span aria-hidden> · </span>
+      {counts.in_labos ?? 0} in LabOS
+    </p>
   );
 }
 
 export function PlanningScreen() {
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-6">
-      <header className="mb-6 space-y-2">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Link to="/" className="underline-offset-4 hover:underline">
-            Home
-          </Link>
-          <span aria-hidden>/</span>
-          <span className="text-foreground">Planning</span>
+    <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden px-3 py-2">
+      <header className="mb-2 flex shrink-0 items-center justify-between gap-3 border-b pb-2">
+        <div className="min-w-0 space-y-0.5">
+          <h1 className="text-sm font-semibold tracking-tight">Lab planning</h1>
+          <PlanningStats />
         </div>
-        <h1 className="text-lg font-semibold tracking-tight">Lab planning</h1>
-        <p className="text-sm text-muted-foreground">
-          Queue work units, inspect tasks, and review run settings before lab execution.
-        </p>
-        <PlanningStats />
+        <BlockedFailedDrawer onTaskOpen={setSelectedTask} />
       </header>
 
-      <section className="rounded-lg border p-4">
-        <h2 className="mb-4 text-sm font-medium">Work units</h2>
-        <WorkUnitList />
-      </section>
+      <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
+        <PlanningBoard onTaskOpen={setSelectedTask} />
+      </div>
+
+      <TaskDetailDialog
+        task={selectedTask}
+        open={selectedTask !== null}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setSelectedTask(null);
+        }}
+      />
     </div>
   );
 }

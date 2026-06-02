@@ -100,11 +100,11 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
                   {ticketView ? (
                     <>
                       <span aria-hidden>·</span>
-                      <span className="inline-flex items-center gap-1">
+                      <span className="inline-flex items-center gap-1 whitespace-nowrap">
                         <span>Scheduled</span>
                         <ScheduledTime
                           scheduledDay={ticketView.ticket.scheduledDay}
-                          className="h-auto p-0 text-xs font-normal text-muted-foreground"
+                          className="h-auto p-0 text-xs font-normal text-muted-foreground whitespace-nowrap"
                         />
                       </span>
                     </>
@@ -123,7 +123,7 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
               <RelativeTimeCard
                 date={new Date(task.createdAt)}
                 variant="ghost"
-                className="h-auto p-0 text-[11px] font-normal text-muted-foreground"
+                className="inline h-auto p-0 text-[11px] font-normal text-muted-foreground whitespace-nowrap"
                 updateInterval={60_000}
               />
               <span aria-hidden>·</span>

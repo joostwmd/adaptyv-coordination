@@ -46,9 +46,11 @@ function RootComponent() {
         storageKey="vite-ui-theme"
       >
         <TooltipProvider>
-          <div className="grid grid-rows-[auto_1fr] h-svh">
+          <div className="grid h-svh grid-rows-[auto_1fr] overflow-hidden">
             <Header />
-            <Outlet />
+            <main className="min-h-0 min-w-0 overflow-hidden">
+              <Outlet />
+            </main>
           </div>
           <Toaster richColors />
           <PrototypeControls />

@@ -18,15 +18,19 @@
     "@fontsource-variable/figtree": "^5.2.10",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.4.0",
     "lucide-react": "^0.546.0",
     "next-themes": "catalog:",
     "radix-ui": "^1.4.3",
     "react": "catalog:",
+    "react-day-picker": "^10.0.1",
     "react-dom": "catalog:",
+    "react-resizable-panels": "^4.11.2",
     "shadcn": "^4.10.0",
     "sonner": "^2.0.5",
     "tailwind-merge": "^3.3.1",
-    "tw-animate-css": "^1.3.4"
+    "tw-animate-css": "^1.3.4",
+    "vaul": "^1.1.2"
   },
   "devDependencies": {
     "@adaptyv-coordination/config": "workspace:*",

@@ -1,6 +1,11 @@
 import { create } from "zustand";
 import type { BlockedReason } from "@/domain/blocked-reason";
 import { buildPlanningSeedData } from "@/domain/seed";
+import { DEFAULT_PLANNING_DAY } from "@/domain/planning/constants";
+import {
+  clampPlanningDay,
+  stepPlanningDay as stepPlanningDayByDelta,
+} from "@/domain/planning/planning-dates";
 import {
   DEFAULT_PRIORITY_WEIGHTS,
   PRIORITY_WEIGHT_PRESETS,
@@ -31,6 +36,7 @@ interface PlanningState {
   workUnits: WorkUnit[];
   tickets: Ticket[];
   weights: PriorityWeights;
+  currentDay: string;
 
   addTask: (task: Omit<Task, "id"> & { id?: string }) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
@@ -45,6 +51,7 @@ interface PlanningState {
   createRerunFromTasks: (taskIds: string[]) => Task[];
 
   groupReadyIntoWorkUnits: () => WorkUnit[];
+  createWorkUnitFromReadyTasks: (taskIds: string[]) => WorkUnit | null;
   addTaskToWorkUnit: (taskId: string, workUnitId: string) => void;
   removeTaskFromWorkUnit: (taskId: string) => void;
   splitWorkUnit: (workUnitId: string) => { primary: WorkUnit; secondary: WorkUnit } | null;
@@ -61,6 +68,9 @@ interface PlanningState {
 
   setWeights: (weights: PriorityWeights) => void;
   applyWeightPreset: (presetName: keyof typeof PRIORITY_WEIGHT_PRESETS) => void;
+
+  setCurrentDay: (day: string) => void;
+  stepPlanningDay: (delta: number) => void;
 
   markTaskInLabos: (taskId: string) => void;
 
@@ -104,6 +114,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
   workUnits: initialSeed.workUnits,
   tickets: initialSeed.tickets,
   weights: DEFAULT_PRIORITY_WEIGHTS,
+  currentDay: DEFAULT_PLANNING_DAY,
 
   addTask: (taskData) =>
     set((state) => {
@@ -176,6 +187,18 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     const tasks = attachTasksToWorkUnits(state.tasks, workUnits);
     set({ workUnits, tasks });
     return newWorkUnits;
+  },
+
+  createWorkUnitFromReadyTasks: (taskIds) => {
+    const state = get();
+    const selected = state.tasks.filter((task) => taskIds.includes(task.id));
+    if (selected.length === 0) return null;
+
+    const newWorkUnit = createWorkUnitFromTasks(selected);
+    const workUnits = [...state.workUnits, newWorkUnit];
+    const tasks = attachTasksToWorkUnits(state.tasks, workUnits);
+    set({ workUnits, tasks });
+    return newWorkUnit;
   },
 
   addTaskToWorkUnit: (taskId, workUnitId) =>
@@ -296,6 +319,13 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       weights: PRIORITY_WEIGHT_PRESETS[presetName] ?? DEFAULT_PRIORITY_WEIGHTS,
     }),
 
+  setCurrentDay: (day) => set({ currentDay: clampPlanningDay(day) }),
+
+  stepPlanningDay: (delta) =>
+    set((state) => ({
+      currentDay: stepPlanningDayByDelta(state.currentDay, delta),
+    })),
+
   markTaskInLabos: (taskId) =>
     set((state) => ({
       tasks: syncReadiness(
@@ -349,6 +379,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       workUnits: seed.workUnits,
       tickets: seed.tickets,
       weights: DEFAULT_PRIORITY_WEIGHTS,
+      currentDay: DEFAULT_PLANNING_DAY,
     });
   },
 }));
@@ -357,5 +388,6 @@ export const usePlanningTasks = () => usePlanningStore((s) => s.tasks);
 export const usePlanningWorkUnits = () => usePlanningStore((s) => s.workUnits);
 export const usePlanningTickets = () => usePlanningStore((s) => s.tickets);
 export const usePlanningWeights = () => usePlanningStore((s) => s.weights);
+export const usePlanningCurrentDay = () => usePlanningStore((s) => s.currentDay);
 
 export type { BlockedReason };

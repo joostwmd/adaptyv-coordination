@@ -177,6 +177,7 @@ function applyPlanningScenarios(tasks: Task[]): Task[] {
 function buildTicketsForWorkUnits(workUnits: WorkUnit[]): Ticket[] {
   const scheduledCount = Math.max(1, Math.floor(workUnits.length * 0.65));
   const tickets: Ticket[] = [];
+  const labTechs = seedStaff.filter((member) => member.role === "lab-tech");
 
   for (let index = 0; index < scheduledCount; index++) {
     const workUnit = workUnits[index];
@@ -185,7 +186,7 @@ function buildTicketsForWorkUnits(workUnits: WorkUnit[]): Ticket[] {
     tickets.push({
       id: nextTicketId(),
       workUnitId: workUnit.id,
-      assigneeId: seedStaff[index % seedStaff.length]!.id,
+      assigneeId: labTechs[index % labTechs.length]!.id,
       scheduledDay: SCHEDULE_DAYS[index % SCHEDULE_DAYS.length]!,
       status: "scheduled",
     });

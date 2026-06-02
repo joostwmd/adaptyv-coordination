@@ -1,5 +1,5 @@
-export type { StaffMember } from "./staff";
-export { getInitials } from "./staff";
+export type { StaffMember, StaffRole } from "./staff";
+export { getInitials, getStaffHandle } from "./staff";
 
 export type {
   ClientRef,

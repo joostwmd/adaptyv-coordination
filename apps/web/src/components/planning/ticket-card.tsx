@@ -12,6 +12,7 @@ import {
 } from "@adaptyv-coordination/ui/components/collapsible";
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 import { ChevronDownIcon } from "lucide-react";
+import { motion } from "motion/react";
 
 import type { Task } from "@/domain/task/types";
 import type { Ticket } from "@/domain/ticket/types";
@@ -26,12 +27,14 @@ type TicketCardProps = {
   ticket: Ticket;
   defaultExpanded?: boolean;
   onTaskOpen: (task: Task) => void;
+  layoutId?: string;
 };
 
 export function TicketCard({
   ticket,
   defaultExpanded = false,
   onTaskOpen,
+  layoutId,
 }: TicketCardProps) {
   const [open, setOpen] = useState(defaultExpanded);
   const view = useTicketView(ticket);
@@ -40,7 +43,7 @@ export function TicketCard({
 
   const assignees = view.assignee ? [view.assignee] : [];
 
-  return (
+  const card = (
     <Card>
       <CardHeader className="gap-2 pb-3">
         <div className="flex items-start justify-between gap-2">
@@ -52,11 +55,11 @@ export function TicketCard({
                 {view.experimentCount === 1 ? "" : "s"}
               </span>
               <span aria-hidden>·</span>
-              <span className="inline-flex items-center gap-1">
+              <span className="inline-flex items-center gap-1 whitespace-nowrap">
                 <span>Scheduled</span>
                 <ScheduledTime
                   scheduledDay={ticket.scheduledDay}
-                  className="h-auto p-0 text-xs font-normal text-muted-foreground"
+                  className="h-auto p-0 text-xs font-normal text-muted-foreground whitespace-nowrap"
                 />
               </span>
             </p>
@@ -69,7 +72,8 @@ export function TicketCard({
       </CardHeader>
 
       <CardContent className="pt-0 pb-3">
-        <Collapsible open={open} onOpenChange={setOpen}>
+        <motion.div layoutRoot>
+          <Collapsible open={open} onOpenChange={setOpen}>
           <CollapsibleTrigger
             className={cn(
               "flex w-full items-center justify-between rounded-md border bg-muted/30 px-3 py-2.5 text-xs font-medium",
@@ -91,11 +95,21 @@ export function TicketCard({
                 task={task}
                 onOpen={onTaskOpen}
                 variant="compact"
+                layoutId={`task-${task.id}`}
               />
             ))}
           </CollapsibleContent>
         </Collapsible>
+        </motion.div>
       </CardContent>
     </Card>
+  );
+
+  if (!layoutId) return card;
+
+  return (
+    <motion.div layoutId={layoutId}>
+      {card}
+    </motion.div>
   );
 }

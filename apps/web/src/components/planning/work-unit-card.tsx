@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@adaptyv-coordination/ui/components/card";
+import { Badge } from "@adaptyv-coordination/ui/components/badge";
+import { Button } from "@adaptyv-coordination/ui/components/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -12,6 +14,7 @@ import {
 } from "@adaptyv-coordination/ui/components/collapsible";
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 import { ChevronDownIcon } from "lucide-react";
+import { motion } from "motion/react";
 
 import type { Task } from "@/domain/task/types";
 import type { WorkUnit } from "@/domain/work-unit/types";
@@ -26,6 +29,12 @@ type WorkUnitCardProps = {
   variant?: "default" | "suggested";
   defaultExpanded?: boolean;
   onTaskOpen: (task: Task) => void;
+  showSplitBadge?: boolean;
+  onSplit?: () => void;
+  layoutId?: string;
+  previewLabel?: string;
+  showEyebrow?: boolean;
+  renderTask?: (task: Task) => ReactNode;
 };
 
 export function WorkUnitCard({
@@ -33,6 +42,12 @@ export function WorkUnitCard({
   variant = "default",
   defaultExpanded = false,
   onTaskOpen,
+  showSplitBadge = false,
+  onSplit,
+  layoutId,
+  previewLabel,
+  showEyebrow = true,
+  renderTask,
 }: WorkUnitCardProps) {
   const [open, setOpen] = useState(defaultExpanded);
   const view = useWorkUnitView(workUnit);
@@ -42,7 +57,7 @@ export function WorkUnitCard({
   const isSuggested = variant === "suggested";
   const statusConfig = WORK_UNIT_STATUS_CONFIG[workUnit.status];
 
-  return (
+  const card = (
     <Card
       className={cn(
         isSuggested &&
@@ -52,9 +67,9 @@ export function WorkUnitCard({
       <CardHeader className="gap-2 pb-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1 space-y-1">
-            {isSuggested ? (
+            {isSuggested && showEyebrow ? (
               <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                Suggested unit
+                {previewLabel ?? "Suggested unit"}
               </p>
             ) : null}
             <CardTitle
@@ -76,7 +91,20 @@ export function WorkUnitCard({
               <span>
                 {view.tasks.length} task{view.tasks.length === 1 ? "" : "s"}
               </span>
+              {showSplitBadge ? (
+                <>
+                  <span aria-hidden>·</span>
+                  <Badge variant="destructive" className="text-[10px]">
+                    Over capacity — split
+                  </Badge>
+                </>
+              ) : null}
             </p>
+            {showSplitBadge && onSplit ? (
+              <Button type="button" size="xs" variant="outline" onClick={onSplit}>
+                Split unit
+              </Button>
+            ) : null}
           </div>
           {view.priority ? (
             <PriorityIndicator priority={view.priority} context="workUnit" />
@@ -85,7 +113,8 @@ export function WorkUnitCard({
       </CardHeader>
 
       <CardContent className="pt-0 pb-3">
-        <Collapsible open={open} onOpenChange={setOpen}>
+        <motion.div layoutRoot>
+          <Collapsible open={open} onOpenChange={setOpen}>
           <CollapsibleTrigger
             className={cn(
               "flex w-full items-center justify-between rounded-md border px-3 py-2.5 text-xs font-medium transition-colors",
@@ -103,17 +132,31 @@ export function WorkUnitCard({
             />
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-2 flex flex-col gap-2">
-            {view.enrichedTasks.map(({ task }) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                onOpen={onTaskOpen}
-                variant="compact"
-              />
-            ))}
+            {view.enrichedTasks.map(({ task }) =>
+              renderTask ? (
+                <div key={task.id}>{renderTask(task)}</div>
+              ) : (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onOpen={onTaskOpen}
+                  variant="compact"
+                  layoutId={`task-${task.id}`}
+                />
+              ),
+            )}
           </CollapsibleContent>
         </Collapsible>
+        </motion.div>
       </CardContent>
     </Card>
+  );
+
+  if (!layoutId) return card;
+
+  return (
+    <motion.div layoutId={layoutId}>
+      {card}
+    </motion.div>
   );
 }

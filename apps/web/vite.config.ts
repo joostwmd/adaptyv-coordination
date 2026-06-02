@@ -10,6 +10,14 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
+  optimizeDeps: {
+    include: [
+      "@dnd-kit/react",
+      "@dnd-kit/dom",
+      "motion/react",
+      "react-resizable-panels",
+    ],
+  },
   plugins: [
     tailwindcss(),
     tanstackRouter({

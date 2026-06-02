@@ -1,5 +1,6 @@
 import type { Task } from "@/domain/task/types";
 import { useEnrichedTask } from "@/hooks/usePlanningTask";
+import { motion } from "motion/react";
 
 import { ExperimentCodeHover } from "@/components/experiment";
 
@@ -14,9 +15,10 @@ type TaskCardProps = {
   task: Task;
   onOpen: (task: Task) => void;
   variant?: "standalone" | "compact";
+  layoutId?: string;
 };
 
-export function TaskCard({ task, onOpen, variant = "standalone" }: TaskCardProps) {
+export function TaskCard({ task, onOpen, variant = "standalone", layoutId }: TaskCardProps) {
   const enriched = useEnrichedTask(task);
   if (!enriched) return null;
 
@@ -51,7 +53,7 @@ export function TaskCard({ task, onOpen, variant = "standalone" }: TaskCardProps
       </>
     ) : undefined;
 
-  return (
+  const content = (
     <TaskCardCell
       title={title}
       subtitle={subtitle}
@@ -66,4 +68,8 @@ export function TaskCard({ task, onOpen, variant = "standalone" }: TaskCardProps
       ) : null}
     </TaskCardCell>
   );
+
+  if (!layoutId) return content;
+
+  return <motion.div layoutId={layoutId}>{content}</motion.div>;
 }

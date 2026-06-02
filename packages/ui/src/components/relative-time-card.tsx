@@ -105,7 +105,7 @@ function TimezoneCard(props: TimezoneCardProps) {
 }
 
 const triggerVariants = cva(
-  "inline-flex w-fit items-center justify-center text-foreground/70 text-sm transition-colors hover:text-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+  "inline-flex w-fit shrink-0 items-center justify-center whitespace-nowrap text-foreground/70 text-sm transition-colors hover:text-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
   {
     variants: {
       variant: {
@@ -184,7 +184,11 @@ function RelativeTimeCard(props: RelativeTimeCardProps) {
   return (
     <HoverCard open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
       <HoverCardTrigger render={<TriggerPrimitive {...triggerProps} className={cn(triggerVariants({ variant, className }))} />}>{children ?? (
-                      <time dateTime={date.toISOString()} suppressHydrationWarning>
+                      <time
+                        dateTime={date.toISOString()}
+                        className="whitespace-nowrap"
+                        suppressHydrationWarning
+                      >
                         {new Intl.DateTimeFormat(locale, {
                           month: "short",
                           day: "numeric",
