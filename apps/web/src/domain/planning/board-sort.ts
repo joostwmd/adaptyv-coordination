@@ -123,7 +123,7 @@ export function sortSiblingUnitGroups(
     .sort((a, b) => {
       const maxA = Math.max(0, ...a.map(scoreUnit));
       const maxB = Math.max(0, ...b.map(scoreUnit));
-      const byScore = compareDescending(maxB, maxA);
+      const byScore = compareDescending(maxA, maxB);
       if (byScore !== 0) return byScore;
       const keyA = a[0]?.workUnitKey ?? a[0]?.id ?? "";
       const keyB = b[0]?.workUnitKey ?? b[0]?.id ?? "";
