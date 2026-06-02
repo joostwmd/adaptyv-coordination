@@ -1,10 +1,13 @@
 import type { Task } from "@/domain/task/types";
 import { useEnrichedTask } from "@/hooks/usePlanningTask";
 
+import { ExperimentCodeHover } from "@/components/experiment";
+
 import { ParameterSummary } from "./parameter-summary";
 import { PriorityIndicator } from "./priority-indicator";
 import { ReadinessBadge } from "./readiness-badge";
 import { TaskCardCell } from "./task-card-cell";
+import { ExperimentLink } from "@/components/task/primitives/experiment-link";
 import { TaskTypeBadge } from "./task-type-badge";
 
 type TaskCardProps = {
@@ -20,15 +23,21 @@ export function TaskCard({ task, onOpen, variant = "standalone" }: TaskCardProps
   const isCompact = variant === "compact";
   const experiment = enriched.experiment;
 
-  const title = isCompact
-    ? (experiment?.code ?? enriched.title)
-    : enriched.title;
+  const title = isCompact ? (
+    experiment ? (
+      <ExperimentCodeHover experiment={experiment} linkClassName="text-sm" />
+    ) : (
+      enriched.title
+    )
+  ) : (
+    enriched.title
+  );
 
   const subtitle = isCompact
     ? experiment?.name
-    : experiment
-      ? `${experiment.code} · ${experiment.name}`
-      : undefined;
+    : experiment ? (
+        <ExperimentLink experiment={experiment} showLabel={false} codeOnly />
+      ) : undefined;
 
   const showReadiness =
     (!isCompact && task.readiness !== "batched") ||

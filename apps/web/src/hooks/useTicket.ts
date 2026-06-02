@@ -6,8 +6,10 @@ import type { Ticket } from "@/domain/ticket/types";
 import type { WorkUnit } from "@/domain/work-unit/types";
 import {
   countExperimentsInWorkUnit,
+  getExperimentsInWorkUnit,
   getWorkUnitTemplateLabel,
 } from "@/components/planning/utils";
+import type { ExperimentSummary } from "@/types";
 import {
   useEnrichedTasks,
   useExperimentsById,
@@ -24,6 +26,7 @@ export type EnrichedTicket = {
   enrichedTasks: EnrichedPlanningTask[];
   assignee: StaffMember | null;
   experimentCount: number;
+  experiments: ExperimentSummary[];
   templateLabel: string;
   priority: PriorityScore | null;
 };
@@ -63,6 +66,7 @@ export function useTicketView(ticket: Ticket | null): EnrichedTicket | null {
       enrichedTasks,
       assignee,
       experimentCount: countExperimentsInWorkUnit(tasks, experimentsById),
+      experiments: getExperimentsInWorkUnit(tasks, experimentsById),
       templateLabel: getWorkUnitTemplateLabel(workUnit),
       priority: driver?.priority ?? null,
     };

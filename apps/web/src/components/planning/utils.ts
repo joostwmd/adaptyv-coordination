@@ -36,3 +36,23 @@ export function getWorkUnitTemplateLabel(workUnit: WorkUnit): string {
 export function getPrimaryExperimentId(task: Task): string | undefined {
   return task.experimentIds[0];
 }
+
+export function getExperimentsInWorkUnit(
+  tasks: Task[],
+  experimentsById: Record<string, ExperimentSummary>,
+): ExperimentSummary[] {
+  const ids = new Set<string>();
+  const experiments: ExperimentSummary[] = [];
+
+  for (const task of tasks) {
+    for (const expId of task.experimentIds) {
+      const experiment = experimentsById[expId];
+      if (experiment && !ids.has(experiment.id)) {
+        ids.add(experiment.id);
+        experiments.push(experiment);
+      }
+    }
+  }
+
+  return experiments.sort((a, b) => a.code.localeCompare(b.code));
+}

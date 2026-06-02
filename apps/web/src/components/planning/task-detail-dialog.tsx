@@ -66,6 +66,7 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
                   <ExperimentLink
                     experiment={experiment}
                     showLabel={false}
+                    codeOnly
                     className="text-muted-foreground"
                   />
                 ) : (

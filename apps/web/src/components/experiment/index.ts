@@ -1,3 +1,4 @@
+export { ExperimentCodeHover } from "./experiment-code-hover";
 export { ExperimentHoverCard } from "./experiment-hover-card";
 export {
   EXPERIMENT_PRIORITY_HINT,

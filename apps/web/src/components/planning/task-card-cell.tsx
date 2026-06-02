@@ -9,8 +9,8 @@ import { cn } from "@adaptyv-coordination/ui/lib/utils";
 import type { KeyboardEvent, ReactNode } from "react";
 
 type TaskCardCellProps = {
-  title: string;
-  subtitle?: string;
+  title: ReactNode;
+  subtitle?: ReactNode;
   /** Badges above the title (readiness, type). */
   headerStart?: ReactNode;
   /** Right side of the title row (e.g. priority). */
