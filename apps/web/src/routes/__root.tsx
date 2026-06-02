@@ -6,12 +6,10 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
-import type { trpc } from "@/utils/trpc";
-
+import { PrototypeControls } from "@/components/dev/PrototypeControls";
 import "../index.css";
 
 export interface RouterAppContext {
-  trpc: typeof trpc;
   queryClient: QueryClient;
 }
 
@@ -51,6 +49,7 @@ function RootComponent() {
           <Outlet />
         </div>
         <Toaster richColors />
+        <PrototypeControls />
       </ThemeProvider>
       <TanStackRouterDevtools position="bottom-left" />
       <ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />

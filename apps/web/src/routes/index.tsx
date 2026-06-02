@@ -1,9 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { ContextList, MOCK_CONTEXT_ITEMS } from "@/components/context";
-import { TaskList, MOCK_TASKS } from "@/components/task";
-import { trpc } from "@/utils/trpc";
+import { ContextList } from "@/components/context";
+import { TaskList } from "@/components/task";
+import { useContextItems } from "@/hooks/useContextItems";
+import { useTasks } from "@/hooks/useTasks";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -26,34 +26,36 @@ const TITLE_TEXT = `
  `;
 
 function HomeComponent() {
-  const healthCheck = useQuery(trpc.healthCheck.queryOptions());
+  const { contextItems } = useContextItems();
+  const { tasks } = useTasks();
 
   return (
     <div className="container mx-auto max-w-3xl px-4 py-2">
       <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
       <div className="grid gap-6">
         <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
+          <h2 className="mb-2 font-medium">Prototype Mode</h2>
           <div className="flex items-center gap-2">
-            <div
-              className={`h-2 w-2 rounded-full ${healthCheck.data ? "bg-green-500" : "bg-red-500"}`}
-            />
+            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
             <span className="text-sm text-muted-foreground">
-              {healthCheck.isLoading
-                ? "Checking..."
-                : healthCheck.data
-                  ? "Connected"
-                  : "Disconnected"}
+              Using in-memory data store
             </span>
           </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Data resets on page reload. Use the prototype controls in the bottom right to reset data manually.
+          </p>
         </section>
         <section className="rounded-lg border p-4">
-          <h2 className="mb-4 font-medium">Experiment context (demo)</h2>
-          <ContextList items={MOCK_CONTEXT_ITEMS} />
+          <h2 className="mb-4 font-medium">
+            Experiment context ({contextItems.length})
+          </h2>
+          <ContextList items={contextItems} />
         </section>
         <section className="rounded-lg border p-4">
-          <h2 className="mb-4 font-medium">Tasks (demo)</h2>
-          <TaskList items={MOCK_TASKS} />
+          <h2 className="mb-4 font-medium">
+            Tasks ({tasks.length})
+          </h2>
+          <TaskList items={tasks} />
         </section>
       </div>
     </div>

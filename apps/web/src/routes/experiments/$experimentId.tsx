@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { MetaRow } from "@/components/context/primitives/meta-row";
-import { getExperimentById } from "@/components/task";
+import { useExperiment } from "@/hooks/useExperiments";
 import {
   EXPERIMENT_CATEGORY_LABEL,
   EXPERIMENT_TYPE_LABEL,
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/experiments/$experimentId")({
 
 function ExperimentDetailPage() {
   const { experimentId } = Route.useParams();
-  const experiment = getExperimentById(experimentId);
+  const { experiment } = useExperiment(experimentId);
 
   if (!experiment) {
     return (
