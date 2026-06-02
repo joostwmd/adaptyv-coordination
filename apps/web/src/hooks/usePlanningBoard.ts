@@ -44,12 +44,14 @@ export function usePlanningBoard() {
       classifyReadyTasks(tasks, unscheduledWorkUnits),
       experimentsById,
       weights,
+      currentDay,
     );
     const siblingGroups = sortSiblingUnitGroups(
       getSiblingUnitGroups(unscheduledWorkUnits),
       tasks,
       experimentsById,
       weights,
+      currentDay,
     );
     const kanbanRoster = getKanbanRoster(staff);
     const ticketsByPerson = getTicketsByPersonForDay(

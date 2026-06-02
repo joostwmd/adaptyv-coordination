@@ -9,6 +9,7 @@ import {
 import {
   DEFAULT_PRIORITY_WEIGHTS,
   PRIORITY_WEIGHT_PRESETS,
+  type PriorityDimension,
   type PriorityWeights,
 } from "@/domain/priority";
 import type { Ticket } from "@/domain/ticket/types";
@@ -73,6 +74,7 @@ interface PlanningState {
   updateWorkUnit: (workUnitId: string, updates: Partial<WorkUnit>) => void;
 
   setWeights: (weights: PriorityWeights) => void;
+  updateWeight: (dimension: PriorityDimension, value: number) => void;
   applyWeightPreset: (presetName: keyof typeof PRIORITY_WEIGHT_PRESETS) => void;
 
   setCurrentDay: (day: string) => void;
@@ -218,6 +220,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       selected,
       experimentsById,
       state.weights,
+      state.currentDay,
     );
     if (secondary.length === 0) return null;
 
@@ -275,6 +278,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       memberTasks,
       experimentsById,
       state.weights,
+      state.currentDay,
     );
     if (secondary.length === 0) return null;
 
@@ -391,6 +395,14 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
 
   setWeights: (weights) => set({ weights }),
 
+  updateWeight: (dimension, value) =>
+    set((state) => ({
+      weights: {
+        ...state.weights,
+        [dimension]: Math.max(0, Math.min(1, value)),
+      },
+    })),
+
   applyWeightPreset: (presetName) =>
     set({
       weights: PRIORITY_WEIGHT_PRESETS[presetName] ?? DEFAULT_PRIORITY_WEIGHTS,
@@ -446,6 +458,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       state.tasks,
       experimentsById,
       state.weights,
+      state.currentDay,
     );
   },
 

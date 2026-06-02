@@ -9,6 +9,10 @@ import {
 } from "@/stores/usePlanningStore";
 
 import { PlanningBoard } from "./planning-board";
+import {
+  PriorityControlsCollapsible,
+  PriorityControlsTrigger,
+} from "./priority-controls-panel";
 import { TaskDetailDialog } from "./task-detail-dialog";
 import { BlockedFailedDrawer } from "./zones/blocked-failed-drawer";
 
@@ -48,18 +52,28 @@ function PlanningStats() {
 
 export function PlanningScreen() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [priorityOpen, setPriorityOpen] = useState(false);
 
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden px-3 py-2">
-      <header className="mb-2 flex shrink-0 items-center justify-between gap-3 border-b pb-2">
-        <div className="min-w-0 space-y-0.5">
-          <h1 className="text-sm font-semibold tracking-tight">Lab planning</h1>
-          <PlanningStats />
-        </div>
-        <BlockedFailedDrawer onTaskOpen={setSelectedTask} />
-      </header>
+      <PriorityControlsCollapsible
+        open={priorityOpen}
+        onOpenChange={setPriorityOpen}
+        trigger={
+          <header className="flex shrink-0 items-center justify-between gap-3 border-b pb-2">
+            <div className="min-w-0 space-y-0.5">
+              <h1 className="text-sm font-semibold tracking-tight">Lab planning</h1>
+              <PlanningStats />
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <PriorityControlsTrigger open={priorityOpen} />
+              <BlockedFailedDrawer onTaskOpen={setSelectedTask} />
+            </div>
+          </header>
+        }
+      />
 
-      <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
+      <div className="min-h-0 min-w-0 flex-1 overflow-hidden pt-2">
         <PlanningBoard onTaskOpen={setSelectedTask} />
       </div>
 

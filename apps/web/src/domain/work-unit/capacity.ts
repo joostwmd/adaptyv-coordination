@@ -3,12 +3,11 @@ import { getResourceDefinition } from "@/domain/resource/resources";
 import type { Task } from "@/domain/task/types";
 import type { AggregatedResources, CapacityStatus, WorkUnit } from "./types";
 import {
-  buildTaskPriorityContext,
+  buildPlanningPriorityContext,
   scoreTask,
   type PriorityWeights,
 } from "@/domain/priority";
 import type { ExperimentSummary } from "@/types";
-import { DEFAULT_PRIORITY_WEIGHTS } from "@/domain/priority/weights";
 
 export function aggregateResources(tasks: Task[]): AggregatedResources {
   const totals: AggregatedResources = {};
@@ -90,7 +89,8 @@ export type SplitSuggestion = {
 export function suggestSplit(
   tasks: Task[],
   experimentsById: Record<string, ExperimentSummary>,
-  weights: PriorityWeights = DEFAULT_PRIORITY_WEIGHTS,
+  weights: PriorityWeights,
+  referenceDate: string,
 ): SplitSuggestion {
   const status = getCapacityStatus(
     emptyWorkUnitStub(tasks[0]?.taskTemplateId ?? ""),
@@ -99,11 +99,7 @@ export function suggestSplit(
 
   const scored = tasks.map((task) => {
     const exp = experimentsById[task.experimentIds[0] ?? ""];
-    const ctx = buildTaskPriorityContext(
-      exp?.priority ?? 0,
-      exp?.category ?? "rd",
-      { customerTier: exp?.category === "production" ? 4 : 2, createdAt: task.createdAt },
-    );
+    const ctx = buildPlanningPriorityContext(task, exp ?? null, referenceDate);
     return { task, score: scoreTask(task, ctx, weights).total };
   });
 

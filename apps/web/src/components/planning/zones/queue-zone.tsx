@@ -37,6 +37,7 @@ export function QueueZone({ onTaskOpen }: QueueZoneProps) {
   );
   const addTaskToWorkUnit = usePlanningStore((state) => state.addTaskToWorkUnit);
   const weights = usePlanningStore((state) => state.weights);
+  const currentDay = usePlanningStore((state) => state.currentDay);
   const experiments = usePrototypeStore((state) => state.experiments);
 
   const experimentsById = useMemo(
@@ -74,7 +75,7 @@ export function QueueZone({ onTaskOpen }: QueueZoneProps) {
             ) : (
               board.queue.pool.map((group) => {
                 const suggested = createWorkUnitFromTasks(group.tasks);
-                const split = suggestSplit(group.tasks, experimentsById, weights);
+                const split = suggestSplit(group.tasks, experimentsById, weights, currentDay);
                 const showSplitPreview = split.secondary.length > 0;
 
                 return (

@@ -31,6 +31,7 @@ export function useWorkUnitView(workUnit: WorkUnit | null): EnrichedWorkUnit | n
   const experimentsById = useExperimentsById();
   const weights = usePlanningWeights();
   const getWorkUnitPriority = usePlanningStore((s) => s.getWorkUnitPriority);
+  const referenceDate = usePlanningStore((s) => s.currentDay);
 
   const tasks = useMemo(() => {
     if (!workUnit) return [];
@@ -44,7 +45,7 @@ export function useWorkUnitView(workUnit: WorkUnit | null): EnrichedWorkUnit | n
 
     const workUnitPriority =
       getWorkUnitPriority(workUnit.id) ??
-      computeWorkUnitPriority(workUnit, tasks, experimentsById, weights);
+      computeWorkUnitPriority(workUnit, tasks, experimentsById, weights, referenceDate);
     const driver = workUnitPriority
       ? enrichedTasks.find((e) => e.task.id === workUnitPriority.driverTaskId)
       : undefined;
@@ -64,6 +65,7 @@ export function useWorkUnitView(workUnit: WorkUnit | null): EnrichedWorkUnit | n
     enrichedTasks,
     experimentsById,
     weights,
+    referenceDate,
     getWorkUnitPriority,
   ]);
 }

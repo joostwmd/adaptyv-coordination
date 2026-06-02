@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 import {
-  buildTaskPriorityContext,
+  buildPlanningPriorityContext,
   scoreTask,
   type PriorityScore,
   type PriorityWeights,
@@ -33,18 +33,12 @@ export function enrichTask(
   task: Task,
   experimentsById: Record<string, ExperimentSummary>,
   weights: PriorityWeights,
+  referenceDate: string,
 ): EnrichedPlanningTask {
   const template = getTaskTemplate(task.taskTemplateId);
   const expId = task.experimentIds[0];
   const experiment = expId ? (experimentsById[expId] ?? null) : null;
-  const ctx = buildTaskPriorityContext(
-    experiment?.priority ?? 0,
-    experiment?.category ?? "rd",
-    {
-      customerTier: experiment?.category === "production" ? 4 : 2,
-      createdAt: task.createdAt,
-    },
-  );
+  const ctx = buildPlanningPriorityContext(task, experiment, referenceDate);
 
   return {
     task,
@@ -69,21 +63,23 @@ export function useExperimentsById() {
 
 export function useEnrichedTask(task: Task | null): EnrichedPlanningTask | null {
   const weights = usePlanningWeights();
+  const referenceDate = usePlanningStore((s) => s.currentDay);
   const experimentsById = useExperimentsById();
 
   return useMemo(() => {
     if (!task) return null;
-    return enrichTask(task, experimentsById, weights);
-  }, [task, experimentsById, weights]);
+    return enrichTask(task, experimentsById, weights, referenceDate);
+  }, [task, experimentsById, weights, referenceDate]);
 }
 
 export function useEnrichedTasks(tasks: Task[]): EnrichedPlanningTask[] {
   const weights = usePlanningWeights();
+  const referenceDate = usePlanningStore((s) => s.currentDay);
   const experimentsById = useExperimentsById();
 
   return useMemo(
-    () => tasks.map((t) => enrichTask(t, experimentsById, weights)),
-    [tasks, experimentsById, weights],
+    () => tasks.map((t) => enrichTask(t, experimentsById, weights, referenceDate)),
+    [tasks, experimentsById, weights, referenceDate],
   );
 }
 

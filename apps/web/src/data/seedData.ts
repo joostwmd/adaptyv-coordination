@@ -10,11 +10,11 @@ import type { ContextItem } from "@/components/context/types";
 
 // Seed clients - expanded from existing mock data
 export const seedClients: ClientRef[] = [
-  { id: "d4f8808e-f30f-542d-b533-d26b132034ae", name: "Fredy Therapeutics" },
-  { id: "client-acme", name: "Acme Biologics" },
-  { id: "client-biopharma", name: "BioPharma Solutions" },
-  { id: "client-gentech", name: "GenTech Innovations" },
-  { id: "client-medcore", name: "MedCore Research" },
+  { id: "d4f8808e-f30f-542d-b533-d26b132034ae", name: "Fredy Therapeutics", tier: 5 },
+  { id: "client-acme", name: "Acme Biologics", tier: 4 },
+  { id: "client-biopharma", name: "BioPharma Solutions", tier: 3 },
+  { id: "client-gentech", name: "GenTech Innovations", tier: 2 },
+  { id: "client-medcore", name: "MedCore Research", tier: 2 },
 ];
 
 // Seed staff - expanded from existing mock data
@@ -42,6 +42,7 @@ export const seedExperiments: ExperimentDetail[] = [
     typeLabel: "Affinity Characterization",
     methodName: "SPR",
     category: "rd",
+    dueDate: "2026-06-28",
     client: seedClients[0],
     status: {
       name: "Data analysis and validation",
@@ -71,6 +72,7 @@ export const seedExperiments: ExperimentDetail[] = [
     typeLabel: "Thermostability",
     methodName: "BLI",
     category: "production",
+    dueDate: "2026-06-04",
     client: seedClients[0],
     status: {
       name: "In production",
@@ -94,6 +96,7 @@ export const seedExperiments: ExperimentDetail[] = [
     typeLabel: "Binding Screening",
     methodName: "DSF",
     category: "rd",
+    dueDate: "2026-06-18",
     client: seedClients[0],
     status: {
       name: "Waiting for materials",
@@ -117,6 +120,7 @@ export const seedExperiments: ExperimentDetail[] = [
     typeLabel: "Expression",
     methodName: "E. coli BL21",
     category: "rd",
+    dueDate: "2026-07-05",
     client: seedClients[1],
     status: {
       name: "Active",
@@ -146,6 +150,7 @@ export const seedExperiments: ExperimentDetail[] = [
     typeLabel: "Epitope Binning",
     methodName: "Competitive ELISA",
     category: "rd",
+    dueDate: "2026-06-12",
     client: seedClients[2],
     status: {
       name: "Sample prep",
@@ -169,6 +174,7 @@ export const seedExperiments: ExperimentDetail[] = [
     typeLabel: "Thermostability",
     methodName: "DSC/DLS",
     category: "production",
+    dueDate: "2026-06-08",
     client: seedClients[3],
     status: {
       name: "Completed",
@@ -192,6 +198,7 @@ export const seedExperiments: ExperimentDetail[] = [
     typeLabel: "Binding Screening",
     methodName: "BLI Array",
     category: "rd",
+    dueDate: "2026-07-15",
     client: seedClients[4],
     status: {
       name: "Planning",
@@ -215,6 +222,7 @@ export const seedExperiments: ExperimentDetail[] = [
     typeLabel: "Expression",
     methodName: "E. coli BL21",
     category: "rd",
+    dueDate: "2026-06-22",
     client: seedClients[0],
     status: { name: "Active", color: "#3b82f6" },
     runs: [
@@ -235,6 +243,7 @@ export const seedExperiments: ExperimentDetail[] = [
     typeLabel: "Binding Screening",
     methodName: "DSF",
     category: "rd",
+    dueDate: "2026-06-10",
     client: seedClients[1],
     status: { name: "Planning", color: "#6b7280" },
     runs: [
@@ -255,6 +264,7 @@ export const seedExperiments: ExperimentDetail[] = [
     typeLabel: "Affinity Characterization",
     methodName: "SPR",
     category: "rd",
+    dueDate: "2026-06-14",
     client: seedClients[4],
     status: { name: "Sample prep", color: "#f59e0b" },
     runs: [
@@ -275,6 +285,7 @@ export const seedExperiments: ExperimentDetail[] = [
     typeLabel: "Binding Screening",
     methodName: "BLI",
     category: "rd",
+    dueDate: "2026-06-07",
     client: seedClients[2],
     status: { name: "Waiting for materials", color: "#eab308" },
     runs: [
@@ -294,6 +305,7 @@ export const seedExperiments: ExperimentDetail[] = [
     type: "expression",
     typeLabel: "Expression",
     category: "production",
+    dueDate: "2026-06-05",
     client: seedClients[3],
     status: { name: "In production", color: "#10b981" },
     runs: [
@@ -314,6 +326,7 @@ export const seedExperiments: ExperimentDetail[] = [
     typeLabel: "Thermostability",
     methodName: "BLI",
     category: "production",
+    dueDate: "2026-06-03",
     client: seedClients[0],
     status: { name: "In production", color: "#10b981" },
     runs: [

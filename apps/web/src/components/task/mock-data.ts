@@ -20,6 +20,7 @@ export const MOCK_EXPERIMENTS: ExperimentDetail[] = [
     client: {
       id: "d4f8808e-f30f-542d-b533-d26b132034ae",
       name: "Fredy Therapeutics",
+      tier: 5,
     },
     status: {
       name: "Data analysis and validation",
@@ -52,6 +53,7 @@ export const MOCK_EXPERIMENTS: ExperimentDetail[] = [
     client: {
       id: "client-fredy",
       name: "Fredy Therapeutics",
+      tier: 5,
     },
     status: {
       name: "In production",
@@ -77,6 +79,7 @@ export const MOCK_EXPERIMENTS: ExperimentDetail[] = [
     client: {
       id: "client-fredy",
       name: "Fredy Therapeutics",
+      tier: 5,
     },
     status: {
       name: "Waiting for materials",

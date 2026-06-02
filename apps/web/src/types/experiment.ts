@@ -37,9 +37,11 @@ export type ExperimentStatus = {
   color?: string;
 };
 
+/** Client SLA tier for planning priority (1 = lowest, 5 = highest). */
 export type ClientRef = {
   id: string;
   name: string;
+  tier: number;
 };
 
 export type ExperimentListItem = {
@@ -51,6 +53,8 @@ export type ExperimentListItem = {
   typeLabel: string;
   methodName?: string;
   category: ExperimentCategory;
+  /** ISO date (YYYY-MM-DD) for ETA / deadline proximity scoring. */
+  dueDate?: string;
   client: ClientRef;
   status: ExperimentStatus;
 };
@@ -65,6 +69,7 @@ export type ExperimentSummary = Pick<
   | "typeLabel"
   | "methodName"
   | "category"
+  | "dueDate"
   | "client"
   | "status"
 >;
