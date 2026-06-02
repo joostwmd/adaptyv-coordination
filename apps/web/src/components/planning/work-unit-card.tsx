@@ -50,6 +50,21 @@ export function WorkUnitCard({
 
   const isSuggested = variant === "suggested";
   const statusConfig = WORK_UNIT_STATUS_CONFIG[workUnit.status];
+  const isSingleTaskSuggested = isSuggested && view.tasks.length === 1;
+
+  const taskList = view.enrichedTasks.map(({ task }) =>
+    renderTask ? (
+      <div key={task.id}>{renderTask(task)}</div>
+    ) : (
+      <TaskCard
+        key={task.id}
+        task={task}
+        onOpen={onTaskOpen}
+        variant="compact"
+        layoutId={isSingleTaskSuggested ? undefined : `task-${task.id}`}
+      />
+    ),
+  );
 
   const card = (
     <Card
@@ -94,41 +109,36 @@ export function WorkUnitCard({
       </CardHeader>
 
       <CardContent className="pt-0 pb-3">
-        <motion.div layoutRoot>
-          <Collapsible open={open} onOpenChange={setOpen}>
-          <CollapsibleTrigger
-            className={cn(
-              "flex w-full items-center justify-between rounded-md border px-3 py-2.5 text-xs font-medium transition-colors",
-              isSuggested
-                ? "border-dashed border-muted-foreground/30 bg-muted/20 hover:bg-muted/35"
-                : "bg-muted/30 hover:bg-muted/50",
-            )}
-          >
-            <span>
-              {open ? "Hide" : "Show"} {view.tasks.length} task
-              {view.tasks.length === 1 ? "" : "s"}
-            </span>
-            <ChevronDownIcon
-              className={cn("size-4 shrink-0 transition-transform", open && "rotate-180")}
-            />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-2 flex flex-col gap-2">
-            {view.enrichedTasks.map(({ task }) =>
-              renderTask ? (
-                <div key={task.id}>{renderTask(task)}</div>
-              ) : (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  onOpen={onTaskOpen}
-                  variant="compact"
-                  layoutId={`task-${task.id}`}
+        {isSingleTaskSuggested ? (
+          <div className="flex flex-col gap-2">{taskList}</div>
+        ) : (
+          <motion.div layoutRoot>
+            <Collapsible open={open} onOpenChange={setOpen}>
+              <CollapsibleTrigger
+                className={cn(
+                  "flex w-full items-center justify-between rounded-md border px-3 py-2.5 text-xs font-medium transition-colors",
+                  isSuggested
+                    ? "border-dashed border-muted-foreground/30 bg-muted/20 hover:bg-muted/35"
+                    : "bg-muted/30 hover:bg-muted/50",
+                )}
+              >
+                <span>
+                  {open ? "Hide" : "Show"} {view.tasks.length} task
+                  {view.tasks.length === 1 ? "" : "s"}
+                </span>
+                <ChevronDownIcon
+                  className={cn(
+                    "size-4 shrink-0 transition-transform",
+                    open && "rotate-180",
+                  )}
                 />
-              ),
-            )}
-          </CollapsibleContent>
-        </Collapsible>
-        </motion.div>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-2 flex flex-col gap-2 overflow-hidden">
+                {taskList}
+              </CollapsibleContent>
+            </Collapsible>
+          </motion.div>
+        )}
       </CardContent>
     </Card>
   );

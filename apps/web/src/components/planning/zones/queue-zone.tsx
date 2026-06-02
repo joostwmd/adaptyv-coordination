@@ -203,7 +203,7 @@ export function QueueZone({ onTaskOpen }: QueueZoneProps) {
               <p className="text-xs text-muted-foreground">No solo ready tasks.</p>
             ) : (
               board.queue.alone.map((task) => (
-                <AnimatedBoardItem key={task.id} id={task.id} layoutId={`task-${task.id}`}>
+                <AnimatedBoardItem key={task.id} id={task.id} layoutId={`solo-${task.id}`}>
                   <PlanningSuggestionShell
                     label="Solo unit"
                     action={
@@ -221,7 +221,6 @@ export function QueueZone({ onTaskOpen }: QueueZoneProps) {
                       workUnit={createWorkUnitFromTasks([task])}
                       variant="suggested"
                       showEyebrow={false}
-                      defaultExpanded
                       onTaskOpen={onTaskOpen}
                     />
                   </PlanningSuggestionShell>
