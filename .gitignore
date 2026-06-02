@@ -45,8 +45,10 @@ lerna-debug.log*
 coverage
 .nyc_output
 
+
 # Misc
 *.tgz
 .cache
 tmp
 temp
+data
