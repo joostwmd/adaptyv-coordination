@@ -14,7 +14,7 @@ import {
   PriorityControlsTrigger,
 } from "./priority-controls-panel";
 import { TaskDetailDialog } from "./task-detail-dialog";
-import { BlockedFailedDrawer } from "./zones/blocked-failed-drawer";
+import { NeedsAttentionDrawer } from "./zones/needs-attention-drawer";
 
 function PlanningStats() {
   const tasks = usePlanningTasks();
@@ -67,7 +67,7 @@ export function PlanningScreen() {
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <PriorityControlsTrigger open={priorityOpen} />
-              <BlockedFailedDrawer onTaskOpen={setSelectedTask} />
+              <NeedsAttentionDrawer onTaskOpen={setSelectedTask} />
             </div>
           </header>
         }

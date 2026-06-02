@@ -14,7 +14,7 @@ import { usePlanningBoard } from "@/hooks/usePlanningBoard";
 
 import { TaskCard } from "../task-card";
 
-type BlockedFailedDrawerProps = {
+type NeedsAttentionDrawerProps = {
   onTaskOpen: (task: Task) => void;
 };
 
@@ -46,7 +46,7 @@ function TaskSection({
   );
 }
 
-export function BlockedFailedDrawer({ onTaskOpen }: BlockedFailedDrawerProps) {
+export function NeedsAttentionDrawer({ onTaskOpen }: NeedsAttentionDrawerProps) {
   const board = usePlanningBoard();
   const totalCount =
     board.blockedTasks.length +
@@ -57,7 +57,7 @@ export function BlockedFailedDrawer({ onTaskOpen }: BlockedFailedDrawerProps) {
     <Drawer direction="right">
       <DrawerTrigger asChild>
         <Button type="button" variant="outline" size="sm" className="shrink-0">
-          Blocked / failed
+          Needs attention
           {totalCount > 0 ? (
             <Badge variant="secondary" className="ml-1.5 px-1.5 py-0 text-[10px]">
               {totalCount}
@@ -67,8 +67,10 @@ export function BlockedFailedDrawer({ onTaskOpen }: BlockedFailedDrawerProps) {
       </DrawerTrigger>
       <DrawerContent className="flex h-full max-h-none flex-col data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md">
         <DrawerHeader className="shrink-0 border-b pb-3">
-          <DrawerTitle>Blocked / failed</DrawerTitle>
-          <DrawerDescription>Tasks out of the forward planning path</DrawerDescription>
+          <DrawerTitle>Tasks needing attention</DrawerTitle>
+          <DrawerDescription>
+            Tasks out of the forward planning path — blocked, waiting, or reruns
+          </DrawerDescription>
         </DrawerHeader>
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-6 pt-4">
           <div className="space-y-6">
@@ -78,12 +80,12 @@ export function BlockedFailedDrawer({ onTaskOpen }: BlockedFailedDrawerProps) {
               onTaskOpen={onTaskOpen}
             />
             <TaskSection
-              title="Waiting upstream"
+              title="Waiting on dependencies"
               tasks={board.waitingTasks}
               onTaskOpen={onTaskOpen}
             />
             <TaskSection
-              title="Failed / reruns"
+              title="Reruns"
               tasks={board.failedTasks}
               onTaskOpen={onTaskOpen}
             />
