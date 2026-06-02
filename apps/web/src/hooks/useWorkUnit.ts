@@ -2,6 +2,7 @@ import { useMemo } from "react";
 
 import type { PriorityScore } from "@/domain/priority";
 import type { Task } from "@/domain/task/types";
+import { computeWorkUnitPriority } from "@/domain/work-unit";
 import type { WorkUnit } from "@/domain/work-unit/types";
 import {
   countExperimentsInWorkUnit,
@@ -12,7 +13,7 @@ import {
   useExperimentsById,
   type EnrichedPlanningTask,
 } from "@/hooks/usePlanningTask";
-import { usePlanningStore } from "@/stores/usePlanningStore";
+import { usePlanningStore, usePlanningWeights } from "@/stores/usePlanningStore";
 
 export type EnrichedWorkUnit = {
   workUnit: WorkUnit;
@@ -28,6 +29,7 @@ export type EnrichedWorkUnit = {
 export function useWorkUnitView(workUnit: WorkUnit | null): EnrichedWorkUnit | null {
   const allTasks = usePlanningStore((s) => s.tasks);
   const experimentsById = useExperimentsById();
+  const weights = usePlanningWeights();
   const getWorkUnitPriority = usePlanningStore((s) => s.getWorkUnitPriority);
 
   const tasks = useMemo(() => {
@@ -40,9 +42,11 @@ export function useWorkUnitView(workUnit: WorkUnit | null): EnrichedWorkUnit | n
   return useMemo(() => {
     if (!workUnit) return null;
 
-    const priority = getWorkUnitPriority(workUnit.id);
-    const driver = priority
-      ? enrichedTasks.find((e) => e.task.id === priority.driverTaskId)
+    const workUnitPriority =
+      getWorkUnitPriority(workUnit.id) ??
+      computeWorkUnitPriority(workUnit, tasks, experimentsById, weights);
+    const driver = workUnitPriority
+      ? enrichedTasks.find((e) => e.task.id === workUnitPriority.driverTaskId)
       : undefined;
 
     return {
@@ -54,5 +58,12 @@ export function useWorkUnitView(workUnit: WorkUnit | null): EnrichedWorkUnit | n
       priority: driver?.priority ?? null,
       driverTaskTitle: driver?.title ?? null,
     };
-  }, [workUnit, tasks, enrichedTasks, experimentsById, getWorkUnitPriority]);
+  }, [
+    workUnit,
+    tasks,
+    enrichedTasks,
+    experimentsById,
+    weights,
+    getWorkUnitPriority,
+  ]);
 }
