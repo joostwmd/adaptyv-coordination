@@ -2,8 +2,8 @@ import { Button } from "@adaptyv-coordination/ui/components/button";
 
 import type { Ticket } from "@/domain/ticket/types";
 import { useTicketExecution } from "@/hooks/useTicketExecution";
-import { TicketCard } from "@/components/planning/ticket-card";
-import { PlanningSuggestionShell } from "@/components/planning/primitives/planning-suggestion-shell";
+import { TicketCard } from "@/features/planning";
+import { PlanningSuggestionShell } from "@/features/planning/suggestion-shell";
 
 import { TicketExecutionStatusBadge } from "./ticket-execution-status";
 

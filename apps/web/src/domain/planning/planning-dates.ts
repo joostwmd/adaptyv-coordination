@@ -50,6 +50,7 @@ export function stepPlanningDay(day: string, delta: number): string {
   return clampPlanningDay(toPlanningDayString(next));
 }
 
+export function isPlanningDayInRange(day: string): boolean {
   const { minDay, maxDay } = getPlanningDayBounds();
   return day >= minDay && day <= maxDay;
 }

@@ -11,8 +11,8 @@ import type { Ticket } from "@/domain/ticket/types";
 import type { WorkUnit } from "@/domain/work-unit/types";
 import { usePlanningBoardStore } from "@/stores/planning/usePlanningBoardStore";
 
-import { TicketCard } from "../ticket-card";
-import { WorkUnitCard } from "../work-unit-card";
+import { TicketCard } from "@/features/planning/cards/ticket-card";
+import { WorkUnitCard } from "@/features/planning/cards/work-unit-card";
 import { isPlanningDragData } from "./types";
 
 type PlanningDndProviderProps = {

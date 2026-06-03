@@ -1,6 +1,6 @@
 import type { StaffMember } from "@/types";
 
-import { StaffAvatar } from "@/components/task/primitives/staff-avatar";
+import { StaffAvatar } from "@/shared/staff/staff-avatar";
 
 type AssigneesRowProps = {
   assignees: StaffMember[];

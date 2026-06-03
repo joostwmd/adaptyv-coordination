@@ -19,7 +19,7 @@ import type {
 import {
   formatExperimentStatus,
   getExperimentStatusBadgeVariant,
-} from "@/components/experiment/experiment-run-status";
+} from "@/entities/experiment/experiment-run-status";
 import { EXPERIMENT_TYPE_LABEL, EXPERIMENT_CATEGORY_LABEL } from "@/types/experiment";
 
 type RunStats = {

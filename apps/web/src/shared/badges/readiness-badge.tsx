@@ -1,7 +1,7 @@
 import { Badge } from "@adaptyv-coordination/ui/components/badge";
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
-import { TASK_READINESS_CONFIG } from "./constants";
+import { TASK_READINESS_CONFIG } from "@/shared/badges/constants";
 import type { TaskReadiness } from "@/domain/task/types";
 
 type ReadinessBadgeProps = {

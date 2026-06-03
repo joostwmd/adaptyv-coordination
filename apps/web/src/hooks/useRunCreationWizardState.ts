@@ -17,7 +17,7 @@ import type { ExperimentDetail } from "@/types";
 import {
   RUN_CREATION_WIZARD_STEPS,
   type RunCreationWizardStep,
-} from "@/components/experiment/run-creation/constants";
+} from "@/features/experiments/detail/run-creation/constants";
 
 type UseRunCreationWizardStateOptions = {
   experiment: ExperimentDetail;

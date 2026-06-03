@@ -3,8 +3,8 @@ import { cn } from "@adaptyv-coordination/ui/lib/utils";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
 
-import { CollapsibleTaskList } from "@/components/task/collapsible-task-list";
-import type { TaskReferenceKey } from "@/components/task/task-references";
+import { CollapsibleTaskList } from "@/entities/task/collapsible-task-list";
+import type { TaskReferenceKey } from "@/entities/task/task-references";
 import { useTasksByRun } from "@/hooks/useTasks";
 import type { ExperimentRunSummary, ExperimentSummary, Task } from "@/types";
 import { getTaskDisplayName } from "@/types/task";

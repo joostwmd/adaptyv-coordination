@@ -5,7 +5,7 @@ import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
 import type { Task } from "@/domain/task/types";
 
-import { TaskCard } from "@/components/task/task-card";
+import { TaskCard } from "@/entities/task/task-card";
 import type { PlanningDragData, SiblingDropData } from "./types";
 
 type DraggableTaskRowProps = {

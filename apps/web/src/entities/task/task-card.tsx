@@ -5,8 +5,8 @@ import { useMemo } from "react";
 import {
   ExperimentCodeHover,
   ExperimentRunHoverCard,
-} from "@/components/experiment";
-import { TaskCardCell } from "@/components/planning/task-card-cell";
+} from "@/entities/experiment";
+import { TaskCardCell } from "@/shared/layout/task-card-cell";
 import { useEnrichedTask } from "@/hooks/usePlanningTask";
 import { useExperimentById } from "@/stores/usePrototypeStore";
 import type { ExperimentRunSummary, ExperimentSummary, Task } from "@/types";

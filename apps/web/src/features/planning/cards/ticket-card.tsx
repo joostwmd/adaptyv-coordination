@@ -10,11 +10,11 @@ import type { Task } from "@/domain/task/types";
 import type { Ticket } from "@/domain/ticket/types";
 import { useTicketView } from "@/hooks/useTicket";
 import { useWorkUnit } from "@/hooks/useWorkUnit";
-import { TicketContent } from "@/components/ticket/ticket-content";
-import { WorkUnitContentHeader } from "@/components/work-unit/work-unit-content-header";
+import { TicketContent } from "@/entities/ticket/ticket-content";
+import { WorkUnitContentHeader } from "@/entities/work-unit/work-unit-content-header";
 import { useWorkUnitView } from "@/hooks/useWorkUnit";
 
-import { PriorityIndicator } from "./priority-indicator";
+import { PriorityIndicator } from "@/shared/badges/priority-indicator";
 
 type TicketCardProps = {
   ticket: Ticket;

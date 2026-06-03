@@ -1,7 +1,7 @@
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
-import { ScheduledTime } from "@/components/planning/primitives/scheduled-time";
-import { StaffAvatar } from "@/components/task/primitives/staff-avatar";
+import { ScheduledTime } from "@/shared/layout/scheduled-time";
+import { StaffAvatar } from "@/shared/staff/staff-avatar";
 import type { Ticket } from "@/domain/ticket/types";
 import type { StaffMember } from "@/types";
 

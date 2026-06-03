@@ -1,4 +1,4 @@
-import { MetaRow } from "@/components/context/primitives/meta-row";
+import { MetaRow } from "@/features/context/primitives/meta-row";
 import type { ExperimentRunSummary, ExperimentSummary } from "@/types";
 
 type ExperimentRunHoverPreviewProps = {

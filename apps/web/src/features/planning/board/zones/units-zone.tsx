@@ -2,13 +2,13 @@ import { useMemo } from "react";
 import { Button } from "@adaptyv-coordination/ui/components/button";
 
 import { getOverflowByUnitId } from "@/domain/planning/overflow";
-import { usePlanningBoardContext } from "@/components/planning/planning-board-context";
+import { usePlanningBoardContext } from "@/features/planning/board/planning-board-context";
 import { usePlanningBoardStore } from "@/stores/planning/usePlanningBoardStore";
 
 import { DraggableWorkUnit } from "../dnd/draggable-work-unit";
 import { SiblingUnitDropZone } from "../dnd/draggable-task-row";
 import { ZoneDropTarget } from "../dnd/zone-drop-target";
-import { PlanningSuggestionShell } from "../primitives/planning-suggestion-shell";
+import { PlanningSuggestionShell } from "@/features/planning/suggestion-shell";
 import {
   AnimatedBoardItem,
   AnimatedBoardList,

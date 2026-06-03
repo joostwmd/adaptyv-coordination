@@ -4,7 +4,7 @@ import { cn } from "@adaptyv-coordination/ui/lib/utils";
 import type { Task } from "@/domain/task/types";
 import type { WorkUnit } from "@/domain/work-unit/types";
 
-import { WorkUnitCard } from "../work-unit-card";
+import { WorkUnitCard } from "@/features/planning/cards/work-unit-card";
 import { DraggableTaskRow } from "./draggable-task-row";
 import type { PlanningDragData } from "./types";
 

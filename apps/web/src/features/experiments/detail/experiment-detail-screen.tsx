@@ -2,18 +2,18 @@ import { Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
-import { ContextCardGrid } from "@/components/context/context-card-grid";
-import { MetaRow } from "@/components/context/primitives/meta-row";
+import { ContextCardGrid } from "@/features/context/context-card-grid";
+import { MetaRow } from "@/features/context/primitives/meta-row";
 import {
   EXPERIMENT_PRIORITY_LABEL,
   formatExperimentPriority,
-} from "@/components/experiment/experiment-priority";
-import { ExperimentRunCard } from "@/components/experiment/experiment-run-card";
+} from "@/entities/experiment/experiment-priority";
+import { ExperimentRunCard } from "@/entities/experiment/experiment-run-card";
 import {
   formatExperimentStatus,
   getExperimentStatusBadgeVariant,
-} from "@/components/experiment/experiment-run-status";
-import { ExperimentRunCreationPanel } from "@/components/experiment/experiment-run-creation-panel";
+} from "@/entities/experiment/experiment-run-status";
+import { ExperimentRunCreationPanel } from "@/features/experiments/detail/experiment-run-creation-panel";
 import type { ExperimentDetail } from "@/types/experiment";
 import {
   EXPERIMENT_CATEGORY_LABEL,

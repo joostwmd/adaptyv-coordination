@@ -1,4 +1,4 @@
-import { ExperimentRunHoverCard } from "@/components/experiment/experiment-run-hover-card";
+import { ExperimentRunHoverCard } from "@/entities/experiment/experiment-run-hover-card";
 import { useExperimentById } from "@/stores/usePrototypeStore";
 
 type ExperimentRunLinkProps = {

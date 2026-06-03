@@ -8,14 +8,14 @@ import {
 
 import { previewPoolGroup, previewSoloUnit } from "@/domain/planning/queue-actions";
 import { useExperimentsById } from "@/hooks/useExperimentsById";
-import { usePlanningBoardContext } from "@/components/planning/planning-board-context";
+import { usePlanningBoardContext } from "@/features/planning/board/planning-board-context";
 import { usePlanningBoardStore } from "@/stores/planning/usePlanningBoardStore";
 import { usePlanningPreferencesStore } from "@/stores/planning/usePlanningPreferencesStore";
 
-import { PlanningSuggestionShell } from "../primitives/planning-suggestion-shell";
+import { PlanningSuggestionShell } from "@/features/planning/suggestion-shell";
 import { ZoneDropTarget } from "../dnd/zone-drop-target";
-import { WorkUnitCard } from "../work-unit-card";
-import { TaskCard } from "@/components/task/task-card";
+import { WorkUnitCard } from "@/features/planning/cards/work-unit-card";
+import { TaskCard } from "@/entities/task/task-card";
 import {
   AnimatedBoardItem,
   AnimatedBoardList,

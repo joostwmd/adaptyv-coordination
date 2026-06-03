@@ -1,5 +1,5 @@
 import { Badge } from "@adaptyv-coordination/ui/components/badge";
-import { usePlanningBoardContext } from "@/components/planning/planning-board-context";
+import { usePlanningBoardContext } from "@/features/planning/board/planning-board-context";
 
 import { DraggableTicket } from "../dnd/draggable-ticket";
 import { KanbanDropCell } from "../dnd/kanban-drop-cell";

@@ -3,7 +3,7 @@
  * Scenario index: queue pool/attach/alone, sibling units, overflow split, multi-day kanban,
  * sent/done/failed tickets, all blocked reasons, reruns, plate gaps, experiment run statuses.
  */
-import type { ContextItem } from "@/components/context/types";
+import type { ContextItem } from "@/features/context/types";
 import type { BlockedReason } from "@/domain/blocked-reason";
 import {
   classifyReadyTasks,

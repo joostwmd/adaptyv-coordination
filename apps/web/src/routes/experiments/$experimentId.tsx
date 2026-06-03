@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
-import { ExperimentDetailScreen } from "@/components/experiment";
+import { ExperimentDetailScreen } from "@/features/experiments";
 import { useExperiment } from "@/hooks/useExperiments";
 
 export const Route = createFileRoute("/experiments/$experimentId")({

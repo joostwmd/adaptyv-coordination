@@ -1,6 +1,6 @@
 import type { StaffMember } from "@/types";
 
-import { StaffAvatar } from "./staff-avatar";
+import { StaffAvatar } from "@/shared/staff/staff-avatar";
 
 type AssigneeRowProps = {
   assignee: StaffMember;

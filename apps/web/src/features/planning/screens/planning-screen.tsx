@@ -1,13 +1,13 @@
 import { useState } from "react";
 
-import { PlanningBoard } from "./planning-board";
-import { PlanningBoardProvider } from "./planning-board-context";
-import { PlanningStats } from "./planning-stats";
+import { PlanningBoard } from "../board/planning-board";
+import { PlanningBoardProvider } from "../board/planning-board-context";
+import { PlanningStats } from "../board/planning-stats";
 import {
   PriorityControlsCollapsible,
   PriorityControlsTrigger,
-} from "./priority-controls-panel";
-import { NeedsAttentionDrawer } from "./zones/needs-attention-drawer";
+} from "../priority/priority-controls-panel";
+import { NeedsAttentionDrawer } from "../board/zones/needs-attention-drawer";
 
 export function PlanningScreen() {
   const [priorityOpen, setPriorityOpen] = useState(false);

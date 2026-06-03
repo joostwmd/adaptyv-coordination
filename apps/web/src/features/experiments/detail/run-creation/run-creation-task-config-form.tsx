@@ -4,7 +4,7 @@ import { getDisplayParamFields } from "@/domain/task-template/param-schema";
 import type { RunTaskDraft } from "@/domain/run-creation/draft";
 import type { SelectableRunStep } from "@/domain/run-creation/types";
 
-import { PlateStockPicker } from "@/components/plate/plate-stock-picker";
+import { PlateStockPicker } from "@/features/experiments/detail/run-creation/plate-stock-picker";
 import { RunCreationParamField } from "./run-creation-param-field";
 
 type RunCreationTaskConfigFormProps = {

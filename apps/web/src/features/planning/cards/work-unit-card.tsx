@@ -10,11 +10,11 @@ import { motion } from "motion/react";
 import type { Task } from "@/domain/task/types";
 import type { WorkUnit } from "@/domain/work-unit/types";
 import { useWorkUnitView } from "@/hooks/useWorkUnit";
-import { TaskCard } from "@/components/task/task-card";
-import { WorkUnitContent } from "@/components/work-unit/work-unit-content";
-import { WorkUnitContentHeader } from "@/components/work-unit/work-unit-content-header";
+import { TaskCard } from "@/entities/task/task-card";
+import { WorkUnitContent } from "@/entities/work-unit/work-unit-content";
+import { WorkUnitContentHeader } from "@/entities/work-unit/work-unit-content-header";
 
-import { PriorityIndicator } from "./priority-indicator";
+import { PriorityIndicator } from "@/shared/badges/priority-indicator";
 
 type WorkUnitCardProps = {
   workUnit: WorkUnit;

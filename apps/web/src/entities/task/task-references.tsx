@@ -5,11 +5,11 @@ import { cn } from "@adaptyv-coordination/ui/lib/utils";
 import {
   ExperimentHoverCard,
   ExperimentRunHoverCard,
-} from "@/components/experiment";
-import { TicketAssignmentRow } from "@/components/ticket/ticket-assignment-row";
-import { TicketDetailDialog } from "@/components/ticket/ticket-detail-dialog";
-import { WorkUnitChip } from "@/components/work-unit/work-unit-chip";
-import { WorkUnitHoverCard } from "@/components/work-unit/work-unit-hover-card";
+} from "@/entities/experiment";
+import { TicketAssignmentRow } from "@/entities/ticket/ticket-assignment-row";
+import { TicketDetailDialog } from "@/entities/ticket/ticket-detail-dialog";
+import { WorkUnitChip } from "@/entities/work-unit/work-unit-chip";
+import { WorkUnitHoverCard } from "@/entities/work-unit/work-unit-hover-card";
 import { useStaffMember } from "@/hooks/useStaff";
 import { useTicketByWorkUnit } from "@/hooks/useTicket";
 import { useWorkUnit } from "@/hooks/useWorkUnit";

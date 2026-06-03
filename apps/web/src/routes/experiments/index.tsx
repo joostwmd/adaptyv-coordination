@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { ExperimentsTable } from "@/components/experiments/experiments-table";
+import { ExperimentsTable } from "@/features/experiments";
 
 export const Route = createFileRoute("/experiments/")({
   component: ExperimentsIndexPage,

@@ -3,7 +3,7 @@ import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
 import type { Ticket } from "@/domain/ticket/types";
 
-import { TicketCard } from "../ticket-card";
+import { TicketCard } from "@/features/planning/cards/ticket-card";
 import type { PlanningDragData } from "./types";
 
 type DraggableTicketProps = {

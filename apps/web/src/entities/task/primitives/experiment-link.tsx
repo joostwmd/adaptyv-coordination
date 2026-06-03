@@ -1,6 +1,6 @@
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
-import { ExperimentCodeHover } from "@/components/experiment/experiment-code-hover";
+import { ExperimentCodeHover } from "@/entities/experiment/experiment-code-hover";
 import type { ExperimentSummary } from "@/types";
 
 type ExperimentLinkProps = {

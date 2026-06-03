@@ -1,11 +1,11 @@
 import { RelativeTimeCard } from "@adaptyv-coordination/ui/components/relative-time-card";
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
-import { ParameterSummary } from "@/components/planning/parameter-summary";
-import { RequiredPlatesSummary } from "@/components/task/required-plates-summary";
-import { PriorityIndicator } from "@/components/planning/priority-indicator";
-import { ReadinessBadge } from "@/components/planning/readiness-badge";
-import { TaskTypeBadge } from "@/components/planning/task-type-badge";
+import { ParameterSummary } from "@/shared/summaries/parameter-summary";
+import { RequiredPlatesSummary } from "@/entities/task/required-plates-summary";
+import { PriorityIndicator } from "@/shared/badges/priority-indicator";
+import { ReadinessBadge } from "@/shared/badges/readiness-badge";
+import { TaskTypeBadge } from "@/shared/badges/task-type-badge";
 import { BLOCKED_REASON_LABEL } from "@/domain/blocked-reason";
 import { useEnrichedTask } from "@/hooks/usePlanningTask";
 import type {

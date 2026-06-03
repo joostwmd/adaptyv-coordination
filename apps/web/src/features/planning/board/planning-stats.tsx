@@ -8,7 +8,7 @@ import {
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
 import { formatPlanningDayLabel } from "@/domain/planning/display";
-import { usePlanningBoardContext } from "@/components/planning/planning-board-context";
+import { usePlanningBoardContext } from "@/features/planning/board/planning-board-context";
 import {
   usePlanningBoardStore,
   usePlanningTasks,

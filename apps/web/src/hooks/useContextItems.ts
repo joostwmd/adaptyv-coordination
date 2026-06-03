@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
 import { usePrototypeStore, useContextItems as useContextItemsStore, useContextItemsByType } from '@/stores/usePrototypeStore';
-import type { ContextItem } from '@/components/context/types';
+import type { ContextItem } from '@/features/context/types';
 
 // Main context items hook with actions
 export const useContextItems = () => {

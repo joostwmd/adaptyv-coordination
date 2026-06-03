@@ -1,10 +1,10 @@
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 import type { ReactNode } from "react";
 
-import { ContentSection } from "@/components/planning/primitives/content-section";
-import { CollapsibleTaskList } from "@/components/task/collapsible-task-list";
-import type { TaskReferenceKey } from "@/components/task/task-references";
-import { WorkUnitContent } from "@/components/work-unit/work-unit-content";
+import { ContentSection } from "@/shared/layout/content-section";
+import { CollapsibleTaskList } from "@/entities/task/collapsible-task-list";
+import type { TaskReferenceKey } from "@/entities/task/task-references";
+import { WorkUnitContent } from "@/entities/work-unit/work-unit-content";
 import type { Ticket } from "@/domain/ticket/types";
 import { useTicketView } from "@/hooks/useTicket";
 import { useWorkUnit } from "@/hooks/useWorkUnit";

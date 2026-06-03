@@ -6,7 +6,7 @@ import {
 import type { WorkUnit } from "@/domain/work-unit/types";
 import type { Task } from "@/types";
 
-import { ParameterSummary } from "@/components/planning/parameter-summary";
+import { ParameterSummary } from "@/shared/summaries/parameter-summary";
 
 export type WorkUnitParameterSummaryProps = {
   workUnit: WorkUnit;

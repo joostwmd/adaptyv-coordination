@@ -7,7 +7,7 @@ import type {
   ExperimentRunSummary,
 } from "@/types";
 import { deriveRunTaskStats } from "@/types/task";
-import type { ContextItem } from "@/components/context/types";
+import type { ContextItem } from "@/features/context/types";
 import {
   seedClients,
   seedStaff,

@@ -1,7 +1,7 @@
 import { useDroppable } from "@dnd-kit/react";
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
-import type { KanbanDropData } from "../dnd/types";
+import type { KanbanDropData } from "./types";
 
 type KanbanDropCellProps = {
   staffId: string;

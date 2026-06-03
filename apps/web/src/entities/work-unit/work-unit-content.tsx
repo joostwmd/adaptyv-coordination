@@ -1,9 +1,9 @@
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 import type { ReactNode } from "react";
 
-import { ContentSection } from "@/components/planning/primitives/content-section";
-import { CollapsibleTaskList } from "@/components/task/collapsible-task-list";
-import type { TaskReferenceKey } from "@/components/task/task-references";
+import { ContentSection } from "@/shared/layout/content-section";
+import { CollapsibleTaskList } from "@/entities/task/collapsible-task-list";
+import type { TaskReferenceKey } from "@/entities/task/task-references";
 import { aggregateRequiredPlatesForTasks } from "@/domain/plate/requirements";
 import { getTaskTemplate } from "@/domain/task-template/catalog";
 import {

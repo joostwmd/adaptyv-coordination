@@ -1,5 +1,5 @@
 import { useTicketsDayBoard } from "@/hooks/useTicketsDayBoard";
-import { DateStepper } from "@/components/planning/zones/date-stepper";
+import { DateStepper } from "@/features/planning";
 
 import { TicketsStaffRow } from "./tickets-staff-row";
 

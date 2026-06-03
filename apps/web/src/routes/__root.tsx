@@ -3,9 +3,9 @@ import { TooltipProvider } from "@adaptyv-coordination/ui/components/tooltip";
 import type { QueryClient } from "@tanstack/react-query";
 import { HeadContent, Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 
-import Header from "@/components/header";
-import { ThemeProvider } from "@/components/theme-provider";
-import { PrototypeControls } from "@/components/dev/PrototypeControls";
+import Header from "@/app/header";
+import { ThemeProvider } from "@/app/theme-provider";
+import { PrototypeControls } from "@/dev/PrototypeControls";
 import "../index.css";
 
 export interface RouterAppContext {

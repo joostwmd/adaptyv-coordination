@@ -10,9 +10,9 @@ import {
 import { Badge } from "@adaptyv-coordination/ui/components/badge";
 
 import type { Task } from "@/domain/task/types";
-import { usePlanningBoardContext } from "@/components/planning/planning-board-context";
+import { usePlanningBoardContext } from "@/features/planning/board/planning-board-context";
 
-import { TaskCard } from "@/components/task/task-card";
+import { TaskCard } from "@/entities/task/task-card";
 
 function TaskSection({ title, tasks }: { title: string; tasks: Task[] }) {
   return (
