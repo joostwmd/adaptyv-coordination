@@ -67,30 +67,30 @@ export function WorkUnitContent({
       />
 
       {!isCompact && !showTasks ? (
-        <>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border/50 pt-3">
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border/50 pt-3">
+          <PreviewField
+            label="Template"
+            value={getWorkUnitTemplateLabel(workUnit)}
+            className="col-span-2"
+          />
+          {view.driverTaskTitle ? (
             <PreviewField
-              label="Template"
-              value={getWorkUnitTemplateLabel(workUnit)}
+              label="Driver task"
+              value={view.driverTaskTitle}
               className="col-span-2"
             />
-            {view.driverTaskTitle ? (
-              <PreviewField
-                label="Driver task"
-                value={view.driverTaskTitle}
-                className="col-span-2"
-              />
-            ) : null}
-            <PreviewField label="Batch key" value={workUnit.workUnitKey} className="col-span-2" />
-          </dl>
-          
-          <WorkUnitParameterSummary
-            workUnit={workUnit}
-            tasks={view.tasks}
-            variant="flat"
-            showHeading={true}
-          />
-        </>
+          ) : null}
+          <PreviewField label="Batch key" value={workUnit.workUnitKey} className="col-span-2" />
+        </dl>
+      ) : null}
+
+      {!isCompact ? (
+        <WorkUnitParameterSummary
+          workUnit={workUnit}
+          tasks={view.tasks}
+          variant="flat"
+          showHeading={true}
+        />
       ) : null}
 
       {showTasks ? (
