@@ -1,8 +1,6 @@
-import { Badge } from "@adaptyv-coordination/ui/components/badge";
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 import type { ReactNode } from "react";
 
-import { WORK_UNIT_STATUS_CONFIG } from "@/components/planning/constants";
 import type { WorkUnit } from "@/domain/work-unit/types";
 import type { EnrichedWorkUnit } from "@/hooks/useWorkUnit";
 
@@ -21,7 +19,6 @@ export function WorkUnitContentHeader({
   headerEnd,
   className,
 }: WorkUnitContentHeaderProps) {
-  const statusConfig = WORK_UNIT_STATUS_CONFIG[workUnit.status];
   const isCompact = variant === "compact";
 
   return (
@@ -39,12 +36,9 @@ export function WorkUnitContentHeader({
         </h3>
         <p className="font-mono text-[11px] text-muted-foreground">{workUnit.id}</p>
       </div>
-      <div className="flex shrink-0 flex-wrap items-start justify-end gap-1.5">
-        <Badge variant={statusConfig.variant} className="text-[11px] font-normal">
-          {statusConfig.label}
-        </Badge>
-        {headerEnd}
-      </div>
+      {headerEnd ? (
+        <div className="flex shrink-0 items-start justify-end">{headerEnd}</div>
+      ) : null}
     </header>
   );
 }
