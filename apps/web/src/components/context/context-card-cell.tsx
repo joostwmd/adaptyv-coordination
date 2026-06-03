@@ -30,14 +30,14 @@ export function ContextCardCell({ item, onOpen, children }: ContextCardCellProps
   return (
     <Card
       className={cn(
-        "cursor-pointer transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        "h-full cursor-pointer transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
       )}
       onClick={onOpen}
       onKeyDown={handleKeyDown}
       role="button"
       tabIndex={0}
     >
-      <CardHeader>
+      <CardHeader className="shrink-0">
         <div className="flex flex-wrap items-center gap-2">
           <SourceBadge type={item.type} />
           <span className="text-xs text-muted-foreground">
@@ -47,12 +47,14 @@ export function ContextCardCell({ item, onOpen, children }: ContextCardCellProps
         <CardTitle>{getTitle(item)}</CardTitle>
       </CardHeader>
 
-      <CardContent className="flex flex-col gap-3">
+      <CardContent className="flex min-h-0 flex-1 flex-col gap-3">
         <AnnotationBlock text={item.annotation} />
         {children}
       </CardContent>
 
-      <CardFooter className="text-xs text-muted-foreground">View details</CardFooter>
+      <CardFooter className="h-10 shrink-0 items-center px-4 py-0 text-xs text-muted-foreground">
+        View details
+      </CardFooter>
     </Card>
   );
 }

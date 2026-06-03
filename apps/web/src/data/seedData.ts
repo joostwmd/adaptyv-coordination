@@ -717,7 +717,6 @@ export const seedExperiments = applyRunStatsToExperiments(
   seedTasks,
 );
 
-// Seed context items - based on existing mock data
 export const seedContextItems: ContextItem[] = [
   {
     id: "ctx-platform-1",

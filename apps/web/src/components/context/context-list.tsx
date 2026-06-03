@@ -1,33 +1,11 @@
-import { useState } from "react";
-
-import { ContextCard } from "./context-card";
-import { ContextDetailDialog } from "./context-detail-dialog";
+import { ContextCardGrid } from "./context-card-grid";
 import type { ContextItem } from "./types";
 
 type ContextListProps = {
   items: ContextItem[];
 };
 
+/** Single-column layout; prefer {@link ContextCardGrid} for responsive grids. */
 export function ContextList({ items }: ContextListProps) {
-  const [selectedItem, setSelectedItem] = useState<ContextItem | null>(null);
-
-  return (
-    <>
-      <div className="grid gap-3">
-        {items.map((item) => (
-          <ContextCard key={item.id} item={item} onOpen={setSelectedItem} />
-        ))}
-      </div>
-
-      <ContextDetailDialog
-        item={selectedItem}
-        open={selectedItem !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setSelectedItem(null);
-          }
-        }}
-      />
-    </>
-  );
+  return <ContextCardGrid items={items} className="md:grid-cols-1" />;
 }

@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
+import { ContextCardGrid } from "@/components/context/context-card-grid";
 import { MetaRow } from "@/components/context/primitives/meta-row";
 import {
   EXPERIMENT_PRIORITY_LABEL,
@@ -85,6 +86,8 @@ function ExperimentDetailContent({
             ) : null}
           </div>
         </div>
+
+        <ContextCardGrid collapsible defaultOpen />
 
         <div className="rounded-lg border p-6">
           <div className="mb-4 flex items-center justify-between gap-3">
