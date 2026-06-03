@@ -9,6 +9,8 @@ import {
   classifyReadyTasks,
   getUnscheduledWorkUnits,
 } from "@/domain/planning/board-selectors";
+import { resolveWorkflowForExperiment } from "@/domain/run-creation/workflow-steps";
+import type { WorkflowTemplate } from "@/domain/workflow/types";
 import {
   createRerunTasks,
   createStandaloneTask,
@@ -23,12 +25,11 @@ import {
 } from "@/domain/task/scaffold";
 import type { Ticket } from "@/domain/ticket/types";
 import {
+  attachTasksToWorkUnits,
   createWorkUnitFromTasks,
   resetWorkUnitIdCounter,
 } from "@/domain/work-unit";
 import type { WorkUnit } from "@/domain/work-unit/types";
-import { getWorkflowTemplate } from "@/domain/workflow";
-import type { WorkflowTemplate } from "@/domain/workflow/types";
 import type {
   ClientRef,
   ExperimentDetail,
@@ -974,14 +975,11 @@ function getExperiment(id: string): ExperimentDetail {
   return experiment;
 }
 
-function resolveWorkflow(experiment: ExperimentDetail): WorkflowTemplate | undefined {
-  return (
-    getWorkflowTemplate(experiment.type, experiment.methodName) ??
-    getWorkflowTemplate(experiment.type)
-  );
+function resolveWorkflow(experiment: ExperimentDetail) {
+  return resolveWorkflowForExperiment(experiment);
 }
 
-function workflowSteps(workflow: WorkflowTemplate) {
+function workflowSteps(workflow: NonNullable<ReturnType<typeof resolveWorkflowForExperiment>>) {
   return workflow.steps.filter((step) => !step.optional);
 }
 
@@ -1119,25 +1117,6 @@ function buildScheduleDays(referenceDay: string): string[] {
     days.push(`${year}-${month}-${day}`);
   }
   return days;
-}
-
-function attachTasksToWorkUnits(tasks: Task[], workUnits: WorkUnit[]): Task[] {
-  const workUnitByTask = new Map<string, string>();
-  for (const workUnit of workUnits) {
-    for (const taskId of workUnit.taskIds) {
-      workUnitByTask.set(taskId, workUnit.id);
-    }
-  }
-
-  return refreshAllTaskReadiness(
-    tasks.map((task) => {
-      const workUnitId = workUnitByTask.get(task.id);
-      if (workUnitId) {
-        return { ...task, workUnitId, readiness: "batched" as const };
-      }
-      return task;
-    }),
-  );
 }
 
 type PlannedTicket = {

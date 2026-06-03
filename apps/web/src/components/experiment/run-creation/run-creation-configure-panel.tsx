@@ -2,7 +2,8 @@ import { useMemo } from "react";
 
 import { Button } from "@adaptyv-coordination/ui/components/button";
 
-import type { RunCreationDraft, RunTaskDraft } from "@/domain/run-creation/draft";
+import type { RunCreationDraft } from "@/domain/run-creation/draft";
+import { updateTaskDraft, type RunTaskDraft } from "@/domain/run-creation/draft";
 import {
   getTaskConfigStatusForStep,
   isRunCreationDraftComplete,
@@ -54,9 +55,9 @@ export function RunCreationConfigurePanel({
     if (next) onActiveStepKeyChange(next.key);
   };
 
-  const handleDraftChange = (nextDraft: RunTaskDraft) => {
+  const handleDraftChange = (patch: Partial<Pick<RunTaskDraft, "params" | "plateAssignments">>) => {
     if (!activeStep) return;
-    onDraftsChange({ ...drafts, [activeStep.key]: nextDraft });
+    onDraftsChange(updateTaskDraft(drafts, activeStep.key, patch));
   };
 
   if (selectedSteps.length === 0) {

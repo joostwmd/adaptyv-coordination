@@ -1,7 +1,7 @@
 import { RelativeTimeCard } from "@adaptyv-coordination/ui/components/relative-time-card";
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
-import { formatPlanningDayLabel } from "@/domain/planning/planning-dates";
+import { formatPlanningDayLabel } from "@/domain/planning/display";
 
 type ScheduledTimeProps = {
   scheduledDay?: string;

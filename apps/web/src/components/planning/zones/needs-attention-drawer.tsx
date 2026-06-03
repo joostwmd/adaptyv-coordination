@@ -10,7 +10,7 @@ import {
 import { Badge } from "@adaptyv-coordination/ui/components/badge";
 
 import type { Task } from "@/domain/task/types";
-import { usePlanningBoard } from "@/hooks/usePlanningBoard";
+import { usePlanningBoardContext } from "@/components/planning/planning-board-context";
 
 import { TaskCard } from "@/components/task/task-card";
 
@@ -35,11 +35,11 @@ function TaskSection({ title, tasks }: { title: string; tasks: Task[] }) {
 }
 
 export function NeedsAttentionDrawer() {
-  const board = usePlanningBoard();
+  const board = usePlanningBoardContext();
   const totalCount =
     board.blockedTasks.length +
     board.waitingTasks.length +
-    board.failedTasks.length;
+    board.rerunTasks.length;
 
   return (
     <Drawer direction="right">
@@ -64,7 +64,7 @@ export function NeedsAttentionDrawer() {
           <div className="space-y-6">
             <TaskSection title="Blocked" tasks={board.blockedTasks} />
             <TaskSection title="Waiting on dependencies" tasks={board.waitingTasks} />
-            <TaskSection title="Reruns" tasks={board.failedTasks} />
+            <TaskSection title="Reruns" tasks={board.rerunTasks} />
           </div>
         </div>
       </DrawerContent>

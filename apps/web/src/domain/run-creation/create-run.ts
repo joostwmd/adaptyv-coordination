@@ -1,63 +1,28 @@
-import { getPlateStock, getPlateType } from "@/domain/plate/catalog";
-import type { PlateRequirement } from "@/domain/plate/types";
-import { getDefaultParams } from "@/domain/task-template/param-schema";
-import { getTaskTemplate } from "@/domain/task-template/catalog";
-import type { TaskTemplate } from "@/domain/task-template/types";
-import { mockInputSampleCount } from "@/domain/task/input-samples";
+import { nextExperimentRunId } from "@/domain/experiment-run/ids";
+import { defaultRunName, nextRevisionIndex } from "@/domain/experiment-run/revision";
+import { buildTaskFromWorkflowStep } from "@/domain/task/build-from-step";
 import { refreshAllTaskReadiness } from "@/domain/task/readiness";
-import { nextTaskId } from "@/domain/task/scaffold";
 import type { Task } from "@/types";
 import type { ExperimentDetail, ExperimentRunSummary, ExperimentSummary } from "@/types/experiment";
 
-import type { RunCreationDraft, RunTaskDraft } from "./draft";
+import type { RunCreationDraft } from "./draft";
 import type { SelectableRunStep } from "./types";
-
-function requiredPlatesFromDraft(
-  draft: RunTaskDraft,
-  template: TaskTemplate | undefined,
-): PlateRequirement[] | undefined {
-  const typeIds = template?.requiredPlateTypes ?? [];
-  if (typeIds.length === 0) return undefined;
-
-  const plates = typeIds.map((plateTypeId) => {
-    const stockId = draft.plateAssignments[plateTypeId];
-    const stock = stockId ? getPlateStock(stockId) : undefined;
-    const plateType = getPlateType(plateTypeId);
-    return {
-      plateTypeId,
-      plateTypeName: plateType?.name ?? "Unknown plate type",
-      plateCode: stock?.code,
-      materialStockId: stock?.materialStockId,
-      isAssigned: Boolean(stockId),
-      isRequired: true,
-    };
-  });
-
-  return plates.length > 0 ? plates : undefined;
-}
+import { validateRunCreationPayload } from "./validation";
 
 export function suggestDefaultRunName(experiment: ExperimentDetail): string {
-  const revisionIndex =
-    experiment.runs.length > 0
-      ? Math.max(...experiment.runs.map((r) => r.revisionIndex)) + 1
-      : 1;
-  return `Revision ${revisionIndex}`;
+  return defaultRunName(experiment);
 }
 
 export function buildNewRunSummary(
   experiment: ExperimentDetail,
   runName?: string,
 ): ExperimentRunSummary {
-  const revisionIndex =
-    experiment.runs.length > 0
-      ? Math.max(...experiment.runs.map((r) => r.revisionIndex)) + 1
-      : 1;
-
+  const revisionIndex = nextRevisionIndex(experiment.runs);
   const trimmedName = runName?.trim();
-  const name = trimmedName || suggestDefaultRunName(experiment);
+  const name = trimmedName || defaultRunName(experiment);
 
   return {
-    id: `run-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+    id: nextExperimentRunId(),
     name,
     revisionIndex,
     experimentId: experiment.id,
@@ -83,29 +48,16 @@ export function buildTasksFromRunCreation(
     const draft = drafts[step.key];
     if (!draft) continue;
 
-    const template = getTaskTemplate(step.taskTemplateId);
-    const params = {
-      ...(template ? getDefaultParams(template.paramSchema) : {}),
-      ...step.step.paramOverrides,
-      ...draft.params,
-    };
-
-    const id = nextTaskId();
-    const task: Task = {
-      id,
+    const task = buildTaskFromWorkflowStep({
+      experiment,
+      run,
       taskTemplateId: step.taskTemplateId,
-      name: `${step.templateName} — ${experiment.code}`,
-      origin: "template",
-      experimentId: experiment.id,
-      runId: run.id,
-      params,
-      requiredPlates: requiredPlatesFromDraft(draft, template),
-      inputSampleCount: mockInputSampleCount(step.taskTemplateId, id),
-      status: "pending",
+      stepParamOverrides: step.step.paramOverrides,
+      draftParams: draft.params,
+      plateAssignments: draft.plateAssignments,
       dependsOn: previousId ? [previousId] : [],
-      readiness: "ready",
-      createdAt: new Date().toISOString(),
-    };
+      name: `${step.templateName} — ${experiment.code}`,
+    });
 
     tasks.push(task);
     previousId = task.id;
@@ -125,6 +77,9 @@ export function buildRunCreationResult(
   drafts: RunCreationDraft,
   runName?: string,
 ): RunCreationResult | null {
+  const validation = validateRunCreationPayload(selectedSteps, drafts);
+  if (!validation.ok) return null;
+
   const { runs: _runs, ...summary } = experiment;
   const run = buildNewRunSummary(experiment, runName);
   const tasks = buildTasksFromRunCreation(summary, run, selectedSteps, drafts);

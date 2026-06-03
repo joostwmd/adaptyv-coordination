@@ -17,7 +17,7 @@ import {
   usePlanningTasks,
   usePlanningTickets,
   usePlanningWorkUnits,
-} from "@/stores/usePlanningStore";
+} from "@/stores/planning/usePlanningBoardStore";
 import { useExperimentCount } from "@/stores/usePrototypeStore";
 
 const EASE_OUT_QUINT = [0.22, 1, 0.36, 1] as const;

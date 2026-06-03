@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
 
 import { Button } from "@adaptyv-coordination/ui/components/button";
+import { nextRevisionIndex } from "@/domain/experiment-run/revision";
 import type { ExperimentDetail } from "@/types";
 
 import { RunCreationWizard } from "./run-creation/run-creation-wizard";
@@ -20,7 +21,7 @@ export function ExperimentRunCreationPanel({
         <div>
           <h2 className="text-sm font-medium">Create new run</h2>
           <p className="text-xs text-muted-foreground">
-            {experiment.code} · Revision {experiment.runs.length + 1}
+            {experiment.code} · Revision {nextRevisionIndex(experiment.runs)}
           </p>
         </div>
         <Button

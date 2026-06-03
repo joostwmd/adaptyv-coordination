@@ -29,7 +29,7 @@ You are a mutation testing specialist using Stryker. Your job is to run mutation
 
 - **Success:** survivors.md empty or `ALL_KILLED` → exit, report success.
 - **Max iterations:** After 10 iterations with survivors remaining → stop, report: "Stopped after 10 iterations. X survivors remaining: [brief summary of files and highest-priority survivors]"
-- Do not run Sryker unnecessarily after success.
+- Do not run Stryker unnecessarily after success.
 
 ## Max Iteration Guard
 

@@ -4,13 +4,15 @@ import { getDisplayParamFields } from "@/domain/task-template/param-schema";
 import type { RunTaskDraft } from "@/domain/run-creation/draft";
 import type { SelectableRunStep } from "@/domain/run-creation/types";
 
-import { PlateStockPicker } from "./plate-stock-picker";
+import { PlateStockPicker } from "@/components/plate/plate-stock-picker";
 import { RunCreationParamField } from "./run-creation-param-field";
 
 type RunCreationTaskConfigFormProps = {
   step: SelectableRunStep;
   draft: RunTaskDraft;
-  onDraftChange: (draft: RunTaskDraft) => void;
+  onDraftChange: (
+    patch: Partial<Pick<RunTaskDraft, "params" | "plateAssignments">>,
+  ) => void;
 };
 
 export function RunCreationTaskConfigForm({
@@ -23,20 +25,11 @@ export function RunCreationTaskConfigForm({
   const requiredPlateTypes = template?.requiredPlateTypes ?? [];
 
   const updateParam = (name: string, value: unknown) => {
-    onDraftChange({
-      ...draft,
-      params: { ...draft.params, [name]: value },
-    });
+    onDraftChange({ params: { [name]: value } });
   };
 
   const updatePlate = (plateTypeId: string, stockId: string | undefined) => {
-    onDraftChange({
-      ...draft,
-      plateAssignments: {
-        ...draft.plateAssignments,
-        [plateTypeId]: stockId,
-      },
-    });
+    onDraftChange({ plateAssignments: { [plateTypeId]: stockId } });
   };
 
   return (

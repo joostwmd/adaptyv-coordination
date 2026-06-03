@@ -1,7 +1,10 @@
+import { toDisplayScore } from "@/domain/priority";
 import { getTaskTemplate } from "@/domain/task-template/catalog";
 import type { Task } from "@/domain/task/types";
 import type { WorkUnit } from "@/domain/work-unit/types";
 import type { ExperimentSummary } from "@/types";
+
+import { parsePlanningDay } from "./planning-dates";
 
 export function getTaskTitle(task: Task): string {
   if (task.name) return task.name;
@@ -9,10 +12,16 @@ export function getTaskTitle(task: Task): string {
   return template?.name ?? "Task";
 }
 
-import { toDisplayScore } from "@/domain/priority";
-
 export function formatPriorityScore(normalizedTotal: number): string {
   return toDisplayScore(normalizedTotal).toLocaleString();
+}
+
+export function formatPlanningDayLabel(day: string): string {
+  return parsePlanningDay(day).toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export function countExperimentsInWorkUnit(

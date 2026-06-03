@@ -7,13 +7,14 @@ import {
 } from "@adaptyv-coordination/ui/components/tooltip";
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
-import { formatPlanningDayLabel } from "@/domain/planning/planning-dates";
+import { formatPlanningDayLabel } from "@/domain/planning/display";
+import { usePlanningBoardContext } from "@/components/planning/planning-board-context";
 import {
-  usePlanningStore,
+  usePlanningBoardStore,
   usePlanningTasks,
   usePlanningTickets,
   usePlanningWorkUnits,
-} from "@/stores/usePlanningStore";
+} from "@/stores/planning/usePlanningBoardStore";
 
 type PlanningStatProps = {
   value: number;
@@ -99,8 +100,9 @@ export function PlanningStats() {
   const tasks = usePlanningTasks();
   const workUnits = usePlanningWorkUnits();
   const tickets = usePlanningTickets();
-  const currentDay = usePlanningStore((s) => s.currentDay);
-  const unscheduledCount = usePlanningStore((s) => s.getUnscheduledWorkUnits().length);
+  const board = usePlanningBoardContext();
+  const currentDay = usePlanningBoardStore((state) => state.currentDay);
+  const unscheduledCount = board.unscheduledWorkUnits.length;
 
   const counts = useMemo(() => {
     const byReadiness: Record<string, number> = {};

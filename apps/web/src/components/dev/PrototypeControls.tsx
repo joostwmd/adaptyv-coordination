@@ -8,17 +8,17 @@ import {
   useStaffCount,
 } from "@/stores/usePrototypeStore";
 import {
-  usePlanningStore,
+  usePlanningBoardStore,
   usePlanningTasks,
   usePlanningTickets,
   usePlanningWorkUnits,
-} from "@/stores/usePlanningStore";
+} from "@/stores/planning/usePlanningBoardStore";
 import { useState } from "react";
 
 export function PrototypeControls() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const resetPrototype = usePrototypeStore((state) => state.resetToSeeds);
-  const resetPlanning = usePlanningStore((state) => state.resetToSeed);
+  const resetPlanning = usePlanningBoardStore((state) => state.resetToSeed);
   const experimentCount = useExperimentCount();
   const staffCount = useStaffCount();
   const planningTaskCount = usePlanningTasks().length;

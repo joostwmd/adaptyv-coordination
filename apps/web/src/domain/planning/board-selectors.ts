@@ -1,9 +1,6 @@
 import type { Task } from "@/domain/task/types";
 import type { Ticket } from "@/domain/ticket/types";
-import {
-  computeWorkUnitKey,
-  groupTasksByWorkUnitKey,
-} from "@/domain/work-unit/grouping";
+import { groupTasksByWorkUnitKey } from "@/domain/work-unit/grouping";
 import type { WorkUnit } from "@/domain/work-unit/types";
 
 export type PlanningBoardState = {
@@ -108,10 +105,6 @@ export function getWaitingUpstreamTasks(tasks: Task[]): Task[] {
   return tasks.filter((task) => task.readiness === "waiting_upstream");
 }
 
-export function getFailedTasks(tasks: Task[]): Task[] {
+export function getRerunTasks(tasks: Task[]): Task[] {
   return tasks.filter((task) => task.origin === "rerun");
-}
-
-export function computeWorkUnitKeyForTask(task: Task): string {
-  return computeWorkUnitKey(task);
 }

@@ -39,9 +39,28 @@ export function isRunCreationDraftComplete(
   steps: { key: string; taskTemplateId: string }[],
   drafts: RunCreationDraft,
 ): boolean {
-  return steps.every(
-    (step) =>
-      getTaskConfigStatusForStep(drafts[step.key], step.taskTemplateId) ===
-      "complete",
-  );
+  return validateRunCreationPayload(steps, drafts).ok;
+}
+
+export type RunCreationValidationResult =
+  | { ok: true }
+  | { ok: false; incompleteStepKeys: string[] };
+
+export function validateRunCreationPayload(
+  steps: { key: string; taskTemplateId: string }[],
+  drafts: RunCreationDraft,
+): RunCreationValidationResult {
+  const incompleteStepKeys = steps
+    .filter(
+      (step) =>
+        getTaskConfigStatusForStep(drafts[step.key], step.taskTemplateId) ===
+        "incomplete",
+    )
+    .map((step) => step.key);
+
+  if (incompleteStepKeys.length > 0) {
+    return { ok: false, incompleteStepKeys };
+  }
+
+  return { ok: true };
 }

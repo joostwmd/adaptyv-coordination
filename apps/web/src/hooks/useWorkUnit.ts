@@ -7,16 +7,17 @@ import type { WorkUnit } from "@/domain/work-unit/types";
 import {
   countExperimentsInWorkUnit,
   getWorkUnitTemplateLabel,
-} from "@/components/planning/utils";
+} from "@/domain/planning/display";
 import {
   useEnrichedTasks,
-  useExperimentsById,
   type EnrichedPlanningTask,
 } from "@/hooks/usePlanningTask";
-import { usePlanningStore, usePlanningWeights } from "@/stores/usePlanningStore";
+import { useExperimentsById } from "@/hooks/useExperimentsById";
+import { usePlanningBoardStore } from "@/stores/planning/usePlanningBoardStore";
+import { usePlanningWeights } from "@/stores/planning/usePlanningPreferencesStore";
 
 export function useWorkUnit(workUnitId: string | undefined): WorkUnit | null {
-  return usePlanningStore((state) =>
+  return usePlanningBoardStore((state) =>
     workUnitId ? (state.workUnits.find((wu) => wu.id === workUnitId) ?? null) : null,
   );
 }
@@ -33,11 +34,11 @@ export type EnrichedWorkUnit = {
 };
 
 export function useWorkUnitView(workUnit: WorkUnit | null): EnrichedWorkUnit | null {
-  const allTasks = usePlanningStore((s) => s.tasks);
+  const allTasks = usePlanningBoardStore((state) => state.tasks);
   const experimentsById = useExperimentsById();
   const weights = usePlanningWeights();
-  const getWorkUnitPriority = usePlanningStore((s) => s.getWorkUnitPriority);
-  const referenceDate = usePlanningStore((s) => s.currentDay);
+  const getWorkUnitPriority = usePlanningBoardStore((state) => state.getWorkUnitPriority);
+  const referenceDate = usePlanningBoardStore((state) => state.currentDay);
 
   const tasks = useMemo(() => {
     if (!workUnit) return [];

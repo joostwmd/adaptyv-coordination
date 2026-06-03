@@ -1,5 +1,5 @@
 import { Badge } from "@adaptyv-coordination/ui/components/badge";
-import { usePlanningBoard } from "@/hooks/usePlanningBoard";
+import { usePlanningBoardContext } from "@/components/planning/planning-board-context";
 
 import { DraggableTicket } from "../dnd/draggable-ticket";
 import { KanbanDropCell } from "../dnd/kanban-drop-cell";
@@ -11,7 +11,7 @@ import { DateStepper } from "./date-stepper";
 import { ZoneShell } from "./zone-shell";
 
 export function DailyKanbanZone() {
-  const board = usePlanningBoard();
+  const board = usePlanningBoardContext();
   const ticketCount = Object.values(board.ticketsByPerson).reduce(
     (total, column) => total + column.length,
     0,

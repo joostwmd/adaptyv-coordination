@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { Button } from "@adaptyv-coordination/ui/components/button";
 
-import { getCapacityStatus } from "@/domain/work-unit";
-import { usePlanningBoard } from "@/hooks/usePlanningBoard";
-import { usePlanningStore } from "@/stores/usePlanningStore";
+import { getOverflowByUnitId } from "@/domain/planning/overflow";
+import { usePlanningBoardContext } from "@/components/planning/planning-board-context";
+import { usePlanningBoardStore } from "@/stores/planning/usePlanningBoardStore";
 
 import { DraggableWorkUnit } from "../dnd/draggable-work-unit";
 import { SiblingUnitDropZone } from "../dnd/draggable-task-row";
@@ -16,18 +16,14 @@ import {
 import { ZoneShell } from "./zone-shell";
 
 export function UnitsZone() {
-  const board = usePlanningBoard();
-  const tasks = usePlanningStore((state) => state.tasks);
-  const splitWorkUnit = usePlanningStore((state) => state.splitWorkUnit);
+  const board = usePlanningBoardContext();
+  const tasks = usePlanningBoardStore((state) => state.tasks);
+  const splitWorkUnit = usePlanningBoardStore((state) => state.splitWorkUnit);
 
-  const overflowByUnitId = useMemo(() => {
-    const map = new Map<string, boolean>();
-    for (const workUnit of board.unscheduledWorkUnits) {
-      const memberTasks = tasks.filter((task) => workUnit.taskIds.includes(task.id));
-      map.set(workUnit.id, !getCapacityStatus(workUnit, memberTasks).withinCapacity);
-    }
-    return map;
-  }, [board.unscheduledWorkUnits, tasks]);
+  const overflowByUnitId = useMemo(
+    () => getOverflowByUnitId(board.unscheduledWorkUnits, tasks),
+    [board.unscheduledWorkUnits, tasks],
+  );
 
   return (
     <ZoneShell

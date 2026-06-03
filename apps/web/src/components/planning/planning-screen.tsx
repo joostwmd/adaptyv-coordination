@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { PlanningBoard } from "./planning-board";
+import { PlanningBoardProvider } from "./planning-board-context";
 import { PlanningStats } from "./planning-stats";
 import {
   PriorityControlsCollapsible,
@@ -12,7 +13,8 @@ export function PlanningScreen() {
   const [priorityOpen, setPriorityOpen] = useState(false);
 
   return (
-    <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden px-3 py-2">
+    <PlanningBoardProvider>
+      <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden px-3 py-2">
       <PriorityControlsCollapsible
         open={priorityOpen}
         onOpenChange={setPriorityOpen}
@@ -33,6 +35,7 @@ export function PlanningScreen() {
       <div className="min-h-0 min-w-0 flex-1 overflow-hidden pt-2">
         <PlanningBoard />
       </div>
-    </div>
+      </div>
+    </PlanningBoardProvider>
   );
 }

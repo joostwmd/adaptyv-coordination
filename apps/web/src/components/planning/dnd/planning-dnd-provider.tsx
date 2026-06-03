@@ -1,36 +1,44 @@
 import { useState, type ReactNode } from "react";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 
+import {
+  applyPlanningDropAction,
+  resolvePlanningDrop,
+  type PlanningDropData,
+  type PlanningDragData,
+} from "@/domain/planning/dnd-policy";
 import type { Ticket } from "@/domain/ticket/types";
 import type { WorkUnit } from "@/domain/work-unit/types";
-import { usePlanningStore } from "@/stores/usePlanningStore";
+import { usePlanningBoardStore } from "@/stores/planning/usePlanningBoardStore";
 
 import { TicketCard } from "../ticket-card";
 import { WorkUnitCard } from "../work-unit-card";
-import {
-  isKanbanDropData,
-  isPlanningDragData,
-  isQueueZoneDropData,
-  isSiblingDropData,
-  isUnitsZoneDropData,
-  type PlanningDropData,
-  type PlanningDragData,
-} from "./types";
+import { isPlanningDragData } from "./types";
 
 type PlanningDndProviderProps = {
   children: ReactNode;
 };
 
 export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
-  const createTicket = usePlanningStore((state) => state.createTicket);
-  const updateTicket = usePlanningStore((state) => state.updateTicket);
-  const unscheduleTicket = usePlanningStore((state) => state.unscheduleTicket);
-  const revertTicketToQueue = usePlanningStore((state) => state.revertTicketToQueue);
-  const dissolveWorkUnit = usePlanningStore((state) => state.dissolveWorkUnit);
-  const addTaskToWorkUnit = usePlanningStore((state) => state.addTaskToWorkUnit);
-  const removeTaskFromWorkUnit = usePlanningStore(
+  const createTicket = usePlanningBoardStore((state) => state.createTicket);
+  const updateTicket = usePlanningBoardStore((state) => state.updateTicket);
+  const unscheduleTicket = usePlanningBoardStore((state) => state.unscheduleTicket);
+  const revertTicketToQueue = usePlanningBoardStore((state) => state.revertTicketToQueue);
+  const dissolveWorkUnit = usePlanningBoardStore((state) => state.dissolveWorkUnit);
+  const addTaskToWorkUnit = usePlanningBoardStore((state) => state.addTaskToWorkUnit);
+  const removeTaskFromWorkUnit = usePlanningBoardStore(
     (state) => state.removeTaskFromWorkUnit,
   );
+
+  const dropActions = {
+    createTicket,
+    updateTicket,
+    unscheduleTicket,
+    revertTicketToQueue,
+    dissolveWorkUnit,
+    removeTaskFromWorkUnit,
+    addTaskToWorkUnit,
+  };
 
   const [activeDrag, setActiveDrag] = useState<{
     kind: PlanningDragData["kind"];
@@ -48,7 +56,7 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
         }
 
         if (sourceData.kind === "unit" && sourceData.workUnitId) {
-          const workUnit = usePlanningStore
+          const workUnit = usePlanningBoardStore
             .getState()
             .workUnits.find((unit) => unit.id === sourceData.workUnitId);
           setActiveDrag({ kind: "unit", workUnit });
@@ -58,7 +66,7 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
         if (sourceData.kind === "ticket") {
           const sourceId = String(event.operation.source?.id ?? "");
           const ticket =
-            usePlanningStore.getState().tickets.find((item) => item.id === sourceId) ??
+            usePlanningBoardStore.getState().tickets.find((item) => item.id === sourceId) ??
             null;
           setActiveDrag({ kind: "ticket", ticket: ticket ?? undefined });
           return;
@@ -76,43 +84,8 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
 
         const sourceData = source.data as PlanningDragData | undefined;
         const targetData = target.data as PlanningDragData | PlanningDropData | undefined;
-
-        if (sourceData?.kind === "unit" && isKanbanDropData(targetData)) {
-          if (!sourceData.workUnitId) return;
-          createTicket(sourceData.workUnitId, targetData.staffId, targetData.day);
-          return;
-        }
-
-        if (sourceData?.kind === "ticket" && isKanbanDropData(targetData)) {
-          updateTicket(String(source.id), {
-            assigneeId: targetData.staffId,
-            scheduledDay: targetData.day,
-          });
-          return;
-        }
-
-        if (sourceData?.kind === "ticket" && isUnitsZoneDropData(targetData)) {
-          unscheduleTicket(String(source.id));
-          return;
-        }
-
-        if (sourceData?.kind === "ticket" && isQueueZoneDropData(targetData)) {
-          revertTicketToQueue(String(source.id));
-          return;
-        }
-
-        if (sourceData?.kind === "unit" && isQueueZoneDropData(targetData)) {
-          if (!sourceData.workUnitId) return;
-          dissolveWorkUnit(sourceData.workUnitId);
-          return;
-        }
-
-        if (sourceData?.kind === "task" && isSiblingDropData(targetData)) {
-          if (sourceData.workUnitKey !== targetData.workUnitKey) return;
-          const taskId = String(source.id);
-          removeTaskFromWorkUnit(taskId);
-          addTaskToWorkUnit(taskId, targetData.workUnitId);
-        }
+        const action = resolvePlanningDrop(String(source.id), sourceData, targetData);
+        applyPlanningDropAction(action, dropActions);
       }}
     >
       {children}

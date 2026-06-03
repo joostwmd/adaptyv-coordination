@@ -1,5 +1,4 @@
 import type { StaffMember } from "@/types";
-import { getStaffHandle } from "@/types";
 
 export type KanbanRosterMember = {
   id: string;
@@ -7,12 +6,18 @@ export type KanbanRosterMember = {
   handle: string;
 };
 
-export function getKanbanRoster(staff: StaffMember[]): KanbanRosterMember[] {
-  return staff
-    .filter((member) => member.role === "lab-tech")
-    .map((member) => ({
-      id: member.id,
-      name: member.name,
-      handle: getStaffHandle(member.name),
-    }));
+export function filterLabTechStaff(staff: StaffMember[]): StaffMember[] {
+  return staff.filter((member) => member.role === "lab-tech");
+}
+
+/** @deprecated Use filterLabTechStaff + handle formatting in the hook layer */
+export function getKanbanRoster(
+  staff: StaffMember[],
+  formatHandle: (name: string) => string,
+): KanbanRosterMember[] {
+  return filterLabTechStaff(staff).map((member) => ({
+    id: member.id,
+    name: member.name,
+    handle: formatHandle(member.name),
+  }));
 }

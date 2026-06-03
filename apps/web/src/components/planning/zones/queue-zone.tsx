@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { Button } from "@adaptyv-coordination/ui/components/button";
 import {
   DropdownMenu,
@@ -7,11 +6,11 @@ import {
   DropdownMenuTrigger,
 } from "@adaptyv-coordination/ui/components/dropdown-menu";
 
-import type { Task } from "@/domain/task/types";
-import { createWorkUnitFromTasks, suggestSplit } from "@/domain/work-unit";
-import { usePlanningBoard } from "@/hooks/usePlanningBoard";
-import { usePlanningStore } from "@/stores/usePlanningStore";
-import { usePrototypeStore } from "@/stores/usePrototypeStore";
+import { previewPoolGroup, previewSoloUnit } from "@/domain/planning/queue-actions";
+import { useExperimentsById } from "@/hooks/useExperimentsById";
+import { usePlanningBoardContext } from "@/components/planning/planning-board-context";
+import { usePlanningBoardStore } from "@/stores/planning/usePlanningBoardStore";
+import { usePlanningPreferencesStore } from "@/stores/planning/usePlanningPreferencesStore";
 
 import { PlanningSuggestionShell } from "../primitives/planning-suggestion-shell";
 import { ZoneDropTarget } from "../dnd/zone-drop-target";
@@ -24,28 +23,19 @@ import {
 import { QueueSubzone, ZoneShell } from "./zone-shell";
 
 export function QueueZone() {
-  const board = usePlanningBoard();
-  const createWorkUnitFromReadyTasks = usePlanningStore(
+  const board = usePlanningBoardContext();
+  const createWorkUnitFromReadyTasks = usePlanningBoardStore(
     (state) => state.createWorkUnitFromReadyTasks,
   );
-  const createSplitUnitsFromReadyTasks = usePlanningStore(
+  const createSplitUnitsFromReadyTasks = usePlanningBoardStore(
     (state) => state.createSplitUnitsFromReadyTasks,
   );
-  const addTaskToWorkUnit = usePlanningStore((state) => state.addTaskToWorkUnit);
-  const weights = usePlanningStore((state) => state.weights);
-  const currentDay = usePlanningStore((state) => state.currentDay);
-  const experiments = usePrototypeStore((state) => state.experiments);
+  const addTaskToWorkUnit = usePlanningBoardStore((state) => state.addTaskToWorkUnit);
+  const weights = usePlanningPreferencesStore((state) => state.weights);
+  const currentDay = usePlanningBoardStore((state) => state.currentDay);
+  const experimentsById = useExperimentsById();
 
-  const experimentsById = useMemo(
-    () =>
-      Object.fromEntries(
-        experiments.map((experiment) => {
-          const { runs: _runs, ...summary } = experiment;
-          return [experiment.id, summary];
-        }),
-      ),
-    [experiments],
-  );
+  const queuePreviewContext = { experimentsById, weights, currentDay };
 
   const queueCount =
     board.queue.pool.reduce((total, group) => total + group.tasks.length, 0) +
@@ -70,9 +60,8 @@ export function QueueZone() {
               <p className="text-xs text-muted-foreground">No batchable groups.</p>
             ) : (
               board.queue.pool.map((group) => {
-                const suggested = createWorkUnitFromTasks(group.tasks);
-                const split = suggestSplit(group.tasks, experimentsById, weights, currentDay);
-                const showSplitPreview = split.secondary.length > 0;
+                const preview = previewPoolGroup(group.tasks, queuePreviewContext);
+                const taskIds = group.tasks.map((task) => task.id);
 
                 return (
                   <AnimatedBoardItem
@@ -81,18 +70,14 @@ export function QueueZone() {
                     layoutId={`pool-${group.workUnitKey}`}
                   >
                     <PlanningSuggestionShell
-                      label={showSplitPreview ? "Over capacity — split" : undefined}
+                      label={preview.showSplitPreview ? "Over capacity — split" : undefined}
                       action={
-                        showSplitPreview ? (
+                        preview.showSplitPreview ? (
                           <Button
                             type="button"
                             size="sm"
                             variant="outline"
-                            onClick={() =>
-                              createSplitUnitsFromReadyTasks(
-                                group.tasks.map((task) => task.id),
-                              )
-                            }
+                            onClick={() => createSplitUnitsFromReadyTasks(taskIds)}
                           >
                             Split unit
                           </Button>
@@ -101,11 +86,7 @@ export function QueueZone() {
                             type="button"
                             size="sm"
                             variant="outline"
-                            onClick={() =>
-                              createWorkUnitFromReadyTasks(
-                                group.tasks.map((task) => task.id),
-                              )
-                            }
+                            onClick={() => createWorkUnitFromReadyTasks(taskIds)}
                           >
                             Create unit
                           </Button>
@@ -113,20 +94,22 @@ export function QueueZone() {
                       }
                     >
                       <WorkUnitCard
-                        workUnit={suggested}
+                        workUnit={preview.suggestedUnit}
                         variant="suggested"
                         showEyebrow={false}
                         layoutId={`pool-preview-${group.workUnitKey}`}
                       />
-                      {showSplitPreview ? (
+                      {preview.showSplitPreview &&
+                      preview.splitPrimaryUnit &&
+                      preview.splitSecondaryUnit ? (
                         <div className="grid gap-2">
                           <WorkUnitCard
-                            workUnit={createWorkUnitFromTasks(split.primary)}
+                            workUnit={preview.splitPrimaryUnit}
                             variant="suggested"
                             previewLabel="Suggested 1/2"
                           />
                           <WorkUnitCard
-                            workUnit={createWorkUnitFromTasks(split.secondary)}
+                            workUnit={preview.splitSecondaryUnit}
                             variant="suggested"
                             previewLabel="Suggested 2/2 — overflow split"
                           />
@@ -211,7 +194,7 @@ export function QueueZone() {
                     }
                   >
                     <WorkUnitCard
-                      workUnit={createWorkUnitFromTasks([task])}
+                      workUnit={previewSoloUnit(task)}
                       variant="suggested"
                       showEyebrow={false}
                     />

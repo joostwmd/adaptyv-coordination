@@ -3,40 +3,30 @@ import { useMemo } from "react";
 import {
   classifyReadyTasks,
   getBlockedTasks,
-  getFailedTasks,
+  getRerunTasks,
   getSiblingUnitGroups,
   getTicketsByPersonForDay,
   getUnscheduledWorkUnits,
   getWaitingUpstreamTasks,
 } from "@/domain/planning/board-selectors";
+import { useExperimentsById } from "@/hooks/useExperimentsById";
 import {
   sortClassifiedQueue,
   sortSiblingUnitGroups,
 } from "@/domain/planning/board-sort";
 import { getKanbanRoster } from "@/domain/planning/kanban-roster";
-import { usePlanningStore } from "@/stores/usePlanningStore";
+import { usePlanningBoardStore } from "@/stores/planning/usePlanningBoardStore";
+import { usePlanningPreferencesStore } from "@/stores/planning/usePlanningPreferencesStore";
 import { usePrototypeStore } from "@/stores/usePrototypeStore";
-import type { ExperimentSummary } from "@/types";
-
+import { getStaffHandle } from "@/types";
 export function usePlanningBoard() {
-  const tasks = usePlanningStore((state) => state.tasks);
-  const workUnits = usePlanningStore((state) => state.workUnits);
-  const tickets = usePlanningStore((state) => state.tickets);
-  const currentDay = usePlanningStore((state) => state.currentDay);
-  const weights = usePlanningStore((state) => state.weights);
+  const tasks = usePlanningBoardStore((state) => state.tasks);
+  const workUnits = usePlanningBoardStore((state) => state.workUnits);
+  const tickets = usePlanningBoardStore((state) => state.tickets);
+  const currentDay = usePlanningBoardStore((state) => state.currentDay);
+  const weights = usePlanningPreferencesStore((state) => state.weights);
   const staff = usePrototypeStore((state) => state.staff);
-  const experiments = usePrototypeStore((state) => state.experiments);
-
-  const experimentsById = useMemo(
-    () =>
-      Object.fromEntries(
-        experiments.map((experiment) => {
-          const { runs: _runs, ...summary } = experiment;
-          return [experiment.id, summary];
-        }),
-      ) as Record<string, ExperimentSummary>,
-    [experiments],
-  );
+  const experimentsById = useExperimentsById();
 
   return useMemo(() => {
     const unscheduledWorkUnits = getUnscheduledWorkUnits(workUnits, tickets);
@@ -53,7 +43,7 @@ export function usePlanningBoard() {
       weights,
       currentDay,
     );
-    const kanbanRoster = getKanbanRoster(staff);
+    const kanbanRoster = getKanbanRoster(staff, getStaffHandle);
     const ticketsByPerson = getTicketsByPersonForDay(
       tickets,
       currentDay,
@@ -68,7 +58,7 @@ export function usePlanningBoard() {
       ticketsByPerson,
       blockedTasks: getBlockedTasks(tasks),
       waitingTasks: getWaitingUpstreamTasks(tasks),
-      failedTasks: getFailedTasks(tasks),
+      rerunTasks: getRerunTasks(tasks),
       kanbanRoster,
     };
   }, [tasks, workUnits, tickets, currentDay, weights, staff, experimentsById]);

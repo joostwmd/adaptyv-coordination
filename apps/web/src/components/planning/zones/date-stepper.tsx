@@ -9,21 +9,21 @@ import {
 } from "@adaptyv-coordination/ui/components/dropdown-menu";
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
+import { formatPlanningDayLabel } from "@/domain/planning/display";
 import {
-  formatPlanningDayLabel,
   getPlanningDayBounds,
   parsePlanningDay,
   toPlanningDayString,
 } from "@/domain/planning/planning-dates";
-import { usePlanningStore } from "@/stores/usePlanningStore";
+import { usePlanningBoardStore } from "@/stores/planning/usePlanningBoardStore";
 
 type DateStepperProps = {
   currentDay: string;
 };
 
 export function DateStepper({ currentDay }: DateStepperProps) {
-  const storeStepPlanningDay = usePlanningStore((state) => state.stepPlanningDay);
-  const setCurrentDay = usePlanningStore((state) => state.setCurrentDay);
+  const storeStepPlanningDay = usePlanningBoardStore((state) => state.stepPlanningDay);
+  const setCurrentDay = usePlanningBoardStore((state) => state.setCurrentDay);
   const [open, setOpen] = useState(false);
 
   const { minDate, maxDate, minDay, maxDay } = getPlanningDayBounds();

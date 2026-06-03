@@ -1,72 +1,13 @@
-import { getDefaultParams } from "@/domain/task-template/param-schema";
-import { getTaskTemplate } from "@/domain/task-template/catalog";
-import { buildRequiredPlatesForTaskTemplate } from "@/domain/plate/requirements";
-import { mockInputSampleCount } from "@/domain/task/input-samples";
 import type { WorkflowTemplate } from "@/domain/workflow/types";
 import type { ExperimentRunSummary, ExperimentSummary } from "@/types";
-import type { Task, TaskOrigin } from "./types";
+
+import { buildTaskFromWorkflowStep } from "./build-from-step";
+import { buildTaskFromTemplate, nextTaskId, resetTaskIdCounter } from "./scaffold-internals";
+import type { Task } from "./types";
 import { refreshAllTaskReadiness } from "./readiness";
 
-let taskIdCounter = 0;
-
-export function resetTaskIdCounter(seed = 0): void {
-  taskIdCounter = seed;
-}
-
-export function nextTaskId(prefix = "task"): string {
-  taskIdCounter += 1;
-  return `${prefix}-${taskIdCounter}`;
-}
-
-function buildTask(
-  taskTemplateId: string,
-  origin: TaskOrigin,
-  context: {
-    experimentId?: string;
-    runId?: string;
-    params?: Record<string, unknown>;
-    requiredPlates?: Task["requiredPlates"];
-    inputSampleCount?: number;
-    dependsOn?: string[];
-    parentTaskId?: string;
-    name?: string;
-    id?: string;
-    status?: Task["status"];
-    readiness?: Task["readiness"];
-  } = {},
-): Task {
-  const template = getTaskTemplate(taskTemplateId);
-  const params = {
-    ...(template ? getDefaultParams(template.paramSchema) : {}),
-    ...context.params,
-  };
-
-  const requiredPlates =
-    context.requiredPlates ??
-    (template ? buildRequiredPlatesForTaskTemplate(template, taskTemplateId) : undefined);
-
-  const id = context.id ?? nextTaskId();
-  const inputSampleCount =
-    context.inputSampleCount ?? mockInputSampleCount(taskTemplateId, id);
-
-  return {
-    id,
-    taskTemplateId,
-    name: context.name ?? template?.name,
-    origin,
-    parentTaskId: context.parentTaskId,
-    experimentId: context.experimentId,
-    runId: context.runId,
-    params,
-    requiredPlates:
-      requiredPlates && requiredPlates.length > 0 ? requiredPlates : undefined,
-    inputSampleCount,
-    status: context.status ?? "pending",
-    dependsOn: context.dependsOn ?? [],
-    readiness: context.readiness ?? "ready",
-    createdAt: new Date().toISOString(),
-  };
-}
+export { nextTaskId, resetTaskIdCounter, buildTaskFromTemplate } from "./scaffold-internals";
+export { buildTaskFromWorkflowStep } from "./build-from-step";
 
 export function scaffoldTasks(
   experiment: ExperimentSummary,
@@ -81,12 +22,12 @@ export function scaffoldTasks(
       continue;
     }
 
-    const task = buildTask(step.taskTemplateId, "template", {
-      experimentId: experiment.id,
-      runId: run.id,
-      params: step.paramOverrides,
+    const task = buildTaskFromWorkflowStep({
+      experiment,
+      run,
+      taskTemplateId: step.taskTemplateId,
+      stepParamOverrides: step.paramOverrides,
       dependsOn: previousId ? [previousId] : [],
-      name: `${getTaskTemplate(step.taskTemplateId)?.name ?? "Task"} — ${experiment.code}`,
     });
     tasks.push(task);
     previousId = task.id;
@@ -105,7 +46,7 @@ export function createStandaloneTask(
   params: Record<string, unknown> = {},
   context: StandaloneTaskContext = {},
 ): Task {
-  const task = buildTask(taskTemplateId, "standalone", {
+  const task = buildTaskFromTemplate(taskTemplateId, "standalone", {
     ...context,
     params,
   });
@@ -123,11 +64,11 @@ export function primaryRunForExperiment(experiment: {
 
 export function createRerunTasks(sourceTasks: Task[]): Task[] {
   const reruns = sourceTasks.map((source) =>
-    buildTask(source.taskTemplateId, "rerun", {
+    buildTaskFromTemplate(source.taskTemplateId, "rerun", {
       experimentId: source.experimentId,
       runId: source.runId,
       params: { ...source.params },
-      requiredPlates: source.requiredPlates?.map((p) => ({ ...p })),
+      requiredPlates: source.requiredPlates?.map((plate) => ({ ...plate })),
       inputSampleCount: source.inputSampleCount,
       parentTaskId: source.id,
       dependsOn: [],

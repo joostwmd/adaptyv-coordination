@@ -1,6 +1,6 @@
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
-import { getWorkUnitTemplateLabel } from "@/components/planning/utils";
+import { getWorkUnitTemplateLabel } from "@/domain/planning/display";
 import type { WorkUnit } from "@/domain/work-unit/types";
 
 type WorkUnitChipProps = {

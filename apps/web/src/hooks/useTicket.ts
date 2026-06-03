@@ -8,19 +8,19 @@ import {
   countExperimentsInWorkUnit,
   getExperimentsInWorkUnit,
   getWorkUnitTemplateLabel,
-} from "@/components/planning/utils";
+} from "@/domain/planning/display";
 import type { ExperimentSummary } from "@/types";
 import {
   useEnrichedTasks,
-  useExperimentsById,
   type EnrichedPlanningTask,
 } from "@/hooks/usePlanningTask";
-import { usePlanningStore } from "@/stores/usePlanningStore";
+import { useExperimentsById } from "@/hooks/useExperimentsById";
+import { usePlanningBoardStore } from "@/stores/planning/usePlanningBoardStore";
 import { usePrototypeStore } from "@/stores/usePrototypeStore";
 import type { StaffMember } from "@/types";
 
 export function useTicketByWorkUnit(workUnitId: string | undefined): Ticket | null {
-  return usePlanningStore((state) =>
+  return usePlanningBoardStore((state) =>
     workUnitId
       ? (state.tickets.find((ticket) => ticket.workUnitId === workUnitId) ?? null)
       : null,
@@ -40,11 +40,11 @@ export type EnrichedTicket = {
 };
 
 export function useTicketView(ticket: Ticket | null): EnrichedTicket | null {
-  const allTasks = usePlanningStore((s) => s.tasks);
-  const workUnits = usePlanningStore((s) => s.workUnits);
-  const staff = usePrototypeStore((s) => s.staff);
+  const allTasks = usePlanningBoardStore((state) => state.tasks);
+  const workUnits = usePlanningBoardStore((state) => state.workUnits);
+  const staff = usePrototypeStore((state) => state.staff);
   const experimentsById = useExperimentsById();
-  const getWorkUnitPriority = usePlanningStore((s) => s.getWorkUnitPriority);
+  const getWorkUnitPriority = usePlanningBoardStore((state) => state.getWorkUnitPriority);
 
   const workUnit = useMemo(() => {
     if (!ticket) return null;

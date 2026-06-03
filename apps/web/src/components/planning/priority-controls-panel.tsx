@@ -17,9 +17,9 @@ import {
   type PriorityPresetName,
 } from "@/domain/priority";
 import {
-  usePlanningStore,
+  usePlanningPreferencesStore,
   usePlanningWeights,
-} from "@/stores/usePlanningStore";
+} from "@/stores/planning/usePlanningPreferencesStore";
 
 import { PriorityFactorsDialog } from "./priority-factors-dialog";
 import { PriorityFormulaCompact } from "./priority-formula-display";
@@ -48,8 +48,8 @@ export function PriorityControlsTrigger({ open }: { open: boolean }) {
 
 function PriorityControlsContent() {
   const weights = usePlanningWeights();
-  const applyWeightPreset = usePlanningStore((state) => state.applyWeightPreset);
-  const updateWeight = usePlanningStore((state) => state.updateWeight);
+  const applyWeightPreset = usePlanningPreferencesStore((state) => state.applyWeightPreset);
+  const updateWeight = usePlanningPreferencesStore((state) => state.updateWeight);
   const activePreset = detectActivePreset(weights);
   const weightSum = sumPriorityWeights(weights);
 

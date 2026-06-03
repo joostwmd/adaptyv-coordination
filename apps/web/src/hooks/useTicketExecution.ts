@@ -4,11 +4,11 @@ import {
   deriveTicketExecutionStatus,
   type TicketExecutionStatus,
 } from "@/domain/tickets/execution-status";
-import { usePlanningStore } from "@/stores/usePlanningStore";
+import { usePlanningBoardStore } from "@/stores/planning/usePlanningBoardStore";
 
 export function useTicketExecution(workUnitId: string) {
-  const allTasks = usePlanningStore((state) => state.tasks);
-  const workUnits = usePlanningStore((state) => state.workUnits);
+  const allTasks = usePlanningBoardStore((state) => state.tasks);
+  const workUnits = usePlanningBoardStore((state) => state.workUnits);
 
   const tasks = useMemo(() => {
     const workUnit = workUnits.find((wu) => wu.id === workUnitId);
@@ -17,9 +17,9 @@ export function useTicketExecution(workUnitId: string) {
     return allTasks.filter((task) => taskIds.has(task.id));
   }, [allTasks, workUnits, workUnitId]);
 
-  const sendTicketToLabOs = usePlanningStore((state) => state.sendTicketToLabOs);
-  const completeWorkUnitTasks = usePlanningStore((state) => state.completeWorkUnitTasks);
-  const failWorkUnitTasks = usePlanningStore((state) => state.failWorkUnitTasks);
+  const sendTicketToLabOs = usePlanningBoardStore((state) => state.sendTicketToLabOs);
+  const completeWorkUnitTasks = usePlanningBoardStore((state) => state.completeWorkUnitTasks);
+  const failWorkUnitTasks = usePlanningBoardStore((state) => state.failWorkUnitTasks);
 
   const status: TicketExecutionStatus = useMemo(
     () => deriveTicketExecutionStatus(tasks),

@@ -22,3 +22,4 @@ export {
   resetWorkUnitIdCounter,
 } from "./grouping";
 export { computeWorkUnitPriority } from "./priority";
+export { attachTasksToWorkUnits } from "./attach-tasks";
