@@ -9,6 +9,7 @@ import type { Task } from "@/types";
 import { useWorkUnitView } from "@/hooks/useWorkUnit";
 
 import { WorkUnitContentHeader } from "./work-unit-content-header";
+import { WorkUnitParameterSummary } from "./work-unit-parameter-summary";
 
 type PreviewFieldProps = {
   label: string;
@@ -66,21 +67,30 @@ export function WorkUnitContent({
       />
 
       {!isCompact && !showTasks ? (
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border/50 pt-3">
-          <PreviewField
-            label="Template"
-            value={getWorkUnitTemplateLabel(workUnit)}
-            className="col-span-2"
-          />
-          {view.driverTaskTitle ? (
+        <>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border/50 pt-3">
             <PreviewField
-              label="Driver task"
-              value={view.driverTaskTitle}
+              label="Template"
+              value={getWorkUnitTemplateLabel(workUnit)}
               className="col-span-2"
             />
-          ) : null}
-          <PreviewField label="Batch key" value={workUnit.workUnitKey} className="col-span-2" />
-        </dl>
+            {view.driverTaskTitle ? (
+              <PreviewField
+                label="Driver task"
+                value={view.driverTaskTitle}
+                className="col-span-2"
+              />
+            ) : null}
+            <PreviewField label="Batch key" value={workUnit.workUnitKey} className="col-span-2" />
+          </dl>
+          
+          <WorkUnitParameterSummary
+            workUnit={workUnit}
+            tasks={view.tasks}
+            variant="flat"
+            showHeading={true}
+          />
+        </>
       ) : null}
 
       {showTasks ? (

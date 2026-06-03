@@ -8,6 +8,7 @@ import { useEnrichedTask } from "@/hooks/usePlanningTask";
 import type { ExperimentRunSummary, ExperimentSummary, Task } from "@/types";
 
 import { StatusBadge } from "./primitives/status-badge";
+import { TaskNameBadge } from "./primitives/task-name-badge";
 import { TaskReferences, type TaskReferenceKey } from "./task-references";
 
 export type TaskContentProps = {
@@ -41,6 +42,7 @@ export function TaskContent({
       <div className="flex flex-wrap items-center gap-1.5">
         {showReadiness ? <ReadinessBadge readiness={task.readiness} /> : null}
         {!isCompact ? <TaskTypeBadge label={enriched.templateName} /> : null}
+        <TaskNameBadge task={task} />
         <StatusBadge status={task.status} />
         <div className="ml-auto">
           <PriorityIndicator priority={enriched.priority} stopPropagation />

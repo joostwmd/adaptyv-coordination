@@ -5,5 +5,6 @@ export { CollapsibleTaskList } from "./collapsible-task-list";
 export { TaskReferences } from "./task-references";
 export type { TaskReferenceKey } from "./task-references";
 export { TaskList } from "./task-list";
+export { TaskNameBadge } from "./primitives/task-name-badge";
 export { MOCK_EXPERIMENTS, MOCK_EXPERIMENT_MAP, MOCK_STAFF, MOCK_TASKS, getExperimentById } from "./mock-data";
 export type { Task } from "@/types";
