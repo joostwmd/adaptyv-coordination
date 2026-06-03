@@ -52,6 +52,7 @@ interface PlanningState {
   scaffoldFromExperiment: (experimentId: string) => Task[];
   createExperimentRunFromWizard: (payload: {
     experimentId: string;
+    runName: string;
     selectedSteps: SelectableRunStep[];
     drafts: RunCreationDraft;
   }) => { run: ExperimentRunSummary; tasks: Task[] } | null;
@@ -197,6 +198,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       experiment,
       payload.selectedSteps,
       payload.drafts,
+      payload.runName,
     );
     if (!result) return null;
 

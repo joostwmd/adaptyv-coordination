@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@adaptyv-coordination/ui/components/button";
+import { Input } from "@adaptyv-coordination/ui/components/input";
+import { Label } from "@adaptyv-coordination/ui/components/label";
 import {
   Stepper,
   StepperContent,
@@ -15,6 +17,7 @@ import {
   StepperTrigger,
 } from "@adaptyv-coordination/ui/components/stepper";
 
+import { suggestDefaultRunName } from "@/domain/run-creation/create-run";
 import {
   buildInitialDrafts,
   type RunCreationDraft,
@@ -63,11 +66,13 @@ export function RunCreationWizard({ experiment, onClose }: RunCreationWizardProp
 
   const [drafts, setDrafts] = useState<RunCreationDraft>({});
   const [activeConfigStepKey, setActiveConfigStepKey] = useState<string>("");
+  const [runName, setRunName] = useState(() => suggestDefaultRunName(experiment));
 
   useEffect(() => {
     if (!workflow) {
       setSelectedKeys(new Set());
       setWizardStep(RUN_CREATION_WIZARD_STEPS.selectTasks);
+      setRunName(suggestDefaultRunName(experiment));
       return;
     }
     const steps = buildSelectableRunSteps(workflow);
@@ -75,7 +80,8 @@ export function RunCreationWizard({ experiment, onClose }: RunCreationWizardProp
     setWizardStep(RUN_CREATION_WIZARD_STEPS.selectTasks);
     setDrafts({});
     setActiveConfigStepKey("");
-  }, [experiment.id, workflow]);
+    setRunName(suggestDefaultRunName(experiment));
+  }, [experiment, workflow]);
 
   const selectedSteps = useMemo(
     () => selectableSteps.filter((s) => selectedKeys.has(s.key)),
@@ -93,6 +99,7 @@ export function RunCreationWizard({ experiment, onClose }: RunCreationWizardProp
   const handleCreateRun = useCallback(() => {
     const result = createExperimentRunFromWizard({
       experimentId: experiment.id,
+      runName: runName.trim(),
       selectedSteps,
       drafts,
     });
@@ -112,10 +119,14 @@ export function RunCreationWizard({ experiment, onClose }: RunCreationWizardProp
   }, [
     createExperimentRunFromWizard,
     experiment.id,
+    runName,
     selectedSteps,
     drafts,
     onClose,
   ]);
+
+  const canContinueFromStepOne =
+    selectedKeys.size > 0 && runName.trim().length > 0;
 
   return (
     <Stepper
@@ -135,7 +146,7 @@ export function RunCreationWizard({ experiment, onClose }: RunCreationWizardProp
       className="flex h-full min-h-0 flex-col"
       onValidate={async (step) => {
         if (step === RUN_CREATION_WIZARD_STEPS.selectTasks) {
-          return selectedKeys.size > 0;
+          return canContinueFromStepOne;
         }
         return true;
       }}
@@ -145,8 +156,8 @@ export function RunCreationWizard({ experiment, onClose }: RunCreationWizardProp
           <StepperTrigger>
             <StepperIndicator />
             <div className="flex flex-col items-start text-left">
-              <StepperTitle>Select steps</StepperTitle>
-              <StepperDescription>Choose workflow tasks</StepperDescription>
+              <StepperTitle>Name & select</StepperTitle>
+              <StepperDescription>Run name and workflow tasks</StepperDescription>
             </div>
           </StepperTrigger>
           <StepperSeparator />
@@ -166,12 +177,30 @@ export function RunCreationWizard({ experiment, onClose }: RunCreationWizardProp
         value={RUN_CREATION_WIZARD_STEPS.selectTasks}
         className="min-h-0 flex-1 overflow-y-auto pb-4"
       >
-        <RunCreationStepSelect
-          workflowLabel={workflow?.label ?? "No workflow"}
-          steps={selectableSteps}
-          selectedKeys={selectedKeys}
-          onSelectionChange={setSelectedKeys}
-        />
+        <div className="flex flex-col gap-4">
+          <div className="grid gap-1.5">
+            <Label htmlFor="run-creation-name" className="text-xs text-muted-foreground">
+              Run name
+            </Label>
+            <Input
+              id="run-creation-name"
+              value={runName}
+              onChange={(e) => setRunName(e.target.value)}
+              placeholder={suggestDefaultRunName(experiment)}
+              autoComplete="off"
+            />
+            <p className="text-xs text-muted-foreground">
+              Shown on the experiment timeline and in planning.
+            </p>
+          </div>
+
+          <RunCreationStepSelect
+            workflowLabel={workflow?.label ?? "No workflow"}
+            steps={selectableSteps}
+            selectedKeys={selectedKeys}
+            onSelectionChange={setSelectedKeys}
+          />
+        </div>
       </StepperContent>
 
       <StepperContent
@@ -192,7 +221,7 @@ export function RunCreationWizard({ experiment, onClose }: RunCreationWizardProp
       {wizardStep === RUN_CREATION_WIZARD_STEPS.selectTasks ? (
         <div className="mt-auto flex shrink-0 justify-end gap-2 border-t border-border/60 pt-3">
           <StepperNext asChild>
-            <Button type="button" size="sm" disabled={selectedKeys.size === 0}>
+            <Button type="button" size="sm" disabled={!canContinueFromStepOne}>
               Continue
             </Button>
           </StepperNext>

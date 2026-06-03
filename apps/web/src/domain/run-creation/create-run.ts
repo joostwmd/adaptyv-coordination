@@ -35,15 +35,29 @@ function requiredPlatesFromDraft(
   return plates.length > 0 ? plates : undefined;
 }
 
-export function buildNewRunSummary(experiment: ExperimentDetail): ExperimentRunSummary {
+export function suggestDefaultRunName(experiment: ExperimentDetail): string {
+  const revisionIndex =
+    experiment.runs.length > 0
+      ? Math.max(...experiment.runs.map((r) => r.revisionIndex)) + 1
+      : 1;
+  return `Revision ${revisionIndex}`;
+}
+
+export function buildNewRunSummary(
+  experiment: ExperimentDetail,
+  runName?: string,
+): ExperimentRunSummary {
   const revisionIndex =
     experiment.runs.length > 0
       ? Math.max(...experiment.runs.map((r) => r.revisionIndex)) + 1
       : 1;
 
+  const trimmedName = runName?.trim();
+  const name = trimmedName || suggestDefaultRunName(experiment);
+
   return {
     id: `run-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-    name: `Revision ${revisionIndex}`,
+    name,
     revisionIndex,
     experimentId: experiment.id,
     status: "draft",
@@ -106,9 +120,10 @@ export function buildRunCreationResult(
   experiment: ExperimentDetail,
   selectedSteps: SelectableRunStep[],
   drafts: RunCreationDraft,
+  runName?: string,
 ): RunCreationResult | null {
   const { runs: _runs, ...summary } = experiment;
-  const run = buildNewRunSummary(experiment);
+  const run = buildNewRunSummary(experiment, runName);
   const tasks = buildTasksFromRunCreation(summary, run, selectedSteps, drafts);
   if (tasks.length === 0) return null;
   return { run, tasks };
