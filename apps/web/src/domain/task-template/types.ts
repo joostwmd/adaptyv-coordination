@@ -1,4 +1,10 @@
-export type ParamFieldType = "string" | "number" | "select" | "boolean" | "array";
+export type ParamFieldType =
+  | "string"
+  | "number"
+  | "select"
+  | "boolean"
+  | "array"
+  | "file";
 
 export type ParamField = {
   name: string;

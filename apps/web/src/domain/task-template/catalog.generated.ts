@@ -16,7 +16,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "kinetics",
@@ -26,14 +27,16 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "options": [
                     "MCK",
                     "SCK"
-                ]
+                ],
+                "title": "Kinetics"
             },
             {
                 "name": "overhead",
                 "type": "number",
                 "required": false,
                 "unit": "%",
-                "default": 20
+                "default": 20,
+                "title": "Overhead"
             },
             {
                 "name": "probe_lot",
@@ -45,6 +48,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "target_stocks",
                 "type": "array",
                 "required": false,
+                "title": "Target Stocks",
                 "itemFields": [
                     {
                         "name": "plate_id",
@@ -68,6 +72,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                             "half-log",
                             "log"
                         ],
+                        "title": "Dilution Factor",
                         "description": "Dilution factor"
                     },
                     {
@@ -82,6 +87,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                         "required": false,
                         "unit": "nM",
                         "default": 1000,
+                        "title": "Starting Concentration",
                         "description": "Concentration in nM"
                     },
                     {
@@ -89,6 +95,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                         "type": "number",
                         "required": false,
                         "default": 4,
+                        "title": "Number Of Concentrations",
                         "description": "Number of concentrations"
                     }
                 ]
@@ -97,20 +104,23 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "running_buffer",
                 "type": "string",
                 "required": true,
-                "default": "Buffer K"
+                "default": "Buffer K",
+                "title": "Running Buffer"
             },
             {
                 "name": "a_plate_well_volume",
                 "type": "number",
                 "required": false,
                 "unit": "uL",
-                "default": 48
+                "default": 48,
+                "title": "A Plate Well Volume"
             },
             {
                 "name": "final_dilution_factor",
                 "type": "number",
                 "required": true,
                 "default": 40,
+                "title": "Final Dilution Factor",
                 "description": "Dilution Factor in loading plate"
             },
             {
@@ -118,13 +128,15 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "type": "number",
                 "required": false,
                 "unit": "uL",
-                "default": 40
+                "default": 40,
+                "title": "B And C Plate Well Volume"
             },
             {
                 "name": "expression_dilution_factor",
                 "type": "number",
                 "required": true,
                 "default": 5,
+                "title": "Expression Dilution Factor",
                 "description": "Dilution Factor of expression plate"
             }
         ]
@@ -143,7 +155,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "probes_type",
@@ -158,7 +171,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                     "Protein A",
                     "Anti-Mouse IgG Fc",
                     "Anti-VHH"
-                ]
+                ],
+                "title": "Probes Type"
             }
         ]
     },
@@ -176,7 +190,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "buffer_k",
@@ -184,6 +199,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "required": true,
                 "unit": "L",
                 "default": 1,
+                "title": "Buffer K",
                 "description": "Volume in L"
             },
             {
@@ -192,6 +208,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "required": true,
                 "unit": "L",
                 "default": 0.5,
+                "title": "Buffer R",
                 "description": "Volume in L"
             },
             {
@@ -200,6 +217,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "required": true,
                 "unit": "L",
                 "default": 1,
+                "title": "Buffer Be",
                 "description": "Volume in L"
             }
         ]
@@ -218,7 +236,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "assay_type",
@@ -228,7 +247,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "options": [
                     "High Sensitivity Assay",
                     "Standard Assay"
-                ]
+                ],
+                "title": "Assay Type"
             },
             {
                 "name": "sample_prep_redox_state",
@@ -238,7 +258,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "options": [
                     "Reduced",
                     "Non-Reduced"
-                ]
+                ],
+                "title": "Sample Prep Redox State"
             }
         ]
     },
@@ -256,7 +277,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "chip_type",
@@ -267,12 +289,14 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                     "Protein Express",
                     "DNA 5K/RNA",
                     "Other"
-                ]
+                ],
+                "title": "Chip Type"
             },
             {
                 "name": "raw_data_file",
-                "type": "string",
-                "required": false
+                "type": "file",
+                "required": false,
+                "title": "Raw Data File"
             },
             {
                 "name": "assay_condition",
@@ -284,7 +308,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                     "Non-Reduced",
                     "Not Applicable",
                     "Other"
-                ]
+                ],
+                "title": "Assay Condition"
             }
         ]
     },
@@ -302,19 +327,22 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "kit_size",
                 "type": "string",
                 "required": true,
-                "default": "L"
+                "default": "L",
+                "title": "Kit Size"
             },
             {
                 "name": "kit_type",
                 "type": "string",
                 "required": true,
-                "default": "PUREfrex 2.1"
+                "default": "PUREfrex 2.1",
+                "title": "Kit Type"
             },
             {
                 "name": "total_volume",
@@ -322,6 +350,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "required": true,
                 "unit": "uL",
                 "default": 1500,
+                "title": "Total Volume",
                 "description": "Volume in uL"
             }
         ]
@@ -351,7 +380,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             }
         ]
     },
@@ -378,7 +408,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             }
         ]
     },
@@ -396,7 +427,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "target_concentration",
@@ -404,6 +436,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "required": true,
                 "unit": "nM",
                 "default": 100,
+                "title": "Target Concentration",
                 "description": "Concentration in nM"
             }
         ]
@@ -422,19 +455,22 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "final_volume",
                 "type": "number",
                 "required": false,
-                "default": 30
+                "default": 30,
+                "title": "Final Volume"
             },
             {
                 "name": "dilution_factor",
                 "type": "number",
                 "required": true,
                 "default": 5,
+                "title": "Dilution Factor",
                 "description": "Dilution factor"
             }
         ]
@@ -453,19 +489,22 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "CFE Batch",
                 "type": "string",
                 "required": false,
-                "default": "CFE-"
+                "default": "CFE-",
+                "title": "CFE Batch"
             },
             {
                 "name": "expression_media",
                 "type": "string",
                 "required": true,
-                "default": "PUREfrex 2.1"
+                "default": "PUREfrex 2.1",
+                "title": "Expression Media"
             },
             {
                 "name": "expression_volume",
@@ -473,6 +512,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "required": true,
                 "unit": "uL",
                 "default": 6,
+                "title": "Expression Volume",
                 "description": "Volume in uL"
             },
             {
@@ -480,7 +520,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "type": "number",
                 "required": false,
                 "unit": "C",
-                "default": 37
+                "default": 37,
+                "title": "Expression Temperature"
             }
         ]
     },
@@ -498,7 +539,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "property_4",
@@ -515,6 +557,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "required": true,
                 "unit": "hours",
                 "default": 12,
+                "title": "Expression Time",
                 "description": "Time in hours"
             },
             {
@@ -523,6 +566,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "required": true,
                 "unit": "C",
                 "default": 25,
+                "title": "Expression Temperature",
                 "description": "Temperature in degrees Celsius"
             }
         ]
@@ -551,7 +595,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             }
         ]
     },
@@ -600,7 +645,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "beads_type",
@@ -611,7 +657,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                     "Strep-Tactin XT beads",
                     "His Monster Beads",
                     "Other"
-                ]
+                ],
+                "title": "Beads Type"
             },
             {
                 "name": "input_volume",
@@ -619,6 +666,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "required": true,
                 "unit": "uL",
                 "default": 40,
+                "title": "Input Volume",
                 "description": "Input Volume in uL"
             },
             {
@@ -627,6 +675,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "required": true,
                 "unit": "uL",
                 "default": 40,
+                "title": "Elution Volume",
                 "description": "Elution Volume in uL"
             }
         ]
@@ -645,21 +694,24 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "sample_volume",
                 "type": "number",
                 "required": false,
                 "unit": "uL",
-                "default": 2.5
+                "default": 2.5,
+                "title": "Sample Volume"
             },
             {
                 "name": "quant-it_volume",
                 "type": "number",
                 "required": false,
                 "unit": "uL",
-                "default": 22.5
+                "default": 22.5,
+                "title": "Quant-it Volume"
             },
             {
                 "name": "standard_volume",
@@ -669,7 +721,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "options": [
                     "2.5 uL - Normal Std Curve",
                     "2.75 uL - Biotin-Spiked Std Curve"
-                ]
+                ],
+                "title": "Standard Volume"
             }
         ]
     },
@@ -687,18 +740,21 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "gain",
                 "type": "number",
                 "required": true,
-                "default": 860
+                "default": 860,
+                "title": "Gain"
             },
             {
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "raw_data_file",
-                "type": "string",
-                "required": false
+                "type": "file",
+                "required": false,
+                "title": "Raw Data File"
             }
         ]
     },
@@ -716,7 +772,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             }
         ]
     },
@@ -744,7 +801,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "well_volume",
@@ -805,7 +863,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "well_volume",
@@ -883,7 +942,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "property_3",
@@ -912,7 +972,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "type": "number",
                 "required": false,
                 "unit": "uL",
-                "default": 4
+                "default": 4,
+                "title": "Diluted Expression Volume"
             }
         ]
     },
@@ -929,19 +990,22 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "raw_data_file",
-                "type": "string",
-                "required": false
+                "type": "file",
+                "required": false,
+                "title": "Raw Data File"
             },
             {
                 "name": "incubation_time",
                 "type": "number",
                 "required": false,
                 "unit": "min",
-                "default": 90
+                "default": 90,
+                "title": "Incubation Time"
             }
         ]
     },
@@ -969,18 +1033,21 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "chip_id",
                 "type": "string",
                 "required": false,
-                "default": "CHIP-"
+                "default": "CHIP-",
+                "title": "Chip Id"
             },
             {
                 "name": "target_stocks",
                 "type": "array",
                 "required": false,
+                "title": "Target Stocks",
                 "itemFields": [
                     {
                         "name": "plate_id",
@@ -1004,6 +1071,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                             "half-log",
                             "log"
                         ],
+                        "title": "Dilution Factor",
                         "description": "Dilution factor"
                     },
                     {
@@ -1018,6 +1086,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                         "required": false,
                         "unit": "nM",
                         "default": 1000,
+                        "title": "Starting Concentration",
                         "description": "Concentration in nM"
                     },
                     {
@@ -1025,6 +1094,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                         "type": "number",
                         "required": false,
                         "default": 5,
+                        "title": "Number Of Concentrations",
                         "description": "Number of concentrations"
                     }
                 ]
@@ -1033,13 +1103,15 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "running_buffer",
                 "type": "string",
                 "required": false,
-                "default": "HBSTE"
+                "default": "HBSTE",
+                "title": "Running Buffer"
             },
             {
                 "name": "final_dilution_factor",
                 "type": "number",
                 "required": false,
                 "default": 100,
+                "title": "Final Dilution Factor",
                 "description": "Dilution Factor in loading plate"
             },
             {
@@ -1047,6 +1119,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "type": "number",
                 "required": false,
                 "default": 5,
+                "title": "Expression Dilution Factor",
                 "description": "Dilution Factor of expression plate"
             }
         ]
@@ -1065,7 +1138,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             }
         ]
     },
@@ -1083,7 +1157,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "probes_type",
@@ -1182,6 +1257,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                                 "type": "array",
                                 "required": false,
                                 "default": [],
+                                "title": "Results",
                                 "itemFields": [
                                     {
                                         "name": "key",
@@ -1256,6 +1332,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                                 "type": "array",
                                 "required": false,
                                 "default": [],
+                                "title": "Results",
                                 "itemFields": [
                                     {
                                         "name": "key",
@@ -1330,6 +1407,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                                 "type": "array",
                                 "required": false,
                                 "default": [],
+                                "title": "Results",
                                 "itemFields": [
                                     {
                                         "name": "key",
@@ -1393,24 +1471,28 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "buffer",
                 "type": "string",
                 "required": true,
-                "default": "Buffer BE"
+                "default": "Buffer BE",
+                "title": "Buffer"
             },
             {
                 "name": "input_volume",
                 "type": "number",
                 "required": false,
-                "unit": "uL"
+                "unit": "uL",
+                "title": "Input Volume"
             },
             {
                 "name": "reconstituted_stocks",
                 "type": "array",
                 "required": false,
+                "title": "Reconstituted Stocks",
                 "itemFields": [
                     {
                         "name": "plate_id",
@@ -1448,24 +1530,28 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "buffer",
                 "type": "string",
                 "required": true,
-                "default": "Buffer BE"
+                "default": "Buffer BE",
+                "title": "Buffer"
             },
             {
                 "name": "input_volume",
                 "type": "number",
                 "required": false,
-                "unit": "uL"
+                "unit": "uL",
+                "title": "Input Volume"
             },
             {
                 "name": "reconstituted_stocks",
                 "type": "array",
                 "required": false,
+                "title": "Reconstituted Stocks",
                 "itemFields": [
                     {
                         "name": "plate_id",
@@ -1491,7 +1577,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "change_of_buffer_after_2hrs",
                 "type": "boolean",
                 "required": true,
-                "default": true
+                "default": true,
+                "title": "Change Of Buffer After 2hrs"
             }
         ]
     },
@@ -1509,12 +1596,14 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "buffer_exchanged_stocks",
                 "type": "array",
                 "required": false,
+                "title": "Buffer Exchanged Stocks",
                 "itemFields": [
                     {
                         "name": "plate_id",
@@ -1530,7 +1619,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                         "options": [
                             "1.5mL",
                             "5mL"
-                        ]
+                        ],
+                        "title": "Tube Type"
                     },
                     {
                         "name": "plate_code",
@@ -1542,14 +1632,16 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                         "name": "sample_weight",
                         "type": "number",
                         "required": false,
-                        "unit": "mg"
+                        "unit": "mg",
+                        "title": "Sample Weight"
                     },
                     {
                         "name": "number_of_tubes",
                         "type": "number",
                         "required": false,
                         "unit": "mg",
-                        "default": 1
+                        "default": 1,
+                        "title": "Number Of Tubes"
                     },
                     {
                         "name": "material_stock_id",
@@ -1561,7 +1653,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                         "name": "qubit_concentration",
                         "type": "number",
                         "required": false,
-                        "unit": "ug/mL"
+                        "unit": "ug/mL",
+                        "title": "Qubit Concentration"
                     }
                 ]
             }
@@ -1581,7 +1674,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "volume",
@@ -1594,6 +1688,7 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "lyophilised_stocks",
                 "type": "array",
                 "required": false,
+                "title": "Lyophilised Stocks",
                 "itemFields": [
                     {
                         "name": "plate_id",
@@ -1638,7 +1733,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "capillary_type",
@@ -1648,7 +1744,8 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "options": [
                     "Prometheus High Sensitivity Capillaries",
                     "Other"
-                ]
+                ],
+                "title": "Capillary Type"
             }
         ]
     },
@@ -1666,40 +1763,46 @@ export const TASK_TEMPLATE_BASES: TaskTemplateBase[] = [
                 "name": "notes",
                 "type": "string",
                 "required": false,
-                "default": ""
+                "default": "",
+                "title": "Notes"
             },
             {
                 "name": "raw_data_file",
-                "type": "string",
-                "required": false
+                "type": "file",
+                "required": false,
+                "title": "Raw Data File"
             },
             {
                 "name": "temp_range_max",
                 "type": "number",
                 "required": true,
                 "unit": "C",
-                "default": 95
+                "default": 95,
+                "title": "Temp Range Max"
             },
             {
                 "name": "temp_range_min",
                 "type": "number",
                 "required": true,
                 "unit": "C",
-                "default": 20
+                "default": 20,
+                "title": "Temp Range Min"
             },
             {
                 "name": "laser_intensity",
                 "type": "number",
                 "required": true,
                 "unit": "%",
-                "default": 100
+                "default": 100,
+                "title": "Laser Intensity"
             },
             {
                 "name": "temp_range_increment",
                 "type": "number",
                 "required": true,
                 "unit": "C",
-                "default": 1.5
+                "default": 1.5,
+                "title": "Temp Range Increment"
             }
         ]
     },

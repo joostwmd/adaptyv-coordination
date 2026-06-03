@@ -106,15 +106,10 @@ function getExperiment(id: string): ExperimentDetail {
   return experiment;
 }
 
-const GENERIC_BINDING_WORKFLOW = WORKFLOW_PRESETS.find(
-  (workflow) => workflow.id === "binding-screening-default",
-);
-
 function resolveWorkflow(experiment: ExperimentDetail): WorkflowTemplate | undefined {
   return (
     getWorkflowTemplate(experiment.type, experiment.methodName) ??
-    getWorkflowTemplate(experiment.type) ??
-    (experiment.type === "epitope_binning" ? GENERIC_BINDING_WORKFLOW : undefined)
+    getWorkflowTemplate(experiment.type)
   );
 }
 

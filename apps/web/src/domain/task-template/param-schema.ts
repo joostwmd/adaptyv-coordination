@@ -3,43 +3,21 @@ import type { ParamField, ParamSchema } from "./types";
 /** @deprecated Use planning param filters; kept for imports that only excluded notes. */
 export const RUN_PARAM_UI_EXCLUDED = new Set(["notes"]);
 
-/** Lab-runner fields hidden from planning Run settings (artifacts, traceability, layout). */
-const PLANNING_PARAM_EXCLUDED_NAMES = new Set([
-  "notes",
-  "raw_data_file",
-  "probe_lot",
-  "CFE Batch",
-  "chip_id",
-  "kit_size",
-  "kit_type",
-  "materials_plate",
-  "standards_plate",
-  "overhead",
-  "n",
-  "plates_count",
-  "target_concentration",
-  "property_1",
-  "property_2",
-  "property_3",
-]);
+/** Free-text notes only — not protocol inputs. */
+const PLANNING_PARAM_EXCLUDED_NAMES = new Set(["notes"]);
 
-function isVolumeOrLayoutField(name: string): boolean {
-  if (name === "volume" || name === "well_volume") return true;
-  if (name.endsWith("_volume") || name.endsWith("_volumes")) return true;
-  if (name.startsWith("temp_range_")) return true;
+/** Inventory / plate-picker arrays handled outside scalar Run settings. */
+function isInventoryPickerField(field: ParamField): boolean {
+  if (field.type === "array") return true;
+  if (field.name.endsWith("_stocks")) return true;
   return false;
-}
-
-function isStockOrPlateRefField(name: string): boolean {
-  return name.endsWith("_stocks") || name.endsWith("_plate");
 }
 
 /** Whether a schema field should appear in planning Run settings UI. */
 export function isPlanningRelevantParamField(field: ParamField): boolean {
   if (PLANNING_PARAM_EXCLUDED_NAMES.has(field.name)) return false;
-  if (field.type === "array") return false;
-  if (isVolumeOrLayoutField(field.name)) return false;
-  if (isStockOrPlateRefField(field.name)) return false;
+  if (field.type === "file") return false;
+  if (isInventoryPickerField(field)) return false;
   return true;
 }
 
@@ -89,6 +67,7 @@ export function getSummaryParamFields(
 export function getDefaultParams(schema: ParamSchema): Record<string, unknown> {
   const params: Record<string, unknown> = {};
   for (const field of schema.fields) {
+    if (field.type === "file") continue;
     if (field.default !== undefined) {
       params[field.name] = field.default;
     } else if (field.type === "array") {
@@ -108,7 +87,7 @@ export function getMissingRequiredParams(
   schema: ParamSchema,
   params: Record<string, unknown>,
 ): string[] {
-  return schema.fields
+  return getDisplayParamFields(schema)
     .filter((f) => f.required)
     .filter((f) => {
       const v = params[f.name];
@@ -147,6 +126,13 @@ const BATCHABLE_CANDIDATES = [
   "capillary_type",
   "chip_type",
   "assay_condition",
+  "temp_range_min",
+  "temp_range_max",
+  "temp_range_increment",
+  "laser_intensity",
+  "beads_type",
+  "input_volume",
+  "elution_volume",
   "property_4",
 ];
 
