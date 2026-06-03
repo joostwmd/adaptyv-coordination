@@ -1,0 +1,47 @@
+import { getTaskTemplate } from "@/domain/task-template/catalog";
+import {
+  getDisplayParamFields,
+  paramFieldHasValue,
+} from "@/domain/task-template/param-schema";
+import type { TaskTemplate } from "@/domain/task-template/types";
+
+import type { RunCreationDraft, RunTaskDraft } from "./draft";
+
+export type TaskConfigStatus = "complete" | "incomplete";
+
+export function getTaskConfigStatus(
+  draft: RunTaskDraft | undefined,
+  template: TaskTemplate | undefined,
+): TaskConfigStatus {
+  if (!draft || !template) return "incomplete";
+
+  const missingParams = getDisplayParamFields(template.paramSchema).filter(
+    (field) => field.required && !paramFieldHasValue(draft.params[field.name]),
+  );
+
+  const missingPlates = (template.requiredPlateTypes ?? []).filter(
+    (plateTypeId) => !draft.plateAssignments[plateTypeId],
+  );
+
+  return missingParams.length === 0 && missingPlates.length === 0
+    ? "complete"
+    : "incomplete";
+}
+
+export function getTaskConfigStatusForStep(
+  draft: RunTaskDraft | undefined,
+  taskTemplateId: string,
+): TaskConfigStatus {
+  return getTaskConfigStatus(draft, getTaskTemplate(taskTemplateId));
+}
+
+export function isRunCreationDraftComplete(
+  steps: { key: string; taskTemplateId: string }[],
+  drafts: RunCreationDraft,
+): boolean {
+  return steps.every(
+    (step) =>
+      getTaskConfigStatusForStep(drafts[step.key], step.taskTemplateId) ===
+      "complete",
+  );
+}

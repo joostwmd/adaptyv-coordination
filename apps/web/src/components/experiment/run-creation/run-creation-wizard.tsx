@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@adaptyv-coordination/ui/components/button";
 import {
@@ -9,12 +10,15 @@ import {
   StepperItem,
   StepperList,
   StepperNext,
-  StepperPrev,
   StepperSeparator,
   StepperTitle,
   StepperTrigger,
 } from "@adaptyv-coordination/ui/components/stepper";
 
+import {
+  buildInitialDrafts,
+  type RunCreationDraft,
+} from "@/domain/run-creation/draft";
 import {
   buildSelectableRunSteps,
   defaultSelectedStepKeys,
@@ -24,15 +28,21 @@ import {
   RUN_CREATION_WIZARD_STEPS,
   type RunCreationWizardStep,
 } from "@/domain/run-creation/types";
+import { usePlanningStore } from "@/stores/usePlanningStore";
 import type { ExperimentDetail } from "@/types";
 
+import { RunCreationConfigurePanel } from "./run-creation-configure-panel";
 import { RunCreationStepSelect } from "./run-creation-step-select";
 
 type RunCreationWizardProps = {
   experiment: ExperimentDetail;
+  onClose?: () => void;
 };
 
-export function RunCreationWizard({ experiment }: RunCreationWizardProps) {
+export function RunCreationWizard({ experiment, onClose }: RunCreationWizardProps) {
+  const createExperimentRunFromWizard = usePlanningStore(
+    (s) => s.createExperimentRunFromWizard,
+  );
   const workflow = useMemo(
     () => resolveWorkflowForExperiment(experiment),
     [experiment],
@@ -43,7 +53,7 @@ export function RunCreationWizard({ experiment }: RunCreationWizardProps) {
     [workflow],
   );
 
-  const [activeStep, setActiveStep] = useState<RunCreationWizardStep>(
+  const [wizardStep, setWizardStep] = useState<RunCreationWizardStep>(
     RUN_CREATION_WIZARD_STEPS.selectTasks,
   );
 
@@ -51,15 +61,20 @@ export function RunCreationWizard({ experiment }: RunCreationWizardProps) {
     defaultSelectedStepKeys(selectableSteps),
   );
 
+  const [drafts, setDrafts] = useState<RunCreationDraft>({});
+  const [activeConfigStepKey, setActiveConfigStepKey] = useState<string>("");
+
   useEffect(() => {
     if (!workflow) {
       setSelectedKeys(new Set());
-      setActiveStep(RUN_CREATION_WIZARD_STEPS.selectTasks);
+      setWizardStep(RUN_CREATION_WIZARD_STEPS.selectTasks);
       return;
     }
     const steps = buildSelectableRunSteps(workflow);
     setSelectedKeys(defaultSelectedStepKeys(steps));
-    setActiveStep(RUN_CREATION_WIZARD_STEPS.selectTasks);
+    setWizardStep(RUN_CREATION_WIZARD_STEPS.selectTasks);
+    setDrafts({});
+    setActiveConfigStepKey("");
   }, [experiment.id, workflow]);
 
   const selectedSteps = useMemo(
@@ -67,10 +82,55 @@ export function RunCreationWizard({ experiment }: RunCreationWizardProps) {
     [selectableSteps, selectedKeys],
   );
 
+  const enterConfigureStep = useCallback(() => {
+    const steps = selectableSteps.filter((s) => selectedKeys.has(s.key));
+    const initialDrafts = buildInitialDrafts(steps);
+    setDrafts(initialDrafts);
+    setActiveConfigStepKey(steps[0]?.key ?? "");
+    setWizardStep(RUN_CREATION_WIZARD_STEPS.configure);
+  }, [selectableSteps, selectedKeys]);
+
+  const handleCreateRun = useCallback(() => {
+    const result = createExperimentRunFromWizard({
+      experimentId: experiment.id,
+      selectedSteps,
+      drafts,
+    });
+
+    if (!result) {
+      toast.error("Could not create run", {
+        description: "Check step selection and configuration, then try again.",
+      });
+      return;
+    }
+
+    const readyCount = result.tasks.filter((t) => t.readiness === "ready").length;
+    toast.success("Run created", {
+      description: `${result.tasks.length} tasks added to the planning queue (${readyCount} ready).`,
+    });
+    onClose?.();
+  }, [
+    createExperimentRunFromWizard,
+    experiment.id,
+    selectedSteps,
+    drafts,
+    onClose,
+  ]);
+
   return (
     <Stepper
-      value={activeStep}
-      onValueChange={(value) => setActiveStep(value as RunCreationWizardStep)}
+      value={wizardStep}
+      onValueChange={(value) => {
+        const next = value as RunCreationWizardStep;
+        if (
+          next === RUN_CREATION_WIZARD_STEPS.configure &&
+          wizardStep === RUN_CREATION_WIZARD_STEPS.selectTasks
+        ) {
+          enterConfigureStep();
+          return;
+        }
+        setWizardStep(next);
+      }}
       nonInteractive
       className="flex h-full min-h-0 flex-col"
       onValidate={async (step) => {
@@ -80,7 +140,7 @@ export function RunCreationWizard({ experiment }: RunCreationWizardProps) {
         return true;
       }}
     >
-      <StepperList className="mb-1">
+      <StepperList className="mb-2 shrink-0">
         <StepperItem value={RUN_CREATION_WIZARD_STEPS.selectTasks}>
           <StepperTrigger>
             <StepperIndicator />
@@ -116,43 +176,28 @@ export function RunCreationWizard({ experiment }: RunCreationWizardProps) {
 
       <StepperContent
         value={RUN_CREATION_WIZARD_STEPS.configure}
-        className="min-h-0 flex-1 overflow-y-auto pb-4"
+        className="flex min-h-0 flex-1 flex-col overflow-hidden"
       >
-        <div className="rounded-lg border border-dashed border-border/80 bg-muted/20 px-4 py-8 text-center">
-          <p className="text-sm font-medium text-foreground">
-            Configure parameters and inputs
-          </p>
-          <p className="mt-2 text-xs text-muted-foreground">
-            {selectedSteps.length} step
-            {selectedSteps.length === 1 ? "" : "s"} selected — form fields for each
-            task will appear here next.
-          </p>
-        </div>
+        <RunCreationConfigurePanel
+          selectedSteps={selectedSteps}
+          drafts={drafts}
+          onDraftsChange={setDrafts}
+          activeStepKey={activeConfigStepKey}
+          onActiveStepKeyChange={setActiveConfigStepKey}
+          onBack={() => setWizardStep(RUN_CREATION_WIZARD_STEPS.selectTasks)}
+          onCreateRun={handleCreateRun}
+        />
       </StepperContent>
 
-      <div className="mt-auto flex shrink-0 items-center justify-between gap-3 border-t border-border/60 pt-4">
-        {activeStep === RUN_CREATION_WIZARD_STEPS.selectTasks ? (
-          <span />
-        ) : (
-          <StepperPrev asChild>
-            <Button type="button" variant="outline" size="sm">
-              Back
-            </Button>
-          </StepperPrev>
-        )}
-
-        {activeStep === RUN_CREATION_WIZARD_STEPS.selectTasks ? (
+      {wizardStep === RUN_CREATION_WIZARD_STEPS.selectTasks ? (
+        <div className="mt-auto flex shrink-0 justify-end gap-2 border-t border-border/60 pt-3">
           <StepperNext asChild>
             <Button type="button" size="sm" disabled={selectedKeys.size === 0}>
               Continue
             </Button>
           </StepperNext>
-        ) : (
-          <Button type="button" size="sm" disabled title="Coming in the next step">
-            Create run
-          </Button>
-        )}
-      </div>
+        </div>
+      ) : null}
     </Stepper>
   );
 }

@@ -29,6 +29,10 @@ import {
 import type { StandaloneTaskContext } from "@/domain/task/scaffold";
 import { primaryRunForExperiment } from "@/domain/task/scaffold";
 import type { Task } from "@/types";
+import { buildRunCreationResult } from "@/domain/run-creation/create-run";
+import type { RunCreationDraft } from "@/domain/run-creation/draft";
+import type { SelectableRunStep } from "@/domain/run-creation/types";
+import type { ExperimentRunSummary } from "@/types/experiment";
 import { getWorkflowTemplate } from "@/domain/workflow";
 import { usePrototypeStore } from "./usePrototypeStore";
 
@@ -46,6 +50,11 @@ interface PlanningState {
   deleteTask: (id: string) => void;
 
   scaffoldFromExperiment: (experimentId: string) => Task[];
+  createExperimentRunFromWizard: (payload: {
+    experimentId: string;
+    selectedSteps: SelectableRunStep[];
+    drafts: RunCreationDraft;
+  }) => { run: ExperimentRunSummary; tasks: Task[] } | null;
   createStandaloneTask: (
     taskTemplateId: string,
     params?: Record<string, unknown>,
@@ -176,6 +185,30 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
       tasks: syncReadiness([...state.tasks, ...newTasks]),
     }));
     return newTasks;
+  },
+
+  createExperimentRunFromWizard: (payload) => {
+    const experiment = usePrototypeStore
+      .getState()
+      .experiments.find((e) => e.id === payload.experimentId);
+    if (!experiment) return null;
+
+    const result = buildRunCreationResult(
+      experiment,
+      payload.selectedSteps,
+      payload.drafts,
+    );
+    if (!result) return null;
+
+    const { run, tasks } = result;
+
+    usePrototypeStore.getState().addExperimentRunWithTasks(experiment.id, run, tasks);
+
+    set((state) => ({
+      tasks: syncReadiness([...state.tasks, ...tasks]),
+    }));
+
+    return { run, tasks };
   },
 
   createStandaloneTask: (taskTemplateId, params = {}, context = {}) => {

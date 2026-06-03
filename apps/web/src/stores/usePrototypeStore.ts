@@ -48,6 +48,12 @@ interface PrototypeState {
   updateExperiment: (id: string, updates: Partial<ExperimentDetail>) => void;
   deleteExperiment: (id: string) => void;
   addExperimentRun: (experimentId: string, run: Omit<ExperimentRunSummary, 'id' | 'experimentId'>) => void;
+  /** Atomically add a run and its tasks (shared ids with planning store). */
+  addExperimentRunWithTasks: (
+    experimentId: string,
+    run: ExperimentRunSummary,
+    tasks: Task[],
+  ) => void;
   updateExperimentRun: (experimentId: string, runId: string, updates: Partial<ExperimentRunSummary>) => void;
   deleteExperimentRun: (experimentId: string, runId: string) => void;
   
@@ -181,6 +187,26 @@ export const usePrototypeStore = create<PrototypeState>((set, get) => ({
           : exp
       ),
     })),
+
+  addExperimentRunWithTasks: (experimentId, run, tasks) =>
+    set((state) => {
+      const allTasks = [...state.tasks, ...tasks];
+      return {
+        tasks: allTasks,
+        experiments: syncRunStatsInExperiments(
+          state.experiments.map((exp) =>
+            exp.id === experimentId
+              ? {
+                  ...exp,
+                  status: "configured" as const,
+                  runs: [...exp.runs, { ...run, ...deriveRunTaskStats(run.id, allTasks) }],
+                }
+              : exp,
+          ),
+          allTasks,
+        ),
+      };
+    }),
   
   updateExperimentRun: (experimentId, runId, updates) =>
     set((state) => ({
