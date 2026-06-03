@@ -376,8 +376,8 @@ export const useContextItemCount = () => usePrototypeStore(state => state.contex
 export const usePendingTaskCount = () => usePrototypeStore(state => 
   state.tasks.filter(task => task.status === 'pending').length
 );
-export const useSuccessTaskCount = () => usePrototypeStore(state => 
-  state.tasks.filter(task => task.status === 'success').length
+export const useCompletedTaskCount = () => usePrototypeStore(state => 
+  state.tasks.filter(task => task.status === 'completed').length
 );
 export const useFailedTaskCount = () => usePrototypeStore(state => 
   state.tasks.filter(task => task.status === 'failed').length

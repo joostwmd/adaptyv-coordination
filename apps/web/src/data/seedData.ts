@@ -44,22 +44,32 @@ export const seedExperiments: ExperimentDetail[] = [
     category: "rd",
     dueDate: "2026-06-28",
     client: seedClients[0],
-    status: {
-      name: "Data analysis and validation",
-      color: "#00C9E4",
-    },
+    status: "configured",
     runs: [
       {
         id: "run-tnq-baseline",
         name: "Baseline run",
         revisionIndex: 1,
         experimentId: "100a7e4a-8521-5ce9-b22c-7c4f88922623",
+        status: "completed",
+        createdAt: "2026-05-20T09:00:00.000Z",
+        startedAt: "2026-05-20T10:00:00.000Z",
+        completedAt: "2026-05-20T16:00:00.000Z",
+        taskCount: 5,
+        completedTaskCount: 5,
+        failedTaskCount: 0,
       },
       {
         id: "run-tnq-rev2",
         name: "Revision 2 — buffer swap",
         revisionIndex: 2,
         experimentId: "100a7e4a-8521-5ce9-b22c-7c4f88922623",
+        status: "in_progress",
+        createdAt: "2026-05-28T09:00:00.000Z",
+        startedAt: "2026-05-29T08:00:00.000Z",
+        taskCount: 4,
+        completedTaskCount: 2,
+        failedTaskCount: 0,
       },
     ],
   },
@@ -74,16 +84,19 @@ export const seedExperiments: ExperimentDetail[] = [
     category: "production",
     dueDate: "2026-06-04",
     client: seedClients[0],
-    status: {
-      name: "In production",
-      color: "#10b981",
-    },
+    status: "configured",
     runs: [
       {
         id: "run-r3x-rev3",
         name: "Production revision 3",
         revisionIndex: 3,
         experimentId: "exp-production-1",
+        status: "in_progress",
+        createdAt: "2026-06-01T08:00:00.000Z",
+        startedAt: "2026-06-01T09:00:00.000Z",
+        taskCount: 8,
+        completedTaskCount: 6,
+        failedTaskCount: 0,
       },
     ],
   },
@@ -98,16 +111,18 @@ export const seedExperiments: ExperimentDetail[] = [
     category: "rd",
     dueDate: "2026-06-18",
     client: seedClients[0],
-    status: {
-      name: "Waiting for materials",
-      color: "#eab308",
-    },
+    status: "synced",
     runs: [
       {
         id: "run-bsn-rev1",
         name: "Initial binding panel",
         revisionIndex: 1,
         experimentId: "exp-binding-1",
+        status: "draft",
+        createdAt: "2026-05-25T14:00:00.000Z",
+        taskCount: 0,
+        completedTaskCount: 0,
+        failedTaskCount: 0,
       },
     ],
   },
@@ -122,22 +137,31 @@ export const seedExperiments: ExperimentDetail[] = [
     category: "rd",
     dueDate: "2026-07-05",
     client: seedClients[1],
-    status: {
-      name: "Active",
-      color: "#3b82f6",
-    },
+    status: "configured",
     runs: [
       {
         id: "run-acm-pilot",
         name: "Pilot expression study",
         revisionIndex: 1,
         experimentId: "exp-acme-expression",
+        status: "completed",
+        createdAt: "2026-05-15T10:00:00.000Z",
+        startedAt: "2026-05-16T08:00:00.000Z",
+        completedAt: "2026-05-18T17:00:00.000Z",
+        taskCount: 6,
+        completedTaskCount: 6,
+        failedTaskCount: 0,
       },
       {
         id: "run-acm-scale",
         name: "Scale-up validation",
         revisionIndex: 2,
         experimentId: "exp-acme-expression",
+        status: "ready",
+        createdAt: "2026-06-01T15:00:00.000Z",
+        taskCount: 7,
+        completedTaskCount: 0,
+        failedTaskCount: 0,
       },
     ],
   },
@@ -152,16 +176,19 @@ export const seedExperiments: ExperimentDetail[] = [
     category: "rd",
     dueDate: "2026-06-12",
     client: seedClients[2],
-    status: {
-      name: "Sample prep",
-      color: "#f59e0b",
-    },
+    status: "configured",
     runs: [
       {
         id: "run-bps-mapping",
         name: "Initial epitope mapping",
         revisionIndex: 1,
         experimentId: "exp-biopharma-epitope",
+        status: "in_progress",
+        createdAt: "2026-05-22T11:00:00.000Z",
+        startedAt: "2026-05-23T09:00:00.000Z",
+        taskCount: 4,
+        completedTaskCount: 2,
+        failedTaskCount: 0,
       },
     ],
   },
@@ -176,16 +203,20 @@ export const seedExperiments: ExperimentDetail[] = [
     category: "production",
     dueDate: "2026-06-08",
     client: seedClients[3],
-    status: {
-      name: "Completed",
-      color: "#10b981",
-    },
+    status: "configured",
     runs: [
       {
         id: "run-gti-stability",
         name: "6-month stability study",
         revisionIndex: 1,
         experimentId: "exp-gentech-stability",
+        status: "completed",
+        createdAt: "2025-12-01T10:00:00.000Z",
+        startedAt: "2025-12-02T08:00:00.000Z",
+        completedAt: "2026-06-02T17:00:00.000Z",
+        taskCount: 12,
+        completedTaskCount: 12,
+        failedTaskCount: 0,
       },
     ],
   },
@@ -200,16 +231,18 @@ export const seedExperiments: ExperimentDetail[] = [
     category: "rd",
     dueDate: "2026-07-15",
     client: seedClients[4],
-    status: {
-      name: "Planning",
-      color: "#6b7280",
-    },
+    status: "synced",
     runs: [
       {
         id: "run-mdc-hts",
         name: "HTS binding assay",
         revisionIndex: 1,
         experimentId: "exp-medcore-screen",
+        status: "draft",
+        createdAt: "2026-06-01T16:00:00.000Z",
+        taskCount: 0,
+        completedTaskCount: 0,
+        failedTaskCount: 0,
       },
     ],
   },
@@ -224,13 +257,19 @@ export const seedExperiments: ExperimentDetail[] = [
     category: "rd",
     dueDate: "2026-06-22",
     client: seedClients[0],
-    status: { name: "Active", color: "#3b82f6" },
+    status: "configured",
     runs: [
       {
         id: "run-frd-pilot",
         name: "Pilot expression",
         revisionIndex: 1,
         experimentId: "exp-fredy-expression",
+        status: "in_progress",
+        createdAt: "2026-05-30T09:00:00.000Z",
+        startedAt: "2026-05-31T08:00:00.000Z",
+        taskCount: 5,
+        completedTaskCount: 3,
+        failedTaskCount: 0,
       },
     ],
   },
@@ -245,13 +284,18 @@ export const seedExperiments: ExperimentDetail[] = [
     category: "rd",
     dueDate: "2026-06-10",
     client: seedClients[1],
-    status: { name: "Planning", color: "#6b7280" },
+    status: "synced",
     runs: [
       {
         id: "run-acm-bind",
         name: "DSF binding panel",
         revisionIndex: 1,
         experimentId: "exp-acme-binding",
+        status: "draft",
+        createdAt: "2026-06-02T14:00:00.000Z",
+        taskCount: 0,
+        completedTaskCount: 0,
+        failedTaskCount: 0,
       },
     ],
   },
@@ -266,13 +310,18 @@ export const seedExperiments: ExperimentDetail[] = [
     category: "rd",
     dueDate: "2026-06-14",
     client: seedClients[4],
-    status: { name: "Sample prep", color: "#f59e0b" },
+    status: "configured",
     runs: [
       {
         id: "run-mdc-spr",
         name: "SPR titration series",
         revisionIndex: 1,
         experimentId: "exp-medcore-affinity",
+        status: "ready",
+        createdAt: "2026-05-28T10:00:00.000Z",
+        taskCount: 6,
+        completedTaskCount: 0,
+        failedTaskCount: 0,
       },
     ],
   },
@@ -287,13 +336,19 @@ export const seedExperiments: ExperimentDetail[] = [
     category: "rd",
     dueDate: "2026-06-07",
     client: seedClients[2],
-    status: { name: "Waiting for materials", color: "#eab308" },
+    status: "configured",
     runs: [
       {
         id: "run-bps-bli",
         name: "BLI competitive panel",
         revisionIndex: 1,
         experimentId: "exp-biopharma-binding",
+        status: "failed",
+        createdAt: "2026-05-24T12:00:00.000Z",
+        startedAt: "2026-05-25T08:00:00.000Z",
+        taskCount: 4,
+        completedTaskCount: 2,
+        failedTaskCount: 2,
       },
     ],
   },
@@ -307,13 +362,19 @@ export const seedExperiments: ExperimentDetail[] = [
     category: "production",
     dueDate: "2026-06-05",
     client: seedClients[3],
-    status: { name: "In production", color: "#10b981" },
+    status: "configured",
     runs: [
       {
         id: "run-gti-expr",
         name: "Production expression",
         revisionIndex: 1,
         experimentId: "exp-gentech-expression",
+        status: "in_progress",
+        createdAt: "2026-06-02T08:00:00.000Z",
+        startedAt: "2026-06-02T09:00:00.000Z",
+        taskCount: 8,
+        completedTaskCount: 5,
+        failedTaskCount: 0,
       },
     ],
   },
@@ -328,13 +389,20 @@ export const seedExperiments: ExperimentDetail[] = [
     category: "production",
     dueDate: "2026-06-03",
     client: seedClients[0],
-    status: { name: "In production", color: "#10b981" },
+    status: "configured",
     runs: [
       {
         id: "run-frd-thermo",
         name: "Thermo capillary run",
         revisionIndex: 1,
         experimentId: "exp-fredy-thermo",
+        status: "completed",
+        createdAt: "2026-05-28T13:00:00.000Z",
+        startedAt: "2026-05-29T08:00:00.000Z",
+        completedAt: "2026-06-02T15:00:00.000Z",
+        taskCount: 6,
+        completedTaskCount: 6,
+        failedTaskCount: 0,
       },
     ],
   },
@@ -342,8 +410,7 @@ export const seedExperiments: ExperimentDetail[] = [
 
 // Helper function to convert ExperimentDetail to ExperimentSummary
 function toSummary(experiment: ExperimentDetail): ExperimentSummary {
-  const { runs: _runs, ...summary } = experiment;
-  return summary;
+  return experiment;
 }
 
 // Seed tasks - expanded from existing mock data with more comprehensive examples
@@ -373,7 +440,7 @@ export const seedTasks: Task[] = [
   {
     id: "task-2",
     title: "Confirm production slot for thermostability batch",
-    status: "success",
+    status: "completed",
     assignee: seedStaff[2], // Alice Park
     run: seedExperiments[1].runs[0], // R3X production
     experiment: toSummary(seedExperiments[1]),
@@ -449,7 +516,7 @@ export const seedTasks: Task[] = [
   {
     id: "task-6",
     title: "Analyze expression yield data",
-    status: "success",
+    status: "completed",
     assignee: seedStaff[5], // David Kumar
     run: seedExperiments[3].runs[1], // Acme scale-up
     experiment: toSummary(seedExperiments[3]),
@@ -474,7 +541,7 @@ export const seedTasks: Task[] = [
   {
     id: "task-8",
     title: "Complete stability study report",
-    status: "success",
+    status: "completed",
     assignee: seedStaff[2], // Alice Park
     run: seedExperiments[5].runs[0], // GenTech stability
     experiment: toSummary(seedExperiments[5]),

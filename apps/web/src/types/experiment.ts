@@ -32,10 +32,17 @@ export function normalizeExperimentType(typeLabel: string): ExperimentType {
   return TYPE_LABEL_TO_ENUM[typeLabel] ?? "binding_screening";
 }
 
-export type ExperimentStatus = {
-  name: string;
-  color?: string;
-};
+export type ExperimentStatus = 
+  | "synced"        // Data pulled from lab system
+  | "configured";   // Has at least one run with tasks
+
+export type ExperimentRunStatus = 
+  | "draft"         // Run created but tasks not started
+  | "ready"         // All tasks configured and ready
+  | "in_progress"   // Some tasks started
+  | "completed"     // All tasks completed successfully  
+  | "failed"        // One or more tasks failed
+  | "cancelled";    // Run was cancelled
 
 /** Client SLA tier for planning priority (1 = lowest, 5 = highest). */
 export type ClientRef = {
@@ -57,6 +64,7 @@ export type ExperimentListItem = {
   dueDate?: string;
   client: ClientRef;
   status: ExperimentStatus;
+  runs: ExperimentRunSummary[];
 };
 
 export type ExperimentSummary = Pick<
@@ -72,6 +80,7 @@ export type ExperimentSummary = Pick<
   | "dueDate"
   | "client"
   | "status"
+  | "runs"
 >;
 
 export type ExperimentRunSummary = {
@@ -79,6 +88,13 @@ export type ExperimentRunSummary = {
   name: string;
   revisionIndex: number;
   experimentId: string;
+  status: ExperimentRunStatus;
+  createdAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  taskCount: number;
+  completedTaskCount: number;
+  failedTaskCount: number;
 };
 
 export type ExperimentDetail = ExperimentSummary & {

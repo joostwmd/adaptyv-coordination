@@ -1,7 +1,13 @@
 import type { ExperimentRunSummary, ExperimentSummary } from "./experiment";
 import type { StaffMember } from "./staff";
 
-export type TaskStatus = "pending" | "success" | "failed";
+export type TaskStatus = 
+  | "pending"       // Not started
+  | "in_progress"   // Currently being executed
+  | "completed"     // Successfully completed
+  | "failed"        // Failed execution
+  | "blocked"       // Waiting on dependencies
+  | "cancelled";    // Manually cancelled
 
 export type TaskNote = {
   id: string;

@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PlanningRouteImport } from './routes/planning'
+import { Route as ExperimentsRouteImport } from './routes/experiments'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ExperimentsIndexRouteImport } from './routes/experiments/index'
 import { Route as ExperimentsExperimentIdRouteImport } from './routes/experiments/$experimentId'
 
 const PlanningRoute = PlanningRouteImport.update({
@@ -18,45 +20,71 @@ const PlanningRoute = PlanningRouteImport.update({
   path: '/planning',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExperimentsRoute = ExperimentsRouteImport.update({
+  id: '/experiments',
+  path: '/experiments',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExperimentsIndexRoute = ExperimentsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ExperimentsRoute,
+} as any)
 const ExperimentsExperimentIdRoute = ExperimentsExperimentIdRouteImport.update({
-  id: '/experiments/$experimentId',
-  path: '/experiments/$experimentId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$experimentId',
+  path: '/$experimentId',
+  getParentRoute: () => ExperimentsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/experiments': typeof ExperimentsRouteWithChildren
   '/planning': typeof PlanningRoute
   '/experiments/$experimentId': typeof ExperimentsExperimentIdRoute
+  '/experiments/': typeof ExperimentsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/planning': typeof PlanningRoute
   '/experiments/$experimentId': typeof ExperimentsExperimentIdRoute
+  '/experiments': typeof ExperimentsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/experiments': typeof ExperimentsRouteWithChildren
   '/planning': typeof PlanningRoute
   '/experiments/$experimentId': typeof ExperimentsExperimentIdRoute
+  '/experiments/': typeof ExperimentsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/planning' | '/experiments/$experimentId'
+  fullPaths:
+    | '/'
+    | '/experiments'
+    | '/planning'
+    | '/experiments/$experimentId'
+    | '/experiments/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/planning' | '/experiments/$experimentId'
-  id: '__root__' | '/' | '/planning' | '/experiments/$experimentId'
+  to: '/' | '/planning' | '/experiments/$experimentId' | '/experiments'
+  id:
+    | '__root__'
+    | '/'
+    | '/experiments'
+    | '/planning'
+    | '/experiments/$experimentId'
+    | '/experiments/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ExperimentsRoute: typeof ExperimentsRouteWithChildren
   PlanningRoute: typeof PlanningRoute
-  ExperimentsExperimentIdRoute: typeof ExperimentsExperimentIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -68,6 +96,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlanningRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/experiments': {
+      id: '/experiments'
+      path: '/experiments'
+      fullPath: '/experiments'
+      preLoaderRoute: typeof ExperimentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -75,20 +110,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/experiments/': {
+      id: '/experiments/'
+      path: '/'
+      fullPath: '/experiments/'
+      preLoaderRoute: typeof ExperimentsIndexRouteImport
+      parentRoute: typeof ExperimentsRoute
+    }
     '/experiments/$experimentId': {
       id: '/experiments/$experimentId'
-      path: '/experiments/$experimentId'
+      path: '/$experimentId'
       fullPath: '/experiments/$experimentId'
       preLoaderRoute: typeof ExperimentsExperimentIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ExperimentsRoute
     }
   }
 }
 
+interface ExperimentsRouteChildren {
+  ExperimentsExperimentIdRoute: typeof ExperimentsExperimentIdRoute
+  ExperimentsIndexRoute: typeof ExperimentsIndexRoute
+}
+
+const ExperimentsRouteChildren: ExperimentsRouteChildren = {
+  ExperimentsExperimentIdRoute: ExperimentsExperimentIdRoute,
+  ExperimentsIndexRoute: ExperimentsIndexRoute,
+}
+
+const ExperimentsRouteWithChildren = ExperimentsRoute._addFileChildren(
+  ExperimentsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ExperimentsRoute: ExperimentsRouteWithChildren,
   PlanningRoute: PlanningRoute,
-  ExperimentsExperimentIdRoute: ExperimentsExperimentIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
