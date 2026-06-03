@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { Button } from "@adaptyv-coordination/ui/components/button";
 
-import type { Task } from "@/domain/task/types";
 import { getCapacityStatus } from "@/domain/work-unit";
 import { usePlanningBoard } from "@/hooks/usePlanningBoard";
 import { usePlanningStore } from "@/stores/usePlanningStore";
@@ -16,11 +15,7 @@ import {
 } from "./animated-board-item";
 import { ZoneShell } from "./zone-shell";
 
-type UnitsZoneProps = {
-  onTaskOpen: (task: Task) => void;
-};
-
-export function UnitsZone({ onTaskOpen }: UnitsZoneProps) {
+export function UnitsZone() {
   const board = usePlanningBoard();
   const tasks = usePlanningStore((state) => state.tasks);
   const splitWorkUnit = usePlanningStore((state) => state.splitWorkUnit);
@@ -61,7 +56,6 @@ export function UnitsZone({ onTaskOpen }: UnitsZoneProps) {
               const card = (
                 <DraggableWorkUnit
                   workUnit={workUnit}
-                  onTaskOpen={onTaskOpen}
                   layoutId={`unit-${workUnit.id}`}
                   enableSiblingTaskDrag={isSiblingSet}
                 />

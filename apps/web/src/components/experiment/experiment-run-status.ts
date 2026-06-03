@@ -1,5 +1,22 @@
 import type { ExperimentRunStatus } from "@/types";
 
+export function formatExperimentStatus(status: string): string {
+  return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ");
+}
+
+export function getExperimentStatusBadgeVariant(
+  status: string,
+): "default" | "secondary" | "outline" | "destructive" {
+  switch (status) {
+    case "synced":
+      return "outline";
+    case "configured":
+      return "default";
+    default:
+      return "secondary";
+  }
+}
+
 export function formatRunStatus(status: ExperimentRunStatus): string {
   return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ");
 }

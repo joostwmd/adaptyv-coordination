@@ -18,7 +18,6 @@ export type CollapsibleTaskListProps = {
   renderTask?: (task: Task) => ReactNode;
   hide?: TaskReferenceKey[];
   defaultOpen?: boolean;
-  onTaskOpen?: (task: Task) => void;
   className?: string;
   triggerClassName?: string;
 };
@@ -28,7 +27,6 @@ export function CollapsibleTaskList({
   renderTask,
   hide,
   defaultOpen = false,
-  onTaskOpen,
   className,
   triggerClassName,
 }: CollapsibleTaskListProps) {
@@ -47,7 +45,7 @@ export function CollapsibleTaskList({
     <Collapsible open={open} onOpenChange={setOpen} className={className}>
       <CollapsibleTrigger
         className={cn(
-          "flex w-full items-center justify-between rounded-md border bg-muted/30 px-3 py-2.5 text-xs font-medium transition-colors hover:bg-muted/50",
+          "flex w-full items-center justify-between rounded-md border border-border/60 bg-muted/25 px-3 py-2.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/40",
           triggerClassName,
         )}
       >
@@ -63,13 +61,7 @@ export function CollapsibleTaskList({
           renderTask ? (
             <div key={task.id}>{renderTask(task)}</div>
           ) : (
-            <TaskCard
-              key={task.id}
-              task={task}
-              variant="compact"
-              hide={hide}
-              onOpen={onTaskOpen}
-            />
+            <TaskCard key={task.id} task={task} variant="compact" hide={hide} />
           ),
         )}
       </CollapsibleContent>

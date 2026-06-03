@@ -11,7 +11,6 @@ import type { PlanningDragData, SiblingDropData } from "./types";
 type DraggableTaskRowProps = {
   task: Task;
   workUnitKey: string;
-  onOpen: (task: Task) => void;
   dragDisabled?: boolean;
   layoutId?: string;
 };
@@ -19,7 +18,6 @@ type DraggableTaskRowProps = {
 export function DraggableTaskRow({
   task,
   workUnitKey,
-  onOpen,
   dragDisabled = true,
   layoutId,
 }: DraggableTaskRowProps) {
@@ -43,7 +41,6 @@ export function DraggableTaskRow({
     >
       <TaskCard
         task={task}
-        onOpen={onOpen}
         variant="compact"
         layoutId={layoutId ?? `task-${task.id}`}
       />

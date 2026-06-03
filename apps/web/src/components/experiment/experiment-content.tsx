@@ -9,6 +9,10 @@ import {
 } from "@/types";
 
 import {
+  formatExperimentStatus,
+  getExperimentStatusBadgeVariant,
+} from "./experiment-run-status";
+import {
   EXPERIMENT_PRIORITY_HINT,
   EXPERIMENT_PRIORITY_LABEL,
   formatExperimentPriority,
@@ -60,8 +64,11 @@ export function ExperimentContent({
           </h3>
           <p className="mt-0.5 font-mono text-xs text-muted-foreground">{experiment.code}</p>
         </div>
-        <Badge variant="outline" className="shrink-0 text-[11px] font-normal">
-          {experiment.status.charAt(0).toUpperCase() + experiment.status.slice(1)}
+        <Badge
+          variant={getExperimentStatusBadgeVariant(experiment.status)}
+          className="shrink-0 text-[11px] font-normal"
+        >
+          {formatExperimentStatus(experiment.status)}
         </Badge>
       </header>
 

@@ -1,7 +1,6 @@
 import { Badge } from "@adaptyv-coordination/ui/components/badge";
 
 import type { KanbanRosterMember } from "@/domain/planning/kanban-roster";
-import type { Task } from "@/domain/task/types";
 import type { Ticket } from "@/domain/ticket/types";
 
 import { TicketExecutionCard } from "./ticket-execution-card";
@@ -9,10 +8,9 @@ import { TicketExecutionCard } from "./ticket-execution-card";
 type TicketsStaffRowProps = {
   member: KanbanRosterMember;
   tickets: Ticket[];
-  onTaskOpen: (task: Task) => void;
 };
 
-export function TicketsStaffRow({ member, tickets, onTaskOpen }: TicketsStaffRowProps) {
+export function TicketsStaffRow({ member, tickets }: TicketsStaffRowProps) {
   return (
     <section className="flex flex-col gap-2 border-b border-border/60 py-3 last:border-b-0">
       <div className="flex shrink-0 items-center justify-between gap-3 px-1">
@@ -24,11 +22,7 @@ export function TicketsStaffRow({ member, tickets, onTaskOpen }: TicketsStaffRow
       <div className="min-w-0 overflow-x-auto pb-1">
         <div className="flex w-max gap-3 px-1">
           {tickets.map((ticket) => (
-            <TicketExecutionCard
-              key={ticket.id}
-              ticket={ticket}
-              onTaskOpen={onTaskOpen}
-            />
+            <TicketExecutionCard key={ticket.id} ticket={ticket} />
           ))}
         </div>
       </div>

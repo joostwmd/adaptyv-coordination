@@ -1,7 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 
-import type { Task } from "@/domain/task/types";
 import type { Ticket } from "@/domain/ticket/types";
 import type { WorkUnit } from "@/domain/work-unit/types";
 import { usePlanningStore } from "@/stores/usePlanningStore";
@@ -20,13 +19,9 @@ import {
 
 type PlanningDndProviderProps = {
   children: ReactNode;
-  onTaskOpen: (task: Task) => void;
 };
 
-export function PlanningDndProvider({
-  children,
-  onTaskOpen,
-}: PlanningDndProviderProps) {
+export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
   const createTicket = usePlanningStore((state) => state.createTicket);
   const updateTicket = usePlanningStore((state) => state.updateTicket);
   const unscheduleTicket = usePlanningStore((state) => state.unscheduleTicket);
@@ -124,15 +119,12 @@ export function PlanningDndProvider({
       <DragOverlay>
         {activeDrag?.kind === "unit" && activeDrag.workUnit ? (
           <div className="pointer-events-none w-[min(100%,320px)] rotate-1 opacity-95 shadow-lg">
-            <WorkUnitCard
-              workUnit={activeDrag.workUnit}
-              onTaskOpen={onTaskOpen}
-            />
+            <WorkUnitCard workUnit={activeDrag.workUnit} />
           </div>
         ) : null}
         {activeDrag?.kind === "ticket" && activeDrag.ticket ? (
           <div className="pointer-events-none w-[min(100%,320px)] rotate-1 opacity-95 shadow-lg">
-            <TicketCard ticket={activeDrag.ticket} onTaskOpen={onTaskOpen} />
+            <TicketCard ticket={activeDrag.ticket} />
           </div>
         ) : null}
       </DragOverlay>

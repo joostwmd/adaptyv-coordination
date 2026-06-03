@@ -1,7 +1,6 @@
 export { ExperimentCard } from "./experiment-card";
 export { ExperimentCodeHover } from "./experiment-code-hover";
 export { ExperimentContent } from "./experiment-content";
-export { ExperimentDetailDialog } from "./experiment-detail-dialog";
 export { ExperimentDetailScreen } from "./experiment-detail-screen";
 export { ExperimentHoverCard } from "./experiment-hover-card";
 export {
@@ -16,6 +15,8 @@ export { ExperimentRunCreationPanel } from "./experiment-run-creation-panel";
 export { ExperimentRunHoverCard } from "./experiment-run-hover-card";
 export { ExperimentRunPreviewCard } from "./experiment-run-preview-card";
 export {
+  formatExperimentStatus,
   formatRunStatus,
+  getExperimentStatusBadgeVariant,
   getRunStatusBadgeVariant,
 } from "./experiment-run-status";

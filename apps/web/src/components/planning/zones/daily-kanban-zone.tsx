@@ -1,4 +1,3 @@
-import type { Task } from "@/domain/task/types";
 import { Badge } from "@adaptyv-coordination/ui/components/badge";
 import { usePlanningBoard } from "@/hooks/usePlanningBoard";
 
@@ -11,11 +10,7 @@ import {
 import { DateStepper } from "./date-stepper";
 import { ZoneShell } from "./zone-shell";
 
-type DailyKanbanZoneProps = {
-  onTaskOpen: (task: Task) => void;
-};
-
-export function DailyKanbanZone({ onTaskOpen }: DailyKanbanZoneProps) {
+export function DailyKanbanZone() {
   const board = usePlanningBoard();
   const ticketCount = Object.values(board.ticketsByPerson).reduce(
     (total, column) => total + column.length,
@@ -41,7 +36,7 @@ export function DailyKanbanZone({ onTaskOpen }: DailyKanbanZoneProps) {
               return (
                 <div
                   key={member.id}
-                  className="flex w-[320px] min-w-[280px] shrink-0 flex-col gap-2"
+                  className="flex w-[400px] min-w-[360px] shrink-0 flex-col gap-2"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <p className="truncate text-sm font-medium">{member.handle}</p>
@@ -60,7 +55,6 @@ export function DailyKanbanZone({ onTaskOpen }: DailyKanbanZoneProps) {
                           <AnimatedBoardItem key={ticket.id} id={ticket.id}>
                             <DraggableTicket
                               ticket={ticket}
-                              onTaskOpen={onTaskOpen}
                               layoutId={`ticket-${ticket.id}`}
                             />
                           </AnimatedBoardItem>

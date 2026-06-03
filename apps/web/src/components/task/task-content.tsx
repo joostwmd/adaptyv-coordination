@@ -1,3 +1,4 @@
+import { RelativeTimeCard } from "@adaptyv-coordination/ui/components/relative-time-card";
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
 import { ParameterSummary } from "@/components/planning/parameter-summary";
@@ -5,8 +6,14 @@ import { RequiredPlatesSummary } from "@/components/task/required-plates-summary
 import { PriorityIndicator } from "@/components/planning/priority-indicator";
 import { ReadinessBadge } from "@/components/planning/readiness-badge";
 import { TaskTypeBadge } from "@/components/planning/task-type-badge";
+import { BLOCKED_REASON_LABEL } from "@/domain/blocked-reason";
 import { useEnrichedTask } from "@/hooks/usePlanningTask";
-import type { ExperimentRunSummary, ExperimentSummary, Task } from "@/types";
+import type {
+  ExperimentRunSummary,
+  ExperimentSummary,
+  Task,
+  TaskReadiness,
+} from "@/types";
 
 import { StatusBadge } from "./primitives/status-badge";
 import { TaskNameBadge } from "./primitives/task-name-badge";
@@ -21,6 +28,12 @@ export type TaskContentProps = {
   className?: string;
 };
 
+function shouldShowReadiness(readiness: TaskReadiness, isCompact: boolean): boolean {
+  if (readiness === "ready") return false;
+  if (isCompact && readiness === "batched") return false;
+  return true;
+}
+
 export function TaskContent({
   task,
   variant = "standalone",
@@ -34,21 +47,26 @@ export function TaskContent({
 
   if (!enriched) return null;
 
-  const showReadiness =
-    (!isCompact && task.readiness !== "batched") ||
-    (isCompact && task.readiness !== "batched" && task.readiness !== "ready");
+  const showReadiness = shouldShowReadiness(task.readiness, isCompact);
+  const blockedLabel = task.blockedReason
+    ? BLOCKED_REASON_LABEL[task.blockedReason]
+    : null;
 
   return (
     <div className={cn("flex flex-col gap-3", className)}>
       <div className="flex flex-wrap items-center gap-1.5">
+        <StatusBadge status={task.status} />
         {showReadiness ? <ReadinessBadge readiness={task.readiness} /> : null}
         {!isCompact ? <TaskTypeBadge label={enriched.templateName} /> : null}
-        <TaskNameBadge task={task} />
-        <StatusBadge status={task.status} />
+        {!isCompact ? <TaskNameBadge task={task} /> : null}
         <div className="ml-auto">
           <PriorityIndicator priority={enriched.priority} stopPropagation />
         </div>
       </div>
+
+      {blockedLabel ? (
+        <p className="text-sm text-destructive">{blockedLabel}</p>
+      ) : null}
 
       <div className="flex flex-col gap-3">
         <RequiredPlatesSummary
@@ -65,6 +83,23 @@ export function TaskContent({
         run={runProp}
         hide={hide}
       />
+
+      {!isCompact ? (
+        <footer className="space-y-1 border-t border-border/50 pt-3 text-[11px] text-muted-foreground">
+          <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+            <span>Added</span>
+            <RelativeTimeCard
+              date={new Date(task.createdAt)}
+              variant="ghost"
+              className="inline h-auto p-0 text-[11px] font-normal text-muted-foreground whitespace-nowrap"
+              updateInterval={60_000}
+            />
+            <span aria-hidden>·</span>
+            <span className="capitalize">{task.origin}</span>
+          </p>
+          <p className="font-mono text-[10px]">{task.id}</p>
+        </footer>
+      ) : null}
     </div>
   );
 }

@@ -16,6 +16,10 @@ import type {
   ExperimentType,
   ExperimentRunSummary,
 } from "@/types/experiment";
+import {
+  formatExperimentStatus,
+  getExperimentStatusBadgeVariant,
+} from "@/components/experiment/experiment-run-status";
 import { EXPERIMENT_TYPE_LABEL, EXPERIMENT_CATEGORY_LABEL } from "@/types/experiment";
 
 type RunStats = {
@@ -44,19 +48,6 @@ function getRunStats(runs: ExperimentRunSummary[]): RunStats {
     },
     { total: 0, inProgress: 0, completed: 0, failed: 0 },
   );
-}
-
-function getStatusVariant(
-  status: string,
-): "default" | "secondary" | "outline" | "destructive" {
-  switch (status) {
-    case "synced":
-      return "outline";
-    case "configured":
-      return "default";
-    default:
-      return "secondary";
-  }
 }
 
 function RunCountCell({ count }: { count: number }) {
@@ -153,8 +144,8 @@ export function ExperimentsTable() {
         cell: ({ row }) => {
           const status = row.getValue("status") as string;
           return (
-            <Badge variant={getStatusVariant(status)}>
-              {status.charAt(0).toUpperCase() + status.slice(1)}
+            <Badge variant={getExperimentStatusBadgeVariant(status)}>
+              {formatExperimentStatus(status)}
             </Badge>
           );
         },

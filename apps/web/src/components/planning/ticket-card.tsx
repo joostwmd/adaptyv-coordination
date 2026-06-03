@@ -1,18 +1,24 @@
-import { Card, CardContent } from "@adaptyv-coordination/ui/components/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+} from "@adaptyv-coordination/ui/components/card";
 import { motion } from "motion/react";
 import type { ReactNode } from "react";
 
 import type { Task } from "@/domain/task/types";
 import type { Ticket } from "@/domain/ticket/types";
 import { useTicketView } from "@/hooks/useTicket";
+import { useWorkUnit } from "@/hooks/useWorkUnit";
 import { TicketContent } from "@/components/ticket/ticket-content";
+import { WorkUnitContentHeader } from "@/components/work-unit/work-unit-content-header";
+import { useWorkUnitView } from "@/hooks/useWorkUnit";
 
 import { PriorityIndicator } from "./priority-indicator";
 
 type TicketCardProps = {
   ticket: Ticket;
   defaultExpanded?: boolean;
-  onTaskOpen: (task: Task) => void;
   layoutId?: string;
   renderTask?: (task: Task) => ReactNode;
 };
@@ -20,29 +26,38 @@ type TicketCardProps = {
 export function TicketCard({
   ticket,
   defaultExpanded = false,
-  onTaskOpen,
   layoutId,
   renderTask,
 }: TicketCardProps) {
   const view = useTicketView(ticket);
+  const workUnit = useWorkUnit(ticket.workUnitId);
+  const workUnitView = useWorkUnitView(workUnit);
 
-  if (!view) return null;
+  if (!view || !workUnit || !workUnitView) return null;
+
+  const headerEnd = view.priority ? (
+    <PriorityIndicator priority={view.priority} context="workUnit" />
+  ) : null;
 
   const card = (
-    <Card>
-      <CardContent className="pt-6 pb-3">
+    <Card className="overflow-hidden">
+      <CardHeader className="space-y-0 border-b border-border/50 px-4 pb-3 pt-6">
+        <WorkUnitContentHeader
+          workUnit={workUnit}
+          view={workUnitView}
+          headerEnd={headerEnd}
+        />
+      </CardHeader>
+
+      <CardContent className="px-4 pb-4 pt-0">
         <TicketContent
           ticket={ticket}
           assignee={view.assignee}
+          showWorkUnitSummary={false}
+          showWorkUnitSections
           showTasks
           defaultTasksOpen={defaultExpanded}
-          onTaskOpen={onTaskOpen}
           renderTask={renderTask}
-          headerEnd={
-            view.priority ? (
-              <PriorityIndicator priority={view.priority} context="workUnit" />
-            ) : undefined
-          }
         />
       </CardContent>
     </Card>

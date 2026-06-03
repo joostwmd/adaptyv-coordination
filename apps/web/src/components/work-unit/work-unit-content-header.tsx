@@ -28,18 +28,18 @@ export function WorkUnitContentHeader({
     <header
       className={cn("flex items-start justify-between gap-3", className)}
     >
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 space-y-0.5">
         <h3
           className={cn(
             "font-semibold leading-snug text-foreground",
-            isCompact ? "text-base" : "text-sm",
+            isCompact ? "text-sm" : "text-base",
           )}
         >
           {view.templateLabel}
         </h3>
-        <p className="mt-0.5 font-mono text-xs text-muted-foreground">{workUnit.id}</p>
+        <p className="font-mono text-[11px] text-muted-foreground">{workUnit.id}</p>
       </div>
-      <div className="flex shrink-0 items-start gap-2">
+      <div className="flex shrink-0 flex-wrap items-start justify-end gap-1.5">
         <Badge variant={statusConfig.variant} className="text-[11px] font-normal">
           {statusConfig.label}
         </Badge>

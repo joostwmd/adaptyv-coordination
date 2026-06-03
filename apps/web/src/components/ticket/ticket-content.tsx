@@ -1,17 +1,13 @@
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 import type { ReactNode } from "react";
 
-import { ScheduledTime } from "@/components/planning/primitives/scheduled-time";
+import { ContentSection } from "@/components/planning/primitives/content-section";
 import { CollapsibleTaskList } from "@/components/task/collapsible-task-list";
 import type { TaskReferenceKey } from "@/components/task/task-references";
-import { WorkUnitContentHeader } from "@/components/work-unit/work-unit-content-header";
-import { WorkUnitMetadataRow } from "@/components/work-unit/work-unit-metadata-row";
-import { WorkUnitParameterSummary } from "@/components/work-unit/work-unit-parameter-summary";
-import { WorkUnitRequiredPlatesSummary } from "@/components/work-unit/work-unit-required-plates-summary";
+import { WorkUnitContent } from "@/components/work-unit/work-unit-content";
 import type { Ticket } from "@/domain/ticket/types";
 import { useTicketView } from "@/hooks/useTicket";
 import { useWorkUnit } from "@/hooks/useWorkUnit";
-import { useWorkUnitView } from "@/hooks/useWorkUnit";
 import type { StaffMember, Task } from "@/types";
 
 import { TicketAssignmentRow } from "./ticket-assignment-row";
@@ -19,11 +15,14 @@ import { TicketAssignmentRow } from "./ticket-assignment-row";
 export type TicketContentProps = {
   ticket: Ticket;
   assignee?: StaffMember | null;
+  /** Full work unit block including header (e.g. assignment-only dialog). */
+  showWorkUnitSummary?: boolean;
+  /** Stats and prep sections without repeating the header (e.g. ticket card). */
+  showWorkUnitSections?: boolean;
   showTasks?: boolean;
   defaultTasksOpen?: boolean;
   renderTask?: (task: Task) => ReactNode;
   taskListHide?: TaskReferenceKey[];
-  onTaskOpen?: (task: Task) => void;
   headerEnd?: ReactNode;
   className?: string;
 };
@@ -31,53 +30,58 @@ export type TicketContentProps = {
 export function TicketContent({
   ticket,
   assignee: assigneeProp,
+  showWorkUnitSummary = true,
+  showWorkUnitSections,
   showTasks = false,
   defaultTasksOpen = false,
   renderTask,
   taskListHide = ["workUnit", "ticket"],
-  onTaskOpen,
   headerEnd,
   className,
 }: TicketContentProps) {
   const view = useTicketView(ticket);
   const workUnit = useWorkUnit(ticket.workUnitId);
-  const workUnitView = useWorkUnitView(workUnit);
 
   if (!view) return null;
 
   const assignee = assigneeProp ?? view.assignee;
+  const showWorkUnitBody = showWorkUnitSections ?? showWorkUnitSummary;
+  const hasWorkUnitBlock = Boolean(workUnit && (showWorkUnitSummary || showWorkUnitBody));
 
   return (
     <article
-      className={cn("flex flex-col gap-3", className)}
+      className={cn("flex flex-col", className)}
       aria-label={`Ticket ${ticket.id}`}
     >
-      {workUnit && workUnitView ? (
-        <>
-          <WorkUnitContentHeader
-            workUnit={workUnit}
-            view={workUnitView}
-            variant="default"
-            headerEnd={headerEnd}
-          />
-          <WorkUnitMetadataRow workUnit={workUnit} view={workUnitView} />
-          <div className="flex flex-col gap-3">
-            <WorkUnitParameterSummary workUnit={workUnit} tasks={workUnitView.tasks} />
-            <WorkUnitRequiredPlatesSummary tasks={workUnitView.tasks} />
-          </div>
-        </>
+      {showWorkUnitSummary && workUnit ? (
+        <WorkUnitContent
+          workUnit={workUnit}
+          variant="default"
+          showTasks={false}
+          headerEnd={headerEnd}
+        />
+      ) : showWorkUnitBody && workUnit ? (
+        <WorkUnitContent
+          workUnit={workUnit}
+          variant="default"
+          showHeader={false}
+          showTasks={false}
+        />
       ) : null}
 
-      <TicketAssignmentRow ticket={ticket} assignee={assignee} />
+      <ContentSection title="Schedule" divided={hasWorkUnitBlock}>
+        <TicketAssignmentRow ticket={ticket} assignee={assignee} />
+      </ContentSection>
 
       {showTasks ? (
-        <CollapsibleTaskList
-          tasks={view.tasks}
-          renderTask={renderTask}
-          hide={taskListHide}
-          defaultOpen={defaultTasksOpen}
-          onTaskOpen={onTaskOpen}
-        />
+        <ContentSection>
+          <CollapsibleTaskList
+            tasks={view.tasks}
+            renderTask={renderTask}
+            hide={taskListHide}
+            defaultOpen={defaultTasksOpen}
+          />
+        </ContentSection>
       ) : null}
     </article>
   );

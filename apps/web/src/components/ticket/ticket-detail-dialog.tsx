@@ -13,6 +13,8 @@ import { TicketContent } from "./ticket-content";
 type TicketDetailDialogProps = {
   ticket: Ticket | null;
   assignee?: StaffMember | null;
+  /** When opened from a task, show assignment only — not full work unit + task list. */
+  variant?: "assignment" | "full";
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
@@ -20,9 +22,12 @@ type TicketDetailDialogProps = {
 export function TicketDetailDialog({
   ticket,
   assignee,
+  variant = "assignment",
   open,
   onOpenChange,
 }: TicketDetailDialogProps) {
+  const isAssignmentOnly = variant === "assignment";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {ticket ? (
@@ -30,7 +35,12 @@ export function TicketDetailDialog({
           <DialogHeader>
             <DialogTitle className="sr-only">Ticket schedule</DialogTitle>
           </DialogHeader>
-          <TicketContent ticket={ticket} assignee={assignee} showTasks />
+          <TicketContent
+            ticket={ticket}
+            assignee={assignee}
+            showWorkUnitSummary={!isAssignmentOnly}
+            showTasks={!isAssignmentOnly}
+          />
         </DialogContent>
       ) : null}
     </Dialog>

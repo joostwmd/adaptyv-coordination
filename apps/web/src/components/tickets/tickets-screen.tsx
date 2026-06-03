@@ -1,15 +1,10 @@
-import { useState } from "react";
-
-import type { Task } from "@/domain/task/types";
 import { useTicketsDayBoard } from "@/hooks/useTicketsDayBoard";
 import { DateStepper } from "@/components/planning/zones/date-stepper";
-import { TaskDetailDialog } from "@/components/planning/task-detail-dialog";
 
 import { TicketsStaffRow } from "./tickets-staff-row";
 
 export function TicketsScreen() {
   const { currentDay, rows } = useTicketsDayBoard();
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden px-3 py-2">
@@ -34,19 +29,10 @@ export function TicketsScreen() {
               key={row.member.id}
               member={row.member}
               tickets={row.tickets}
-              onTaskOpen={setSelectedTask}
             />
           ))
         )}
       </div>
-
-      <TaskDetailDialog
-        task={selectedTask}
-        open={selectedTask !== null}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) setSelectedTask(null);
-        }}
-      />
     </div>
   );
 }

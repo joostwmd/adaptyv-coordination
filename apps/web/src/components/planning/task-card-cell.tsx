@@ -1,12 +1,11 @@
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@adaptyv-coordination/ui/components/card";
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
-import type { KeyboardEvent, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 type TaskCardCellProps = {
   title: ReactNode;
@@ -15,10 +14,8 @@ type TaskCardCellProps = {
   headerStart?: ReactNode;
   /** Right side of the title row (e.g. priority). */
   headerEnd?: ReactNode;
-  onOpen?: () => void;
   children: ReactNode;
   variant?: "standalone" | "compact";
-  footerLabel?: string;
 };
 
 export function TaskCardCell({
@@ -26,33 +23,16 @@ export function TaskCardCell({
   subtitle,
   headerStart,
   headerEnd,
-  onOpen,
   children,
   variant = "standalone",
-  footerLabel = "View full task",
 }: TaskCardCellProps) {
-  function handleKeyDown(event: KeyboardEvent) {
-    if (!onOpen) return;
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      onOpen();
-    }
-  }
-
   const isCompact = variant === "compact";
-  const isInteractive = Boolean(onOpen);
 
   return (
     <Card
       className={cn(
-        isInteractive &&
-          "cursor-pointer transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
         isCompact && "border-border/60 bg-muted/20 shadow-none",
       )}
-      onClick={onOpen}
-      onKeyDown={isInteractive ? handleKeyDown : undefined}
-      role={isInteractive ? "button" : undefined}
-      tabIndex={isInteractive ? 0 : undefined}
     >
       <CardHeader className={cn(isCompact ? "px-3 py-3" : "pb-3")}>
         {headerStart ? (
@@ -64,7 +44,7 @@ export function TaskCardCell({
               {title}
             </CardTitle>
             {subtitle ? (
-              <p className="text-xs text-muted-foreground leading-snug">{subtitle}</p>
+              <div className="text-xs text-muted-foreground leading-snug">{subtitle}</div>
             ) : null}
           </div>
           {headerEnd ? <div className="shrink-0">{headerEnd}</div> : null}
@@ -80,12 +60,6 @@ export function TaskCardCell({
         >
           {children}
         </CardContent>
-      ) : null}
-
-      {!isCompact ? (
-        <CardFooter className="border-t border-border/50 py-2 text-xs text-muted-foreground">
-          {footerLabel}
-        </CardFooter>
       ) : null}
     </Card>
   );

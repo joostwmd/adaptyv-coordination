@@ -9,9 +9,11 @@ import {
   formatExperimentPriority,
 } from "@/components/experiment/experiment-priority";
 import { ExperimentRunCard } from "@/components/experiment/experiment-run-card";
+import {
+  formatExperimentStatus,
+  getExperimentStatusBadgeVariant,
+} from "@/components/experiment/experiment-run-status";
 import { ExperimentRunCreationPanel } from "@/components/experiment/experiment-run-creation-panel";
-import { TaskDetailDialog } from "@/components/task/task-detail-dialog";
-import type { Task } from "@/types";
 import type { ExperimentDetail } from "@/types/experiment";
 import {
   EXPERIMENT_CATEGORY_LABEL,
@@ -39,7 +41,6 @@ function ExperimentDetailContent({
   experiment,
   onOpenCreation,
 }: ExperimentDetailContentProps) {
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const { runs: _runs, ...experimentSummary } = experiment;
 
   return (
@@ -60,10 +61,8 @@ function ExperimentDetailContent({
                 {experiment.code}
               </p>
             </div>
-            <Badge
-              variant={experiment.status === "synced" ? "outline" : "default"}
-            >
-              {experiment.status.charAt(0).toUpperCase() + experiment.status.slice(1)}
+            <Badge variant={getExperimentStatusBadgeVariant(experiment.status)}>
+              {formatExperimentStatus(experiment.status)}
             </Badge>
           </div>
 
@@ -108,7 +107,6 @@ function ExperimentDetailContent({
                     run={run}
                     experiment={experimentSummary}
                     defaultExpanded={index === 0}
-                    onTaskOpen={setSelectedTask}
                   />
                 ))}
             </div>
@@ -132,13 +130,6 @@ function ExperimentDetailContent({
         </div>
       </div>
 
-      <TaskDetailDialog
-        task={selectedTask}
-        open={selectedTask !== null}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) setSelectedTask(null);
-        }}
-      />
     </div>
   );
 }

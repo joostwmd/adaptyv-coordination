@@ -1,9 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
-import type { Task } from "@/domain/task/types";
 import { usePlanningStore, usePlanningTickets } from "@/stores/usePlanningStore";
 
-import { TaskDetailDialog } from "./task-detail-dialog";
 import { TicketCard } from "./ticket-card";
 import { WorkUnitCard } from "./work-unit-card";
 
@@ -11,7 +9,6 @@ export function WorkUnitList() {
   const tickets = usePlanningTickets();
   const getWorkUnitPriority = usePlanningStore((s) => s.getWorkUnitPriority);
   const getUnscheduledWorkUnits = usePlanningStore((s) => s.getUnscheduledWorkUnits);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const unscheduledWorkUnits = getUnscheduledWorkUnits();
 
@@ -41,11 +38,7 @@ export function WorkUnitList() {
           </h3>
           <div className="grid gap-4">
             {unscheduledWorkUnits.map((workUnit) => (
-              <WorkUnitCard
-                key={workUnit.id}
-                workUnit={workUnit}
-                onTaskOpen={setSelectedTask}
-              />
+              <WorkUnitCard key={workUnit.id} workUnit={workUnit} />
             ))}
           </div>
         </section>
@@ -58,23 +51,11 @@ export function WorkUnitList() {
           </h3>
           <div className="grid gap-4">
             {sortedTickets.map((ticket) => (
-              <TicketCard
-                key={ticket.id}
-                ticket={ticket}
-                onTaskOpen={setSelectedTask}
-              />
+              <TicketCard key={ticket.id} ticket={ticket} />
             ))}
           </div>
         </section>
       ) : null}
-
-      <TaskDetailDialog
-        task={selectedTask}
-        open={selectedTask !== null}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) setSelectedTask(null);
-        }}
-      />
     </>
   );
 }

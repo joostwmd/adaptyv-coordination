@@ -1,6 +1,5 @@
 import { Button } from "@adaptyv-coordination/ui/components/button";
 
-import type { Task } from "@/domain/task/types";
 import type { Ticket } from "@/domain/ticket/types";
 import { useTicketExecution } from "@/hooks/useTicketExecution";
 import { TicketCard } from "@/components/planning/ticket-card";
@@ -10,10 +9,9 @@ import { TicketExecutionStatusBadge } from "./ticket-execution-status";
 
 type TicketExecutionCardProps = {
   ticket: Ticket;
-  onTaskOpen: (task: Task) => void;
 };
 
-export function TicketExecutionCard({ ticket, onTaskOpen }: TicketExecutionCardProps) {
+export function TicketExecutionCard({ ticket }: TicketExecutionCardProps) {
   const { status, sendToLabOs, complete, fail } = useTicketExecution(ticket.workUnitId);
 
   const canSendToLabOs =
@@ -57,7 +55,7 @@ export function TicketExecutionCard({ ticket, onTaskOpen }: TicketExecutionCardP
         </>
       }
     >
-      <TicketCard ticket={ticket} onTaskOpen={onTaskOpen} />
+      <TicketCard ticket={ticket} />
     </PlanningSuggestionShell>
   );
 }

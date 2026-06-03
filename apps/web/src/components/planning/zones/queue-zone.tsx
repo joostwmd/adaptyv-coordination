@@ -23,11 +23,7 @@ import {
 } from "./animated-board-item";
 import { QueueSubzone, ZoneShell } from "./zone-shell";
 
-type QueueZoneProps = {
-  onTaskOpen: (task: Task) => void;
-};
-
-export function QueueZone({ onTaskOpen }: QueueZoneProps) {
+export function QueueZone() {
   const board = usePlanningBoard();
   const createWorkUnitFromReadyTasks = usePlanningStore(
     (state) => state.createWorkUnitFromReadyTasks,
@@ -120,7 +116,6 @@ export function QueueZone({ onTaskOpen }: QueueZoneProps) {
                         workUnit={suggested}
                         variant="suggested"
                         showEyebrow={false}
-                        onTaskOpen={onTaskOpen}
                         layoutId={`pool-preview-${group.workUnitKey}`}
                       />
                       {showSplitPreview ? (
@@ -129,13 +124,11 @@ export function QueueZone({ onTaskOpen }: QueueZoneProps) {
                             workUnit={createWorkUnitFromTasks(split.primary)}
                             variant="suggested"
                             previewLabel="Suggested 1/2"
-                            onTaskOpen={onTaskOpen}
                           />
                           <WorkUnitCard
                             workUnit={createWorkUnitFromTasks(split.secondary)}
                             variant="suggested"
                             previewLabel="Suggested 2/2 — overflow split"
-                            onTaskOpen={onTaskOpen}
                           />
                         </div>
                       ) : null}
@@ -189,7 +182,7 @@ export function QueueZone({ onTaskOpen }: QueueZoneProps) {
                       )
                     }
                   >
-                    <TaskCard task={task} onOpen={onTaskOpen} variant="compact" />
+                    <TaskCard task={task} variant="compact" />
                   </PlanningSuggestionShell>
                 </AnimatedBoardItem>
               ))
@@ -221,7 +214,6 @@ export function QueueZone({ onTaskOpen }: QueueZoneProps) {
                       workUnit={createWorkUnitFromTasks([task])}
                       variant="suggested"
                       showEyebrow={false}
-                      onTaskOpen={onTaskOpen}
                     />
                   </PlanningSuggestionShell>
                 </AnimatedBoardItem>

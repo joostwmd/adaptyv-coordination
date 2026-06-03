@@ -10,7 +10,6 @@ import type { PlanningDragData } from "./types";
 
 type DraggableWorkUnitProps = {
   workUnit: WorkUnit;
-  onTaskOpen: (task: Task) => void;
   variant?: "default" | "suggested";
   className?: string;
   dragDisabled?: boolean;
@@ -20,7 +19,6 @@ type DraggableWorkUnitProps = {
 
 export function DraggableWorkUnit({
   workUnit,
-  onTaskOpen,
   variant = "default",
   className,
   dragDisabled = false,
@@ -51,7 +49,6 @@ export function DraggableWorkUnit({
       <WorkUnitCard
         workUnit={workUnit}
         variant={variant}
-        onTaskOpen={onTaskOpen}
         layoutId={layoutId ?? `unit-${workUnit.id}`}
         renderTask={
           enableSiblingTaskDrag
@@ -59,7 +56,6 @@ export function DraggableWorkUnit({
                 <DraggableTaskRow
                   task={task}
                   workUnitKey={workUnit.workUnitKey}
-                  onOpen={onTaskOpen}
                   dragDisabled={false}
                   layoutId={`task-${task.id}`}
                 />

@@ -23,7 +23,6 @@ export type ExperimentRunContentProps = {
   defaultTasksOpen?: boolean;
   renderTask?: (task: Task) => ReactNode;
   taskListHide?: TaskReferenceKey[];
-  onTaskOpen?: (task: Task) => void;
   className?: string;
 };
 
@@ -74,8 +73,7 @@ export function ExperimentRunContent({
   showTasks = false,
   defaultTasksOpen = false,
   renderTask,
-  taskListHide = ["run"],
-  onTaskOpen,
+  taskListHide = ["run", "experiment"],
   className,
 }: ExperimentRunContentProps) {
   const dateRange = formatRunDateRange(run);
@@ -144,7 +142,6 @@ export function ExperimentRunContent({
           renderTask={renderTask}
           hide={taskListHide}
           defaultOpen={defaultTasksOpen}
-          onTaskOpen={onTaskOpen}
         />
       ) : null}
     </article>

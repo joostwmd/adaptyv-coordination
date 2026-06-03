@@ -14,19 +14,7 @@ import { usePlanningBoard } from "@/hooks/usePlanningBoard";
 
 import { TaskCard } from "@/components/task/task-card";
 
-type NeedsAttentionDrawerProps = {
-  onTaskOpen: (task: Task) => void;
-};
-
-function TaskSection({
-  title,
-  tasks,
-  onTaskOpen,
-}: {
-  title: string;
-  tasks: Task[];
-  onTaskOpen: (task: Task) => void;
-}) {
+function TaskSection({ title, tasks }: { title: string; tasks: Task[] }) {
   return (
     <section className="space-y-2">
       <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -38,7 +26,7 @@ function TaskSection({
       ) : (
         <div className="space-y-2">
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onOpen={onTaskOpen} variant="compact" />
+            <TaskCard key={task.id} task={task} variant="compact" />
           ))}
         </div>
       )}
@@ -46,7 +34,7 @@ function TaskSection({
   );
 }
 
-export function NeedsAttentionDrawer({ onTaskOpen }: NeedsAttentionDrawerProps) {
+export function NeedsAttentionDrawer() {
   const board = usePlanningBoard();
   const totalCount =
     board.blockedTasks.length +
@@ -74,21 +62,9 @@ export function NeedsAttentionDrawer({ onTaskOpen }: NeedsAttentionDrawerProps) 
         </DrawerHeader>
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-6 pt-4">
           <div className="space-y-6">
-            <TaskSection
-              title="Blocked"
-              tasks={board.blockedTasks}
-              onTaskOpen={onTaskOpen}
-            />
-            <TaskSection
-              title="Waiting on dependencies"
-              tasks={board.waitingTasks}
-              onTaskOpen={onTaskOpen}
-            />
-            <TaskSection
-              title="Reruns"
-              tasks={board.failedTasks}
-              onTaskOpen={onTaskOpen}
-            />
+            <TaskSection title="Blocked" tasks={board.blockedTasks} />
+            <TaskSection title="Waiting on dependencies" tasks={board.waitingTasks} />
+            <TaskSection title="Reruns" tasks={board.failedTasks} />
           </div>
         </div>
       </DrawerContent>

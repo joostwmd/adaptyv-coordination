@@ -11,7 +11,6 @@ type ExperimentRunCardProps = {
   experiment: ExperimentSummary;
   defaultExpanded?: boolean;
   className?: string;
-  onTaskOpen?: (task: Task) => void;
   renderTask?: (task: Task) => ReactNode;
 };
 
@@ -20,7 +19,6 @@ export function ExperimentRunCard({
   experiment,
   defaultExpanded = false,
   className,
-  onTaskOpen,
   renderTask,
 }: ExperimentRunCardProps) {
   return (
@@ -31,7 +29,6 @@ export function ExperimentRunCard({
           experiment={experiment}
           showTasks
           defaultTasksOpen={defaultExpanded}
-          onTaskOpen={onTaskOpen}
           renderTask={renderTask}
         />
       </CardContent>

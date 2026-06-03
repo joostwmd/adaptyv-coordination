@@ -4,7 +4,6 @@ export { ReadinessBadge } from "./readiness-badge";
 export { TaskTypeBadge } from "./task-type-badge";
 export { TaskCard } from "@/components/task/task-card";
 export { TaskCardCell } from "./task-card-cell";
-export { TaskDetailDialog } from "./task-detail-dialog";
 export { PlanningScreen } from "./planning-screen";
 export { PlanningBoard } from "./planning-board";
 export { TicketCard } from "./ticket-card";
