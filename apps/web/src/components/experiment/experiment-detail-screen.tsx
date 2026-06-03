@@ -180,6 +180,7 @@ export function ExperimentDetailScreen({ experiment }: ExperimentDetailScreenPro
             className="min-h-0"
           >
             <ExperimentRunCreationPanel
+              experiment={experiment}
               onClose={() => setIsCreationOpen(false)}
             />
           </ResizablePanel>

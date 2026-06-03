@@ -1,12 +1,17 @@
 import { X } from "lucide-react";
 
 import { Button } from "@adaptyv-coordination/ui/components/button";
+import type { ExperimentDetail } from "@/types";
+
+import { RunCreationWizard } from "./run-creation/run-creation-wizard";
 
 type ExperimentRunCreationPanelProps = {
+  experiment: ExperimentDetail;
   onClose: () => void;
 };
 
 export function ExperimentRunCreationPanel({
+  experiment,
   onClose,
 }: ExperimentRunCreationPanelProps) {
   return (
@@ -15,7 +20,7 @@ export function ExperimentRunCreationPanel({
         <div>
           <h2 className="text-sm font-medium">Create new run</h2>
           <p className="text-xs text-muted-foreground">
-            Configure tasks from templates for this experiment run
+            {experiment.code} · Revision {experiment.runs.length + 1}
           </p>
         </div>
         <Button
@@ -28,10 +33,8 @@ export function ExperimentRunCreationPanel({
           <X className="size-4" />
         </Button>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto p-4">
-        <p className="text-sm text-muted-foreground">
-          Run creation flow will go here.
-        </p>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-4">
+        <RunCreationWizard experiment={experiment} />
       </div>
     </div>
   );
