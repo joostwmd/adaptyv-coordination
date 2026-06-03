@@ -38,6 +38,8 @@ export type Task = {
   params: Record<string, unknown>;
   /** Physical input plates to load before execution. */
   requiredPlates?: PlateRequirement[];
+  /** Number of input samples (sequences / wells) processed in this task. */
+  inputSampleCount?: number;
 
   status: TaskStatus;
   readiness: TaskReadiness;

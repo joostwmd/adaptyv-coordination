@@ -1,4 +1,5 @@
 import { buildRequiredPlatesForTaskTemplate } from "@/domain/plate/requirements";
+import { mockInputSampleCount } from "@/domain/task/input-samples";
 import { getTaskTemplate } from "@/domain/task-template/catalog";
 import type {
   StaffMember,
@@ -46,7 +47,12 @@ const TEMPLATE = {
 
 function seedTask(
   partial: Omit<Task, "dependsOn" | "createdAt" | "params" | "origin"> &
-    Partial<Pick<Task, "dependsOn" | "createdAt" | "params" | "origin" | "requiredPlates">>,
+    Partial<
+      Pick<
+        Task,
+        "dependsOn" | "createdAt" | "params" | "origin" | "requiredPlates" | "inputSampleCount"
+      >
+    >,
 ): Task {
   const template = getTaskTemplate(partial.taskTemplateId);
   const requiredPlates =
@@ -54,6 +60,9 @@ function seedTask(
     (template
       ? buildRequiredPlatesForTaskTemplate(template, partial.taskTemplateId)
       : undefined);
+  const inputSampleCount =
+    partial.inputSampleCount ??
+    mockInputSampleCount(partial.taskTemplateId, partial.id);
 
   return {
     params: {},
@@ -63,6 +72,7 @@ function seedTask(
     ...partial,
     requiredPlates:
       requiredPlates && requiredPlates.length > 0 ? requiredPlates : undefined,
+    inputSampleCount,
   };
 }
 

@@ -15,6 +15,7 @@ import type {
   TaskReadiness,
 } from "@/types";
 
+import { InputSampleCountBadge } from "./primitives/input-sample-count-badge";
 import { StatusBadge } from "./primitives/status-badge";
 import { TaskNameBadge } from "./primitives/task-name-badge";
 import { TaskReferences, type TaskReferenceKey } from "./task-references";
@@ -56,6 +57,7 @@ export function TaskContent({
     <div className={cn("flex flex-col gap-3", className)}>
       <div className="flex flex-wrap items-center gap-1.5">
         <StatusBadge status={task.status} />
+        <InputSampleCountBadge task={task} />
         {showReadiness ? <ReadinessBadge readiness={task.readiness} /> : null}
         {!isCompact ? <TaskTypeBadge label={enriched.templateName} /> : null}
         {!isCompact ? <TaskNameBadge task={task} /> : null}

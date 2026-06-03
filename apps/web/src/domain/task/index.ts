@@ -1,5 +1,11 @@
 export type { Task, TaskOrigin, TaskReadiness } from "./types";
 export {
+  aggregateInputSampleCount,
+  formatInputSampleCount,
+  mockInputSampleCount,
+  resolveInputSampleCount,
+} from "./input-samples";
+export {
   computeReadiness,
   refreshAllTaskReadiness,
   refreshTaskReadiness,

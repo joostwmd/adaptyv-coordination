@@ -3,6 +3,7 @@ import type { PlateRequirement } from "@/domain/plate/types";
 import { getDefaultParams } from "@/domain/task-template/param-schema";
 import { getTaskTemplate } from "@/domain/task-template/catalog";
 import type { TaskTemplate } from "@/domain/task-template/types";
+import { mockInputSampleCount } from "@/domain/task/input-samples";
 import { refreshAllTaskReadiness } from "@/domain/task/readiness";
 import { nextTaskId } from "@/domain/task/scaffold";
 import type { Task } from "@/types";
@@ -89,8 +90,9 @@ export function buildTasksFromRunCreation(
       ...draft.params,
     };
 
+    const id = nextTaskId();
     const task: Task = {
-      id: nextTaskId(),
+      id,
       taskTemplateId: step.taskTemplateId,
       name: `${step.templateName} — ${experiment.code}`,
       origin: "template",
@@ -98,6 +100,7 @@ export function buildTasksFromRunCreation(
       runId: run.id,
       params,
       requiredPlates: requiredPlatesFromDraft(draft, template),
+      inputSampleCount: mockInputSampleCount(step.taskTemplateId, id),
       status: "pending",
       dependsOn: previousId ? [previousId] : [],
       readiness: "ready",
