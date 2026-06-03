@@ -1,58 +1,72 @@
-import { Card, CardContent } from "@adaptyv-coordination/ui/components/card";
-import { cn } from "@adaptyv-coordination/ui/lib/utils";
+import { motion } from "motion/react";
 
+import { ExperimentCodeHover } from "@/components/experiment";
+import { TaskCardCell } from "@/components/planning/task-card-cell";
+import { useEnrichedTask } from "@/hooks/usePlanningTask";
 import type { ExperimentRunSummary, ExperimentSummary, Task } from "@/types";
 
 import { TaskContent } from "./task-content";
+import type { TaskReferenceKey } from "./task-references";
 
-type TaskCardProps = {
+export type TaskCardProps = {
   task: Task;
-  onView?: (task: Task) => void;
-  variant?: "default" | "embedded";
+  onOpen?: (task: Task) => void;
+  variant?: "standalone" | "compact" | "embedded";
+  layoutId?: string;
+  hide?: TaskReferenceKey[];
+  experiment?: ExperimentSummary | null;
   run?: ExperimentRunSummary;
-  experiment?: ExperimentSummary;
-  showPlanningLinks?: boolean;
 };
 
 export function TaskCard({
   task,
-  onView,
-  variant = "default",
-  run,
+  onOpen,
+  variant = "standalone",
+  layoutId,
+  hide,
   experiment,
-  showPlanningLinks = true,
+  run,
 }: TaskCardProps) {
-  const isEmbedded = variant === "embedded";
+  const enriched = useEnrichedTask(task);
 
-  return (
-    <Card
-      className={cn(
-        isEmbedded && "shadow-none",
-        onView && "cursor-pointer transition-colors hover:bg-muted/30",
-      )}
-      onClick={onView ? () => onView(task) : undefined}
-      onKeyDown={
-        onView
-          ? (event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onView(task);
-              }
-            }
-          : undefined
-      }
-      role={onView ? "button" : undefined}
-      tabIndex={onView ? 0 : undefined}
-    >
-      <CardContent className={cn(isEmbedded ? "px-4 py-3" : "pt-6")}>
-        <TaskContent
-          task={task}
-          variant={variant}
-          run={run}
-          experiment={experiment}
-          showPlanningLinks={showPlanningLinks}
-        />
-      </CardContent>
-    </Card>
+  if (!enriched) return null;
+
+  const cellVariant = variant === "embedded" ? "compact" : variant;
+  const isCompact = cellVariant === "compact";
+  const exp = experiment ?? enriched.experiment;
+
+  const title = isCompact && exp ? (
+    <ExperimentCodeHover experiment={exp} linkClassName="text-sm" />
+  ) : (
+    enriched.title
   );
+
+  const subtitle =
+    isCompact && exp
+      ? exp.name
+      : exp
+        ? exp.name
+        : undefined;
+
+  const card = (
+    <TaskCardCell
+      title={title}
+      subtitle={subtitle}
+      headerEnd={null}
+      onOpen={onOpen ? () => onOpen(task) : undefined}
+      variant={cellVariant}
+    >
+      <TaskContent
+        task={task}
+        variant={cellVariant}
+        experiment={experiment ?? enriched.experiment}
+        run={run}
+        hide={hide}
+      />
+    </TaskCardCell>
+  );
+
+  if (!layoutId) return card;
+
+  return <motion.div layoutId={layoutId}>{card}</motion.div>;
 }

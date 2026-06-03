@@ -35,7 +35,7 @@ export function ExperimentRunHoverCard({
         align={align}
         className={cn("w-72 p-3", contentClassName)}
       >
-        <ExperimentRunContent run={run} experiment={experiment} />
+        <ExperimentRunContent run={run} experiment={experiment} variant="compact" />
       </HoverCardContent>
     </HoverCard>
   );

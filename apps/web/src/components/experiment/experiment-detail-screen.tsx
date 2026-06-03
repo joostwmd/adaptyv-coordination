@@ -105,7 +105,7 @@ function ExperimentDetailContent({
                     run={run}
                     experiment={experimentSummary}
                     defaultExpanded={index === 0}
-                    onTaskView={setSelectedTask}
+                    onTaskOpen={setSelectedTask}
                   />
                 ))}
             </div>

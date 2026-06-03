@@ -16,7 +16,7 @@ export function TaskList({ items }: TaskListProps) {
     <>
       <div className="grid gap-3">
         {items.map((task) => (
-          <TaskCard key={task.id} task={task} onView={setSelectedTask} />
+          <TaskCard key={task.id} task={task} onOpen={setSelectedTask} />
         ))}
       </div>
 

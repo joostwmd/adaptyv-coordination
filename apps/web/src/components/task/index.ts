@@ -1,6 +1,9 @@
 export { TaskCard } from "./task-card";
+export type { TaskCardProps } from "./task-card";
 export { TaskContent } from "./task-content";
-export { TaskPlanningLinks } from "./task-planning-links";
+export { CollapsibleTaskList } from "./collapsible-task-list";
+export { TaskReferences } from "./task-references";
+export type { TaskReferenceKey } from "./task-references";
 export { TaskList } from "./task-list";
 export { MOCK_EXPERIMENTS, MOCK_EXPERIMENT_MAP, MOCK_STAFF, MOCK_TASKS, getExperimentById } from "./mock-data";
 export type { Task } from "@/types";

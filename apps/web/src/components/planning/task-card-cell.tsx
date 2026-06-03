@@ -15,7 +15,7 @@ type TaskCardCellProps = {
   headerStart?: ReactNode;
   /** Right side of the title row (e.g. priority). */
   headerEnd?: ReactNode;
-  onOpen: () => void;
+  onOpen?: () => void;
   children: ReactNode;
   variant?: "standalone" | "compact";
   footerLabel?: string;
@@ -32,6 +32,7 @@ export function TaskCardCell({
   footerLabel = "View full task",
 }: TaskCardCellProps) {
   function handleKeyDown(event: KeyboardEvent) {
+    if (!onOpen) return;
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       onOpen();
@@ -39,17 +40,19 @@ export function TaskCardCell({
   }
 
   const isCompact = variant === "compact";
+  const isInteractive = Boolean(onOpen);
 
   return (
     <Card
       className={cn(
-        "cursor-pointer transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        isInteractive &&
+          "cursor-pointer transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
         isCompact && "border-border/60 bg-muted/20 shadow-none",
       )}
       onClick={onOpen}
-      onKeyDown={handleKeyDown}
-      role="button"
-      tabIndex={0}
+      onKeyDown={isInteractive ? handleKeyDown : undefined}
+      role={isInteractive ? "button" : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
     >
       <CardHeader className={cn(isCompact ? "px-3 py-3" : "pb-3")}>
         {headerStart ? (

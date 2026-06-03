@@ -5,7 +5,7 @@ import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
 import type { Task } from "@/domain/task/types";
 
-import { PlanningTaskCard } from "../planning-task-card";
+import { TaskCard } from "@/components/task/task-card";
 import type { PlanningDragData, SiblingDropData } from "./types";
 
 type DraggableTaskRowProps = {
@@ -41,7 +41,7 @@ export function DraggableTaskRow({
         isDragging && "cursor-grabbing opacity-40",
       )}
     >
-      <PlanningTaskCard
+      <TaskCard
         task={task}
         onOpen={onOpen}
         variant="compact"

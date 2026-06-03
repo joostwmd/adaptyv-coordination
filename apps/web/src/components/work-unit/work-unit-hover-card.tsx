@@ -33,7 +33,7 @@ export function WorkUnitHoverCard({
         align={align}
         className={cn("w-72 p-3", contentClassName)}
       >
-        <WorkUnitContent workUnit={workUnit} />
+        <WorkUnitContent workUnit={workUnit} variant="compact" />
       </HoverCardContent>
     </HoverCard>
   );

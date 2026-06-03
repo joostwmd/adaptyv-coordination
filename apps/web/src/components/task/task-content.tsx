@@ -1,133 +1,60 @@
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
-import {
-  EXPERIMENT_PRIORITY_LABEL,
-  ExperimentHoverCard,
-  ExperimentRunHoverCard,
-  formatExperimentPriority,
-} from "@/components/experiment";
-import { getTaskTemplate } from "@/domain/task-template/catalog";
-import { useExperimentById } from "@/stores/usePrototypeStore";
-import { TaskPlanningLinks } from "./task-planning-links";
+import { ParameterSummary } from "@/components/planning/parameter-summary";
+import { PriorityIndicator } from "@/components/planning/priority-indicator";
+import { ReadinessBadge } from "@/components/planning/readiness-badge";
+import { TaskTypeBadge } from "@/components/planning/task-type-badge";
+import { useEnrichedTask } from "@/hooks/usePlanningTask";
 import type { ExperimentRunSummary, ExperimentSummary, Task } from "@/types";
-import { getTaskDisplayName } from "@/types/task";
 
-import { AssigneeRow } from "./primitives/assignee-row";
-import { ExperimentLink } from "./primitives/experiment-link";
-import { ExperimentRunLink } from "./primitives/experiment-run-link";
 import { StatusBadge } from "./primitives/status-badge";
+import { TaskReferences, type TaskReferenceKey } from "./task-references";
 
 export type TaskContentProps = {
   task: Task;
-  variant?: "default" | "embedded";
+  variant?: "standalone" | "compact";
   experiment?: ExperimentSummary | null;
   run?: ExperimentRunSummary;
-  showExperiment?: boolean;
-  showRun?: boolean;
-  showAssignee?: boolean;
-  showPlanningLinks?: boolean;
+  hide?: TaskReferenceKey[];
   className?: string;
 };
 
 export function TaskContent({
   task,
-  variant = "default",
+  variant = "standalone",
   experiment: experimentProp,
   run: runProp,
-  showExperiment = true,
-  showRun = true,
-  showAssignee = true,
-  showPlanningLinks = true,
+  hide,
   className,
 }: TaskContentProps) {
-  const experimentFromStore = useExperimentById(task.experimentId ?? "");
-  const summary =
-    experimentProp ??
-    (experimentFromStore
-      ? (() => {
-          const { runs: _runs, ...rest } = experimentFromStore;
-          return rest;
-        })()
-      : null);
+  const enriched = useEnrichedTask(task);
+  const isCompact = variant === "compact";
 
-  const run =
-    runProp ??
-    (experimentFromStore && task.runId
-      ? experimentFromStore.runs.find((entry) => entry.id === task.runId)
-      : undefined);
+  if (!enriched) return null;
 
-  const templateName = getTaskTemplate(task.taskTemplateId)?.name;
-  const title = getTaskDisplayName(task);
-  const isEmbedded = variant === "embedded";
-
-  const titleInner = (
-    <>
-      <h3
-        className={cn(
-          "font-semibold leading-snug text-foreground",
-          isEmbedded ? "text-sm" : "text-base",
-        )}
-      >
-        {title}
-      </h3>
-      {isEmbedded && templateName && templateName !== title ? (
-        <p className="text-[11px] text-muted-foreground">{templateName}</p>
-      ) : null}
-    </>
-  );
-
-  const titleNode =
-    run && summary && isEmbedded ? (
-      <ExperimentRunHoverCard
-        run={run}
-        experiment={summary}
-        trigger={
-          <button
-            type="button"
-            className="min-w-0 flex-1 rounded-sm text-left outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
-            onClick={(event) => event.stopPropagation()}
-          >
-            {titleInner}
-          </button>
-        }
-      />
-    ) : (
-      <div className="min-w-0 flex-1">{titleInner}</div>
-    );
+  const showReadiness =
+    (!isCompact && task.readiness !== "batched") ||
+    (isCompact && task.readiness !== "batched" && task.readiness !== "ready");
 
   return (
     <div className={cn("flex flex-col gap-3", className)}>
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        {titleNode}
+      <div className="flex flex-wrap items-center gap-1.5">
+        {showReadiness ? <ReadinessBadge readiness={task.readiness} /> : null}
+        {!isCompact ? <TaskTypeBadge label={enriched.templateName} /> : null}
         <StatusBadge status={task.status} />
+        <div className="ml-auto">
+          <PriorityIndicator priority={enriched.priority} stopPropagation />
+        </div>
       </div>
 
-      {showAssignee && task.assignee ? <AssigneeRow assignee={task.assignee} /> : null}
+      <ParameterSummary task={task} showHeading={!isCompact} />
 
-      {!isEmbedded && showExperiment && summary ? (
-        <p className="text-xs/relaxed">
-          <span className="text-muted-foreground">{EXPERIMENT_PRIORITY_LABEL} </span>
-          <span className="font-medium">{formatExperimentPriority(summary.priority)}</span>
-          <span className="text-muted-foreground"> ({summary.code})</span>
-        </p>
-      ) : null}
-
-      {!isEmbedded && showRun && task.experimentId && task.runId ? (
-        <ExperimentRunLink experimentId={task.experimentId} runId={task.runId} />
-      ) : null}
-
-      {!isEmbedded && showExperiment && summary ? (
-        <ExperimentHoverCard
-          experiment={summary}
-          trigger={
-            <span className="inline-block w-fit">
-              <ExperimentLink experiment={summary} />
-            </span>
-          }
-        />
-      ) : null}
-
-      {showPlanningLinks ? <TaskPlanningLinks task={task} /> : null}
+      <TaskReferences
+        task={task}
+        experiment={experimentProp ?? enriched.experiment}
+        run={runProp}
+        hide={hide}
+      />
     </div>
   );
 }

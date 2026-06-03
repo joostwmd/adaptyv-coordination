@@ -2,7 +2,7 @@ export { ParameterSummary } from "./parameter-summary";
 export { PriorityIndicator } from "./priority-indicator";
 export { ReadinessBadge } from "./readiness-badge";
 export { TaskTypeBadge } from "./task-type-badge";
-export { PlanningTaskCard } from "./planning-task-card";
+export { TaskCard } from "@/components/task/task-card";
 export { TaskCardCell } from "./task-card-cell";
 export { TaskDetailDialog } from "./task-detail-dialog";
 export { PlanningScreen } from "./planning-screen";
