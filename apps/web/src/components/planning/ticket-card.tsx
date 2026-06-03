@@ -55,13 +55,11 @@ export function TicketCard({
                 {view.experimentCount === 1 ? "" : "s"}
               </span>
               <span aria-hidden>·</span>
-              <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                <span>Scheduled</span>
-                <ScheduledTime
-                  scheduledDay={ticket.scheduledDay}
-                  className="h-auto p-0 text-xs font-normal text-muted-foreground whitespace-nowrap"
-                />
-              </span>
+              <ScheduledTime
+                scheduledDay={ticket.scheduledDay}
+                display="date"
+                className="text-xs text-muted-foreground"
+              />
             </p>
             <AssigneesRow assignees={assignees} />
           </div>
