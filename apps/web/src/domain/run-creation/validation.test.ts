@@ -5,6 +5,7 @@ import { getDefaultParams, paramFieldHasValue } from "@/domain/task-template/par
 import { buildInitialDrafts, updateTaskDraft } from "@/domain/run-creation/draft";
 import type { RunTaskDraft } from "@/domain/run-creation/draft";
 import {
+  canProceedFromRunStepSelection,
   getTaskConfigStatus,
   getTaskConfigStatusForStep,
   isRunCreationDraftComplete,
@@ -77,5 +78,11 @@ describe("run-creation validation", () => {
 
     expect(getTaskConfigStatusForStep(drafts[step.key], step.taskTemplateId)).toBe("complete");
     expect(isRunCreationDraftComplete([step], drafts)).toBe(true);
+  });
+
+  it("requires at least one selected step and a non-empty run name", () => {
+    expect(canProceedFromRunStepSelection(0, "Run A")).toBe(false);
+    expect(canProceedFromRunStepSelection(1, "   ")).toBe(false);
+    expect(canProceedFromRunStepSelection(2, "Run A")).toBe(true);
   });
 });

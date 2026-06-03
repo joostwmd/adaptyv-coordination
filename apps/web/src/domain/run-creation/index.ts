@@ -3,6 +3,7 @@ export {
   buildRunCreationResult,
   buildTasksFromRunCreation,
   suggestDefaultRunName,
+  type RunCreationBuildResult,
   type RunCreationResult,
 } from "./create-run";
 export {
@@ -18,6 +19,7 @@ export {
   resolveWorkflowForExperiment,
 } from "./workflow-steps";
 export {
+  canProceedFromRunStepSelection,
   getTaskConfigStatus,
   getTaskConfigStatusForStep,
   isRunCreationDraftComplete,

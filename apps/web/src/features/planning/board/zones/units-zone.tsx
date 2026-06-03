@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Button } from "@adaptyv-coordination/ui/components/button";
 
 import { getOverflowByUnitId } from "@/domain/planning/overflow";
+import { usePlanningBoardActions } from "@/hooks/usePlanningBoardActions";
 import { usePlanningBoardContext } from "@/features/planning/board/planning-board-context";
 import { usePlanningBoardStore } from "@/stores/planning/usePlanningBoardStore";
 
@@ -17,8 +18,8 @@ import { ZoneShell } from "./zone-shell";
 
 export function UnitsZone() {
   const board = usePlanningBoardContext();
+  const { splitWorkUnit } = usePlanningBoardActions();
   const tasks = usePlanningBoardStore((state) => state.tasks);
-  const splitWorkUnit = usePlanningBoardStore((state) => state.splitWorkUnit);
 
   const overflowByUnitId = useMemo(
     () => getOverflowByUnitId(board.unscheduledWorkUnits, tasks),

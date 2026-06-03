@@ -10,7 +10,6 @@ import { cn } from "@adaptyv-coordination/ui/lib/utils";
 import { formatPlanningDayLabel } from "@/domain/planning/display";
 import { usePlanningBoardContext } from "@/features/planning/board/planning-board-context";
 import {
-  usePlanningBoardStore,
   usePlanningTasks,
   usePlanningTickets,
   usePlanningWorkUnits,
@@ -101,7 +100,7 @@ export function PlanningStats() {
   const workUnits = usePlanningWorkUnits();
   const tickets = usePlanningTickets();
   const board = usePlanningBoardContext();
-  const currentDay = usePlanningBoardStore((state) => state.currentDay);
+  const currentDay = board.currentDay;
   const unscheduledCount = board.unscheduledWorkUnits.length;
 
   const counts = useMemo(() => {

@@ -48,6 +48,7 @@ export function RunCreationConfigurePanel({
   const activeStep = selectedSteps[activeIndex];
   const activeDraft = activeStep ? drafts[activeStep.key] : undefined;
   const isLastStep = activeIndex >= 0 && activeIndex === selectedSteps.length - 1;
+  const activeStepComplete = statuses[activeStepKey] === "complete";
 
   const goToNextStep = () => {
     if (activeIndex < 0 || isLastStep) return;
@@ -95,7 +96,13 @@ export function RunCreationConfigurePanel({
 
         <div className="flex items-center gap-2">
           {!isLastStep ? (
-            <Button type="button" variant="outline" size="sm" onClick={goToNextStep}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={!activeStepComplete}
+              onClick={goToNextStep}
+            >
               Next step
             </Button>
           ) : null}

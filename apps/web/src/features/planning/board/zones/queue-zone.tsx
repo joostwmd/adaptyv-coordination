@@ -8,8 +8,8 @@ import {
 
 import { previewPoolGroup, previewSoloUnit } from "@/domain/planning/queue-actions";
 import { useExperimentsById } from "@/hooks/useExperimentsById";
+import { usePlanningBoardActions } from "@/hooks/usePlanningBoardActions";
 import { usePlanningBoardContext } from "@/features/planning/board/planning-board-context";
-import { usePlanningBoardStore } from "@/stores/planning/usePlanningBoardStore";
 import { usePlanningPreferencesStore } from "@/stores/planning/usePlanningPreferencesStore";
 
 import { PlanningSuggestionShell } from "@/features/planning/suggestion-shell";
@@ -24,18 +24,19 @@ import { QueueSubzone, ZoneShell } from "./zone-shell";
 
 export function QueueZone() {
   const board = usePlanningBoardContext();
-  const createWorkUnitFromReadyTasks = usePlanningBoardStore(
-    (state) => state.createWorkUnitFromReadyTasks,
-  );
-  const createSplitUnitsFromReadyTasks = usePlanningBoardStore(
-    (state) => state.createSplitUnitsFromReadyTasks,
-  );
-  const addTaskToWorkUnit = usePlanningBoardStore((state) => state.addTaskToWorkUnit);
+  const {
+    createWorkUnitFromReadyTasks,
+    createSplitUnitsFromReadyTasks,
+    addTaskToWorkUnit,
+  } = usePlanningBoardActions();
   const weights = usePlanningPreferencesStore((state) => state.weights);
-  const currentDay = usePlanningBoardStore((state) => state.currentDay);
   const experimentsById = useExperimentsById();
 
-  const queuePreviewContext = { experimentsById, weights, currentDay };
+  const queuePreviewContext = {
+    experimentsById,
+    weights,
+    currentDay: board.currentDay,
+  };
 
   const queueCount =
     board.queue.pool.reduce((total, group) => total + group.tasks.length, 0) +

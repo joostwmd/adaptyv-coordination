@@ -64,3 +64,10 @@ export function validateRunCreationPayload(
 
   return { ok: true };
 }
+
+export function canProceedFromRunStepSelection(
+  selectedKeyCount: number,
+  runName: string,
+): boolean {
+  return selectedKeyCount > 0 && runName.trim().length > 0;
+}

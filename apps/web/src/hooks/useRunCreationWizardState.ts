@@ -6,6 +6,11 @@ import {
   buildInitialDrafts,
   type RunCreationDraft,
 } from "@/domain/run-creation/draft";
+import type { SelectableRunStep } from "@/domain/run-creation/types";
+import {
+  canProceedFromRunStepSelection,
+  validateRunCreationPayload,
+} from "@/domain/run-creation/validation";
 import {
   buildSelectableRunSteps,
   defaultSelectedStepKeys,
@@ -23,6 +28,10 @@ type UseRunCreationWizardStateOptions = {
   experiment: ExperimentDetail;
   onClose?: () => void;
 };
+
+function getStepLabel(steps: SelectableRunStep[], stepKey: string): string {
+  return steps.find((step) => step.key === stepKey)?.templateName ?? stepKey;
+}
 
 export function useRunCreationWizardState({
   experiment,
@@ -60,21 +69,42 @@ export function useRunCreationWizardState({
       return;
     }
 
-    const steps = buildSelectableRunSteps(workflow);
-    setSelectedKeys(defaultSelectedStepKeys(steps));
+    setSelectedKeys(defaultSelectedStepKeys(selectableSteps));
     setWizardStep(RUN_CREATION_WIZARD_STEPS.selectTasks);
     setDrafts({});
     setActiveConfigStepKey("");
     setRunName(suggestDefaultRunName(experiment));
-  }, [experiment, workflow]);
+  }, [experiment, workflow, selectableSteps]);
 
   const selectedSteps = useMemo(
     () => selectableSteps.filter((step) => selectedKeys.has(step.key)),
     [selectableSteps, selectedKeys],
   );
 
-  const canContinueFromStepOne =
-    selectedKeys.size > 0 && runName.trim().length > 0;
+  const canContinueFromStepOne = canProceedFromRunStepSelection(
+    selectedKeys.size,
+    runName,
+  );
+
+  const showIncompleteDraftsError = useCallback(
+    (incompleteStepKeys: string[]) => {
+      const firstKey = incompleteStepKeys[0];
+      if (firstKey) {
+        setActiveConfigStepKey(firstKey);
+      }
+
+      const label = firstKey ? getStepLabel(selectedSteps, firstKey) : "a step";
+      const remaining = incompleteStepKeys.length - 1;
+
+      toast.error("Could not create run", {
+        description:
+          remaining > 0
+            ? `Complete configuration for ${label} and ${remaining} other step(s).`
+            : `Complete configuration for ${label} before creating the run.`,
+      });
+    },
+    [selectedSteps],
+  );
 
   const enterConfigureStep = useCallback(() => {
     const steps = selectableSteps.filter((step) => selectedKeys.has(step.key));
@@ -84,6 +114,12 @@ export function useRunCreationWizardState({
   }, [selectableSteps, selectedKeys]);
 
   const createRun = useCallback(() => {
+    const validation = validateRunCreationPayload(selectedSteps, drafts);
+    if (!validation.ok) {
+      showIncompleteDraftsError(validation.incompleteStepKeys);
+      return;
+    }
+
     const result = createExperimentRunFromWizard({
       experimentId: experiment.id,
       runName: runName.trim(),
@@ -91,9 +127,21 @@ export function useRunCreationWizardState({
       drafts,
     });
 
-    if (!result) {
+    if (!result.ok) {
+      if (result.reason === "incomplete_drafts") {
+        showIncompleteDraftsError(result.incompleteStepKeys);
+        return;
+      }
+
+      if (result.reason === "experiment_not_found") {
+        toast.error("Could not create run", {
+          description: "Experiment not found.",
+        });
+        return;
+      }
+
       toast.error("Could not create run", {
-        description: "Complete all step configuration before creating the run.",
+        description: "Select at least one workflow step.",
       });
       return;
     }
@@ -110,6 +158,7 @@ export function useRunCreationWizardState({
     selectedSteps,
     drafts,
     onClose,
+    showIncompleteDraftsError,
   ]);
 
   const handleStepChange = useCallback(

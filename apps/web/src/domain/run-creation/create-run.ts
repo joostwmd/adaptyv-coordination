@@ -66,23 +66,34 @@ export function buildTasksFromRunCreation(
   return refreshAllTaskReadiness(tasks);
 }
 
-export type RunCreationResult = {
-  run: ExperimentRunSummary;
-  tasks: Task[];
-};
+export type RunCreationBuildResult =
+  | { ok: true; run: ExperimentRunSummary; tasks: Task[] }
+  | { ok: false; reason: "incomplete_drafts"; incompleteStepKeys: string[] }
+  | { ok: false; reason: "no_tasks" };
+
+/** @deprecated Use RunCreationBuildResult */
+export type RunCreationResult = Extract<RunCreationBuildResult, { ok: true }>;
 
 export function buildRunCreationResult(
   experiment: ExperimentDetail,
   selectedSteps: SelectableRunStep[],
   drafts: RunCreationDraft,
   runName?: string,
-): RunCreationResult | null {
+): RunCreationBuildResult {
   const validation = validateRunCreationPayload(selectedSteps, drafts);
-  if (!validation.ok) return null;
+  if (!validation.ok) {
+    return {
+      ok: false,
+      reason: "incomplete_drafts",
+      incompleteStepKeys: validation.incompleteStepKeys,
+    };
+  }
 
   const { runs: _runs, ...summary } = experiment;
   const run = buildNewRunSummary(experiment, runName);
   const tasks = buildTasksFromRunCreation(summary, run, selectedSteps, drafts);
-  if (tasks.length === 0) return null;
-  return { run, tasks };
+  if (tasks.length === 0) {
+    return { ok: false, reason: "no_tasks" };
+  }
+  return { ok: true, run, tasks };
 }

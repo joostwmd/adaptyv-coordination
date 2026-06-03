@@ -1,4 +1,4 @@
-import { buildRunCreationResult } from "@/domain/run-creation/create-run";
+import { buildRunCreationResult, type RunCreationBuildResult } from "@/domain/run-creation/create-run";
 import type { RunCreationDraft } from "@/domain/run-creation/draft";
 import type { SelectableRunStep } from "@/domain/run-creation/types";
 import { resolveWorkflowForExperiment } from "@/domain/run-creation/workflow-steps";
@@ -10,7 +10,6 @@ import {
 import type { StandaloneTaskContext } from "@/domain/task/scaffold";
 import { primaryRunForExperiment } from "@/domain/task/scaffold";
 import type { Task } from "@/types";
-import type { ExperimentRunSummary } from "@/types/experiment";
 
 import type { usePrototypeStore } from "../usePrototypeStore";
 
@@ -42,6 +41,11 @@ export function scaffoldFromExperiment(
   return newTasks;
 }
 
+export type CreateExperimentRunFromWizardResult =
+  | Extract<RunCreationBuildResult, { ok: true }>
+  | Extract<RunCreationBuildResult, { ok: false }>
+  | { ok: false; reason: "experiment_not_found" };
+
 export function createExperimentRunFromWizard(
   payload: {
     experimentId: string;
@@ -50,11 +54,13 @@ export function createExperimentRunFromWizard(
     drafts: RunCreationDraft;
   },
   deps: ExperimentRunActionsDeps,
-): { run: ExperimentRunSummary; tasks: Task[] } | null {
+): CreateExperimentRunFromWizardResult {
   const experiment = deps
     .getPrototypeState()
     .experiments.find((entry) => entry.id === payload.experimentId);
-  if (!experiment) return null;
+  if (!experiment) {
+    return { ok: false, reason: "experiment_not_found" };
+  }
 
   const result = buildRunCreationResult(
     experiment,
@@ -62,12 +68,12 @@ export function createExperimentRunFromWizard(
     payload.drafts,
     payload.runName,
   );
-  if (!result) return null;
+  if (!result.ok) return result;
 
   const { run, tasks } = result;
   deps.getPrototypeState().addExperimentRunWithTasks(experiment.id, run, tasks);
   deps.appendTasks(tasks);
-  return { run, tasks };
+  return { ok: true, run, tasks };
 }
 
 export function createStandalonePlanningTask(

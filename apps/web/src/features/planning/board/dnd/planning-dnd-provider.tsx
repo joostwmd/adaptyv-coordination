@@ -9,6 +9,7 @@ import {
 } from "@/domain/planning/dnd-policy";
 import type { Ticket } from "@/domain/ticket/types";
 import type { WorkUnit } from "@/domain/work-unit/types";
+import { usePlanningBoardActions } from "@/hooks/usePlanningBoardActions";
 import { usePlanningBoardStore } from "@/stores/planning/usePlanningBoardStore";
 
 import { TicketCard } from "@/features/planning/cards/ticket-card";
@@ -20,25 +21,7 @@ type PlanningDndProviderProps = {
 };
 
 export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
-  const createTicket = usePlanningBoardStore((state) => state.createTicket);
-  const updateTicket = usePlanningBoardStore((state) => state.updateTicket);
-  const unscheduleTicket = usePlanningBoardStore((state) => state.unscheduleTicket);
-  const revertTicketToQueue = usePlanningBoardStore((state) => state.revertTicketToQueue);
-  const dissolveWorkUnit = usePlanningBoardStore((state) => state.dissolveWorkUnit);
-  const addTaskToWorkUnit = usePlanningBoardStore((state) => state.addTaskToWorkUnit);
-  const removeTaskFromWorkUnit = usePlanningBoardStore(
-    (state) => state.removeTaskFromWorkUnit,
-  );
-
-  const dropActions = {
-    createTicket,
-    updateTicket,
-    unscheduleTicket,
-    revertTicketToQueue,
-    dissolveWorkUnit,
-    removeTaskFromWorkUnit,
-    addTaskToWorkUnit,
-  };
+  const dropActions = usePlanningBoardActions();
 
   const [activeDrag, setActiveDrag] = useState<{
     kind: PlanningDragData["kind"];

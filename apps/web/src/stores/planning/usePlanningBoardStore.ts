@@ -17,13 +17,14 @@ import {
 import type { WorkUnit } from "@/domain/work-unit/types";
 import { createRerunTasks } from "@/domain/task";
 import type { Task } from "@/types";
-import { buildExperimentsById } from "@/hooks/useExperimentsById";
+import { buildExperimentsById } from "@/domain/experiment";
 
 import {
   createExperimentRunFromWizard as runCreateExperimentRunFromWizard,
   createStandalonePlanningTask,
   scaffoldFromExperiment as runScaffoldFromExperiment,
   syncTaskReadiness,
+  type CreateExperimentRunFromWizardResult,
 } from "./experiment-run-actions";
 import {
   getTasksByExperiment as selectTasksByExperiment,
@@ -68,7 +69,7 @@ interface PlanningBoardState {
     runName: string;
     selectedSteps: SelectableRunStep[];
     drafts: RunCreationDraft;
-  }) => { run: ExperimentRunSummary; tasks: Task[] } | null;
+  }) => CreateExperimentRunFromWizardResult;
   createStandaloneTask: (
     taskTemplateId: string,
     params?: Record<string, unknown>,
