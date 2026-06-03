@@ -1,4 +1,4 @@
-import { MOCK_PLATE_STOCKS, MOCK_PLATE_STOCKS_BY_TYPE } from "@/data/plateData";
+import { MOCK_PLATE_STOCKS, MOCK_PLATE_STOCKS_BY_TYPE } from "@/data/seedData";
 
 import { getPlateType, PLATE_TYPES, PLATE_TYPES_BY_ID } from "./plate-types";
 import type { PlateStock, PlateType } from "./types";
