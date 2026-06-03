@@ -1,9 +1,7 @@
 import { Toaster } from "@adaptyv-coordination/ui/components/sonner";
 import { TooltipProvider } from "@adaptyv-coordination/ui/components/tooltip";
 import type { QueryClient } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { HeadContent, Outlet, createRootRouteWithContext } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -56,8 +54,6 @@ function RootComponent() {
           <PrototypeControls />
         </TooltipProvider>
       </ThemeProvider>
-      <TanStackRouterDevtools position="bottom-left" />
-      <ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
     </>
   );
 }

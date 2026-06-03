@@ -6,7 +6,7 @@ export const Route = createFileRoute("/experiments")({
 
 function ExperimentsLayout() {
   return (
-    <div className="h-full min-h-0 overflow-y-auto">
+    <div className="h-full min-h-0 overflow-hidden">
       <Outlet />
     </div>
   );

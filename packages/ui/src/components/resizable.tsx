@@ -20,20 +20,29 @@ function ResizablePanelGroup({
   storageId,
   panelIds,
   orientation = "horizontal",
+  persistLayout = true,
+  defaultLayout: defaultLayoutProp,
   ...props
 }: React.ComponentProps<typeof Group> & {
   storageId: string;
   panelIds?: string[];
+  /** When false, uses `defaultLayout` only and does not read/write localStorage. */
+  persistLayout?: boolean;
+  defaultLayout?: React.ComponentProps<typeof Group>["defaultLayout"];
 }) {
-  const layout = usePersistedLayout(storageId, panelIds);
+  const persisted = usePersistedLayout(storageId, panelIds);
 
   return (
     <Group
       id={storageId}
       orientation={orientation}
       className={cn("flex h-full w-full", className)}
-      defaultLayout={layout.defaultLayout}
-      onLayoutChanged={layout.onLayoutChanged}
+      defaultLayout={
+        persistLayout ? persisted.defaultLayout : defaultLayoutProp
+      }
+      onLayoutChanged={
+        persistLayout ? persisted.onLayoutChanged : undefined
+      }
       {...props}
     />
   );
