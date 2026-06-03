@@ -89,33 +89,39 @@ export function WorkUnitContent({
         />
       ) : null}
 
-      <ContentSection divided={showHeader}>
+      <div
+        className={cn(
+          "flex flex-col gap-4",
+          showHeader && "border-t border-border/50 pt-4",
+          !showHeader && "pt-4",
+        )}
+      >
         <WorkUnitMetadataRow workUnit={workUnit} view={view} />
-      </ContentSection>
 
-      {showDetails ? (
-        <ContentSection title="Unit details">
-          <div className="flex flex-col gap-3">
-            <WorkUnitParameterSummary
-              workUnit={workUnit}
+        {showDetails ? (
+          <ContentSection title="Unit details" divided={false}>
+            <div className="flex flex-col gap-3">
+              <WorkUnitParameterSummary
+                workUnit={workUnit}
+                tasks={view.tasks}
+                showHeading={false}
+              />
+              <WorkUnitRequiredPlatesSummary tasks={view.tasks} />
+            </div>
+          </ContentSection>
+        ) : null}
+
+        {showTasks ? (
+          <ContentSection divided={false}>
+            <CollapsibleTaskList
               tasks={view.tasks}
-              showHeading={false}
+              renderTask={renderTask}
+              hide={taskListHide}
+              defaultOpen={defaultTasksOpen}
             />
-            <WorkUnitRequiredPlatesSummary tasks={view.tasks} />
-          </div>
-        </ContentSection>
-      ) : null}
-
-      {showTasks ? (
-        <ContentSection>
-          <CollapsibleTaskList
-            tasks={view.tasks}
-            renderTask={renderTask}
-            hide={taskListHide}
-            defaultOpen={defaultTasksOpen}
-          />
-        </ContentSection>
-      ) : null}
+          </ContentSection>
+        ) : null}
+      </div>
     </article>
   );
 }

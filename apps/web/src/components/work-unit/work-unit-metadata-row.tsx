@@ -16,49 +16,43 @@ export function WorkUnitMetadataRow({ workUnit, view, className }: WorkUnitMetad
   const totalSamples = aggregateInputSampleCount(view.tasks);
 
   return (
-    <dl
+    <div
       className={cn(
-        "grid grid-cols-2 divide-x divide-border/60 overflow-hidden rounded-lg border border-border/60 bg-muted/25 sm:grid-cols-4",
+        "rounded-lg border border-border/60 bg-background/80 p-3",
         className,
       )}
     >
-      <div className="min-w-0 px-3 py-2.5">
-        <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-          Tasks
-        </dt>
-        <dd className="mt-1 text-sm font-semibold tabular-nums text-foreground">
-          {view.tasks.length}
-        </dd>
-      </div>
-      <div className="min-w-0 px-3 py-2.5">
-        <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-          Experiments
-        </dt>
-        <dd className="mt-1 text-sm font-semibold tabular-nums text-foreground">
-          {view.experimentCount}
-        </dd>
-      </div>
-      <div className="min-w-0 px-3 py-2.5">
-        <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-          Samples
-        </dt>
-        <dd className="mt-1 text-sm font-semibold tabular-nums text-foreground">
-          {totalSamples > 0 ? totalSamples : "—"}
-        </dd>
-      </div>
-      <div className="min-w-0 px-3 py-2.5">
-        <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-          Capacity
-        </dt>
-        <dd
-          className={cn(
-            "mt-1 text-sm font-semibold tabular-nums",
-            capacity.withinCapacity ? "text-foreground" : "text-destructive",
-          )}
-        >
-          {capacity.withinCapacity ? "OK" : "Over"}
-        </dd>
-      </div>
-    </dl>
+      <dl className="grid gap-x-4 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="min-w-0">
+          <dt className="text-xs text-muted-foreground">Tasks</dt>
+          <dd className="text-sm font-semibold tabular-nums text-foreground">
+            {view.tasks.length}
+          </dd>
+        </div>
+        <div className="min-w-0">
+          <dt className="text-xs text-muted-foreground">Experiments</dt>
+          <dd className="text-sm font-semibold tabular-nums text-foreground">
+            {view.experimentCount}
+          </dd>
+        </div>
+        <div className="min-w-0">
+          <dt className="text-xs text-muted-foreground">Samples</dt>
+          <dd className="text-sm font-semibold tabular-nums text-foreground">
+            {totalSamples > 0 ? totalSamples : "—"}
+          </dd>
+        </div>
+        <div className="min-w-0">
+          <dt className="text-xs text-muted-foreground">Capacity</dt>
+          <dd
+            className={cn(
+              "text-sm font-semibold tabular-nums",
+              capacity.withinCapacity ? "text-foreground" : "text-destructive",
+            )}
+          >
+            {capacity.withinCapacity ? "OK" : "Over"}
+          </dd>
+        </div>
+      </dl>
+    </div>
   );
 }
