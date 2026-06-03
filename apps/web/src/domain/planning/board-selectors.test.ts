@@ -2,8 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import {
   classifyReadyTasks,
+  getBlockedTasks,
+  getRerunTasks,
+  getSiblingUnitGroups,
   getTicketsByPersonForDay,
   getUnscheduledWorkUnits,
+  getWaitingUpstreamTasks,
 } from "@/domain/planning/board-selectors";
 import { computeWorkUnitKey } from "@/domain/work-unit/grouping";
 import type { Task } from "@/domain/task/types";
@@ -231,5 +235,26 @@ describe("board-selectors", () => {
 
     expect(byPerson[rosteredId]).toEqual([tickets[0]]);
     expect(Object.values(byPerson).flat()).toHaveLength(1);
+  });
+});
+
+describe("task filters and sibling groups", () => {
+  it("groups unscheduled units by workUnitKey", () => {
+    const groups = getSiblingUnitGroups(planningSeed.workUnits);
+    expect(groups.length).toBeGreaterThan(0);
+    for (const group of groups) {
+      const key = group[0]?.workUnitKey;
+      expect(group.every((unit) => unit.workUnitKey === key)).toBe(true);
+    }
+  });
+
+  it("filters blocked, waiting, and rerun tasks", () => {
+    const blocked = getBlockedTasks(planningSeed.tasks);
+    const waiting = getWaitingUpstreamTasks(planningSeed.tasks);
+    const reruns = getRerunTasks(planningSeed.tasks);
+
+    expect(blocked.every((task) => task.readiness === "blocked")).toBe(true);
+    expect(waiting.every((task) => task.readiness === "waiting_upstream")).toBe(true);
+    expect(reruns.every((task) => task.origin === "rerun")).toBe(true);
   });
 });

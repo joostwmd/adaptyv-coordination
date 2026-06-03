@@ -56,4 +56,16 @@ describe("buildRunCreationResult", () => {
     expect(result.run.name).toBe("Test run");
     expect(result.tasks.length).toBe(steps.length);
   });
+
+  it("lists all incomplete steps in incomplete_drafts failures", () => {
+    if (steps.length === 0) return;
+
+    const drafts = buildInitialDrafts(steps);
+    const result = buildRunCreationResult(experiment, steps, drafts);
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.reason).toBe("incomplete_drafts");
+    expect(result.incompleteStepKeys).toEqual(steps.map((step) => step.key));
+  });
 });

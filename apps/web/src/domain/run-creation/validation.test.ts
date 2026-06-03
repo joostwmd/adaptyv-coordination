@@ -9,6 +9,7 @@ import {
   getTaskConfigStatus,
   getTaskConfigStatusForStep,
   isRunCreationDraftComplete,
+  validateRunCreationPayload,
 } from "@/domain/run-creation/validation";
 import { buildSelectableRunSteps, resolveWorkflowForExperiment } from "@/domain/run-creation/workflow-steps";
 import { seedExperiments } from "@/test/fixtures";
@@ -84,5 +85,17 @@ describe("run-creation validation", () => {
     expect(canProceedFromRunStepSelection(0, "Run A")).toBe(false);
     expect(canProceedFromRunStepSelection(1, "   ")).toBe(false);
     expect(canProceedFromRunStepSelection(2, "Run A")).toBe(true);
+  });
+
+  it("returns incomplete step keys from validateRunCreationPayload", () => {
+    if (steps.length === 0) return;
+
+    const incompleteSteps = steps.slice(0, 1);
+    const drafts = buildInitialDrafts(incompleteSteps);
+    const result = validateRunCreationPayload(incompleteSteps, drafts);
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.incompleteStepKeys).toEqual(incompleteSteps.map((step) => step.key));
   });
 });
