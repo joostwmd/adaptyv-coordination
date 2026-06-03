@@ -51,4 +51,5 @@ coverage
 .cache
 tmp
 temp
-data
+# Fetched lab-runner JSON at repo root (generated catalogs live under apps/web/src/domain)
+/data
