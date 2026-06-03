@@ -1,11 +1,10 @@
-import type { 
-  StaffMember, 
-  ExperimentDetail, 
-  ExperimentSummary, 
-  Task, 
+import type {
+  StaffMember,
+  ExperimentDetail,
+  Task,
   ClientRef,
-  ExperimentRunSummary 
 } from "@/types";
+import { deriveRunTaskStats } from "@/types/task";
 import type { ContextItem } from "@/components/context/types";
 
 // Seed clients - expanded from existing mock data
@@ -31,8 +30,47 @@ export const seedStaff: StaffMember[] = [
   { id: "staff-lisa", name: "Dr. Lisa Thompson", role: "planner" },
 ];
 
+const TEMPLATE = {
+  dnaRecon: "01909d1c-7da1-79aa-fe76-4c350d61a79c",
+  exprPlatePrep: "a52e40c7-db76-46fe-bdc5-bf51522457c1",
+  exprRun: "3e7749a4-d7b7-44a8-b1f3-e2e61dbba64c",
+  sprPrep: "01979c72-1e66-2a8e-555b-3cf5c9f56a06",
+  sprRun: "01954733-5f3c-c54a-ac46-720de477e712",
+  review: "01909d1e-85a5-fc3a-97f0-5a0773cfe3c9",
+  thermoRun: "0196a064-9351-576b-9c4c-3b08f48f1f1e",
+  targetRecon: "0195615e-c56d-603b-0b43-522cbdb52634",
+  dataAnalysis: "01909d1e-1fdf-c8dc-ae7e-72ab364800b7",
+} as const;
+
+function seedTask(
+  partial: Omit<Task, "notes" | "dependsOn" | "createdAt" | "params" | "origin"> &
+    Partial<Pick<Task, "notes" | "dependsOn" | "createdAt" | "params" | "origin">>,
+): Task {
+  return {
+    params: {},
+    dependsOn: [],
+    notes: [],
+    origin: "template",
+    createdAt: "2026-06-01T10:00:00.000Z",
+    ...partial,
+  };
+}
+
+function applyRunStatsToExperiments(
+  experiments: ExperimentDetail[],
+  tasks: Task[],
+): ExperimentDetail[] {
+  return experiments.map((experiment) => ({
+    ...experiment,
+    runs: experiment.runs.map((run) => ({
+      ...run,
+      ...deriveRunTaskStats(run.id, tasks),
+    })),
+  }));
+}
+
 // Seed experiments - based on existing mock data with additional experiments
-export const seedExperiments: ExperimentDetail[] = [
+const seedExperimentsBase: ExperimentDetail[] = [
   {
     id: "100a7e4a-8521-5ce9-b22c-7c4f88922623",
     code: "TNQ-711-657",
@@ -408,169 +446,340 @@ export const seedExperiments: ExperimentDetail[] = [
   },
 ];
 
-// Helper function to convert ExperimentDetail to ExperimentSummary
-function toSummary(experiment: ExperimentDetail): ExperimentSummary {
-  return experiment;
-}
-
-// Seed tasks - expanded from existing mock data with more comprehensive examples
 export const seedTasks: Task[] = [
-  {
-    id: "task-1",
-    title: "Review chromatography data for buffer swap revision",
-    status: "pending",
-    assignee: seedStaff[0], // Sarah Chen
-    run: seedExperiments[0].runs[1], // TNQ buffer swap
-    experiment: toSummary(seedExperiments[0]),
+  // TNQ baseline — completed SPR chain
+  seedTask({
+    id: "task-tnq-b1-spr-prep",
+    taskTemplateId: TEMPLATE.sprPrep,
+    name: "SPR Prep — TNQ baseline",
+    experimentId: "100a7e4a-8521-5ce9-b22c-7c4f88922623",
+    runId: "run-tnq-baseline",
+    status: "completed",
+    readiness: "in_labos",
+    assignee: seedStaff[1],
+    createdAt: "2026-05-20T09:30:00.000Z",
+  }),
+  seedTask({
+    id: "task-tnq-b2-spr-run",
+    taskTemplateId: TEMPLATE.sprRun,
+    name: "SPR Run — TNQ baseline",
+    experimentId: "100a7e4a-8521-5ce9-b22c-7c4f88922623",
+    runId: "run-tnq-baseline",
+    status: "completed",
+    readiness: "in_labos",
+    dependsOn: ["task-tnq-b1-spr-prep"],
+    assignee: seedStaff[0],
+    createdAt: "2026-05-20T11:00:00.000Z",
+  }),
+  seedTask({
+    id: "task-tnq-b3-review",
+    taskTemplateId: TEMPLATE.review,
+    name: "Review — TNQ baseline",
+    experimentId: "100a7e4a-8521-5ce9-b22c-7c4f88922623",
+    runId: "run-tnq-baseline",
+    status: "completed",
+    readiness: "in_labos",
+    dependsOn: ["task-tnq-b2-spr-run"],
+    assignee: seedStaff[1],
+    notes: [
+      {
+        id: "note-7",
+        author: seedStaff[0],
+        body: "Use the same SPR chip lot as the previous Fredy program.",
+        createdAt: "2026-05-27T13:00:00.000Z",
+      },
+    ],
+    createdAt: "2026-05-20T15:00:00.000Z",
+  }),
+  // TNQ rev2 — in progress
+  seedTask({
+    id: "task-tnq-r1-spr-prep",
+    taskTemplateId: TEMPLATE.sprPrep,
+    name: "SPR Prep — buffer swap revision",
+    experimentId: "100a7e4a-8521-5ce9-b22c-7c4f88922623",
+    runId: "run-tnq-rev2",
+    status: "completed",
+    readiness: "in_labos",
+    assignee: seedStaff[1],
+    createdAt: "2026-05-29T08:00:00.000Z",
+  }),
+  seedTask({
+    id: "task-tnq-r2-spr-run",
+    taskTemplateId: TEMPLATE.sprRun,
+    name: "SPR Run — buffer swap revision",
+    experimentId: "100a7e4a-8521-5ce9-b22c-7c4f88922623",
+    runId: "run-tnq-rev2",
+    status: "in_progress",
+    readiness: "ready",
+    dependsOn: ["task-tnq-r1-spr-prep"],
+    assignee: seedStaff[0],
     notes: [
       {
         id: "note-1",
-        author: seedStaff[1], // Marcus Webb
+        author: seedStaff[1],
         body: "Compare peak shapes against baseline before signing off.",
         createdAt: "2026-05-30T10:00:00.000Z",
       },
       {
         id: "note-2",
-        author: seedStaff[0], // Sarah Chen
+        author: seedStaff[0],
         body: "Will need Marcus to confirm if the tailing factor is within spec.",
         createdAt: "2026-05-30T14:30:00.000Z",
       },
     ],
-  },
-  {
-    id: "task-2",
-    title: "Confirm production slot for thermostability batch",
+    createdAt: "2026-05-30T09:00:00.000Z",
+  }),
+  // R3X production thermo
+  seedTask({
+    id: "task-r3x-thermo-run",
+    taskTemplateId: TEMPLATE.thermoRun,
+    name: "Thermostability Run — R3X",
+    experimentId: "exp-production-1",
+    runId: "run-r3x-rev3",
     status: "completed",
-    assignee: seedStaff[2], // Alice Park
-    run: seedExperiments[1].runs[0], // R3X production
-    experiment: toSummary(seedExperiments[1]),
+    readiness: "in_labos",
+    assignee: seedStaff[2],
     notes: [
       {
         id: "note-3",
-        author: seedStaff[2], // Alice Park
+        author: seedStaff[2],
         body: "Slot confirmed with lab ops for next Tuesday.",
         createdAt: "2026-05-28T09:00:00.000Z",
       },
     ],
-  },
-  {
-    id: "task-3",
-    title: "Follow up on missing antigen shipment",
+    createdAt: "2026-06-01T09:00:00.000Z",
+  }),
+  seedTask({
+    id: "task-r3x-analysis",
+    taskTemplateId: TEMPLATE.dataAnalysis,
+    name: "Data Analysis — R3X",
+    experimentId: "exp-production-1",
+    runId: "run-r3x-rev3",
+    status: "in_progress",
+    readiness: "waiting_upstream",
+    dependsOn: ["task-r3x-thermo-run"],
+    assignee: seedStaff[2],
+    createdAt: "2026-06-02T10:00:00.000Z",
+  }),
+  // Acme expression pilot
+  seedTask({
+    id: "task-acm-pilot-prep",
+    taskTemplateId: TEMPLATE.exprPlatePrep,
+    name: "Expression Plate Prep — pilot",
+    experimentId: "exp-acme-expression",
+    runId: "run-acm-pilot",
+    status: "completed",
+    readiness: "in_labos",
+    assignee: seedStaff[4],
+    notes: [
+      {
+        id: "note-8",
+        author: seedStaff[4],
+        body: "Cloning strategy approved by client. Starting vector preparation.",
+        createdAt: "2026-06-01T09:00:00.000Z",
+      },
+    ],
+    createdAt: "2026-05-16T08:00:00.000Z",
+  }),
+  seedTask({
+    id: "task-acm-pilot-run",
+    taskTemplateId: TEMPLATE.exprRun,
+    name: "Expression Run — pilot",
+    experimentId: "exp-acme-expression",
+    runId: "run-acm-pilot",
+    status: "completed",
+    readiness: "in_labos",
+    dependsOn: ["task-acm-pilot-prep"],
+    assignee: seedStaff[4],
+    createdAt: "2026-05-17T08:00:00.000Z",
+  }),
+  // Acme scale-up
+  seedTask({
+    id: "task-acm-scale-run",
+    taskTemplateId: TEMPLATE.exprRun,
+    name: "Expression Run — scale-up",
+    experimentId: "exp-acme-expression",
+    runId: "run-acm-scale",
+    status: "pending",
+    readiness: "ready",
+    assignee: seedStaff[5],
+    notes: [
+      {
+        id: "note-9",
+        author: seedStaff[5],
+        body: "Yield exceeded expectations at 95 mg/L. Ready for scale-up.",
+        createdAt: "2026-06-01T16:30:00.000Z",
+      },
+    ],
+    createdAt: "2026-06-01T15:00:00.000Z",
+  }),
+  // BioPharma epitope
+  seedTask({
+    id: "task-bps-epitope-prep",
+    taskTemplateId: TEMPLATE.targetRecon,
+    name: "Target Prep — epitope mapping",
+    experimentId: "exp-biopharma-epitope",
+    runId: "run-bps-mapping",
+    status: "completed",
+    readiness: "in_labos",
+    assignee: seedStaff[6],
+    createdAt: "2026-05-23T09:00:00.000Z",
+  }),
+  seedTask({
+    id: "task-bps-epitope-run",
+    taskTemplateId: TEMPLATE.dnaRecon,
+    name: "DNA Reconstitution — epitope follow-up",
+    experimentId: "exp-biopharma-epitope",
+    runId: "run-bps-mapping",
+    status: "pending",
+    readiness: "waiting_upstream",
+    dependsOn: ["task-bps-epitope-prep"],
+    assignee: seedStaff[6],
+    createdAt: "2026-05-24T09:00:00.000Z",
+  }),
+  // GenTech stability report
+  seedTask({
+    id: "task-gti-stability-review",
+    taskTemplateId: TEMPLATE.review,
+    name: "Review — stability study",
+    experimentId: "exp-gentech-stability",
+    runId: "run-gti-stability",
+    status: "completed",
+    readiness: "in_labos",
+    assignee: seedStaff[2],
+    notes: [
+      {
+        id: "note-10",
+        author: seedStaff[2],
+        body: "All stability criteria met. Report submitted to client.",
+        createdAt: "2026-05-25T14:00:00.000Z",
+      },
+    ],
+    createdAt: "2026-06-01T12:00:00.000Z",
+  }),
+  // BioPharma binding failed
+  seedTask({
+    id: "task-bps-bind-prep",
+    taskTemplateId: TEMPLATE.targetRecon,
+    name: "Target Reconstitution — panel B",
+    experimentId: "exp-biopharma-binding",
+    runId: "run-bps-bli",
     status: "failed",
-    assignee: seedStaff[3], // James Okonkwo
-    run: seedExperiments[2].runs[0], // BSN binding screen
-    experiment: toSummary(seedExperiments[2]),
+    readiness: "blocked",
+    blockedReason: "missing_materials",
+    assignee: seedStaff[3],
     notes: [
       {
         id: "note-4",
-        author: seedStaff[3], // James Okonkwo
+        author: seedStaff[3],
         body: "Client confirmed delay — ETA pushed by two weeks.",
         createdAt: "2026-05-29T11:15:00.000Z",
       },
       {
         id: "note-5",
-        author: seedStaff[1], // Marcus Webb
+        author: seedStaff[1],
         body: "Escalated to account manager. Task blocked until materials arrive.",
         createdAt: "2026-05-29T16:00:00.000Z",
       },
       {
         id: "note-6",
-        author: seedStaff[3], // James Okonkwo
+        author: seedStaff[3],
         body: "Marked as failed for this planning cycle.",
         createdAt: "2026-05-30T08:00:00.000Z",
       },
     ],
-  },
-  {
-    id: "task-4",
-    title: "Prepare run protocol for baseline characterization",
+    createdAt: "2026-05-25T08:00:00.000Z",
+  }),
+  seedTask({
+    id: "task-bps-bind-run",
+    taskTemplateId: TEMPLATE.sprRun,
+    name: "SPR Run — panel B (not started)",
+    experimentId: "exp-biopharma-binding",
+    runId: "run-bps-bli",
+    status: "cancelled",
+    readiness: "blocked",
+    dependsOn: ["task-bps-bind-prep"],
+    assignee: seedStaff[3],
+    createdAt: "2026-05-26T08:00:00.000Z",
+  }),
+  // MedCore affinity SPR prep
+  seedTask({
+    id: "task-mdc-spr-prep",
+    taskTemplateId: TEMPLATE.sprPrep,
+    name: "SPR Prep — lead titration",
+    experimentId: "exp-medcore-affinity",
+    runId: "run-mdc-spr",
     status: "pending",
-    assignee: seedStaff[1], // Marcus Webb
-    run: seedExperiments[0].runs[0], // TNQ baseline
-    experiment: toSummary(seedExperiments[0]),
-    notes: [
-      {
-        id: "note-7",
-        author: seedStaff[0], // Sarah Chen
-        body: "Use the same SPR chip lot as the previous Fredy program.",
-        createdAt: "2026-05-27T13:00:00.000Z",
-      },
-    ],
-  },
-  {
-    id: "task-5",
-    title: "Set up expression vectors for pilot study",
-    status: "pending",
-    assignee: seedStaff[4], // Elena Rodriguez
-    run: seedExperiments[3].runs[0], // Acme expression
-    experiment: toSummary(seedExperiments[3]),
-    notes: [
-      {
-        id: "note-8",
-        author: seedStaff[4], // Elena Rodriguez
-        body: "Cloning strategy approved by client. Starting vector preparation.",
-        createdAt: "2026-06-01T09:00:00.000Z",
-      },
-    ],
-  },
-  {
-    id: "task-6",
-    title: "Analyze expression yield data",
+    readiness: "ready",
+    assignee: seedStaff[1],
+    createdAt: "2026-05-28T11:00:00.000Z",
+  }),
+  // Fredy thermo completed
+  seedTask({
+    id: "task-frd-thermo-run",
+    taskTemplateId: TEMPLATE.thermoRun,
+    name: "Thermostability Run — formulation A",
+    experimentId: "exp-fredy-thermo",
+    runId: "run-frd-thermo",
     status: "completed",
-    assignee: seedStaff[5], // David Kumar
-    run: seedExperiments[3].runs[1], // Acme scale-up
-    experiment: toSummary(seedExperiments[3]),
-    notes: [
-      {
-        id: "note-9",
-        author: seedStaff[5], // David Kumar
-        body: "Yield exceeded expectations at 95 mg/L. Ready for scale-up.",
-        createdAt: "2026-06-01T16:30:00.000Z",
-      },
-    ],
-  },
-  {
-    id: "task-7",
-    title: "Prepare epitope mapping reagents",
-    status: "pending",
-    assignee: seedStaff[6], // Lisa Thompson
-    run: seedExperiments[4].runs[0], // BioPharma epitope
-    experiment: toSummary(seedExperiments[4]),
-    notes: [],
-  },
-  {
-    id: "task-8",
-    title: "Complete stability study report",
+    readiness: "in_labos",
+    assignee: seedStaff[0],
+    createdAt: "2026-05-29T10:00:00.000Z",
+  }),
+  seedTask({
+    id: "task-frd-thermo-review",
+    taskTemplateId: TEMPLATE.review,
+    name: "Review — formulation A",
+    experimentId: "exp-fredy-thermo",
+    runId: "run-frd-thermo",
     status: "completed",
-    assignee: seedStaff[2], // Alice Park
-    run: seedExperiments[5].runs[0], // GenTech stability
-    experiment: toSummary(seedExperiments[5]),
-    notes: [
-      {
-        id: "note-10",
-        author: seedStaff[2], // Alice Park
-        body: "All stability criteria met. Report submitted to client.",
-        createdAt: "2026-05-25T14:00:00.000Z",
-      },
-    ],
-  },
-  {
-    id: "task-9",
-    title: "Design HTS assay conditions",
-    status: "pending",
-    assignee: seedStaff[1], // Marcus Webb
-    run: seedExperiments[6].runs[0], // MedCore screen
-    experiment: toSummary(seedExperiments[6]),
-    notes: [
-      {
-        id: "note-11",
-        author: seedStaff[1], // Marcus Webb
-        body: "Waiting for client approval on final compound library.",
-        createdAt: "2026-06-02T11:00:00.000Z",
-      },
-    ],
-  },
+    readiness: "in_labos",
+    dependsOn: ["task-frd-thermo-run"],
+    assignee: seedStaff[1],
+    createdAt: "2026-06-02T14:00:00.000Z",
+  }),
+  // Fredy expression in progress
+  seedTask({
+    id: "task-frd-expr-prep",
+    taskTemplateId: TEMPLATE.exprPlatePrep,
+    name: "Expression Plate Prep — candidate 7",
+    experimentId: "exp-fredy-expression",
+    runId: "run-frd-pilot",
+    status: "completed",
+    readiness: "in_labos",
+    assignee: seedStaff[0],
+    createdAt: "2026-05-31T08:00:00.000Z",
+  }),
+  seedTask({
+    id: "task-frd-expr-run",
+    taskTemplateId: TEMPLATE.exprRun,
+    name: "Expression Run — candidate 7",
+    experimentId: "exp-fredy-expression",
+    runId: "run-frd-pilot",
+    status: "in_progress",
+    readiness: "ready",
+    dependsOn: ["task-frd-expr-prep"],
+    assignee: seedStaff[2],
+    createdAt: "2026-06-01T08:00:00.000Z",
+  }),
+  // Gentech expression production
+  seedTask({
+    id: "task-gti-expr-run",
+    taskTemplateId: TEMPLATE.exprRun,
+    name: "Expression Run — production batch",
+    experimentId: "exp-gentech-expression",
+    runId: "run-gti-expr",
+    status: "in_progress",
+    readiness: "ready",
+    assignee: seedStaff[4],
+    createdAt: "2026-06-02T10:00:00.000Z",
+  }),
 ];
+
+export const seedExperiments = applyRunStatsToExperiments(
+  seedExperimentsBase,
+  seedTasks,
+);
 
 // Seed context items - based on existing mock data
 export const seedContextItems: ContextItem[] = [
@@ -732,11 +941,15 @@ export function getExperimentById(id: string): ExperimentDetail | undefined {
 }
 
 export function getTasksByExperiment(experimentId: string): Task[] {
-  return seedTasks.filter((task) => task.experiment.id === experimentId);
+  return seedTasks.filter((task) => task.experimentId === experimentId);
+}
+
+export function getTasksByRun(runId: string): Task[] {
+  return seedTasks.filter((task) => task.runId === runId);
 }
 
 export function getTasksByAssignee(assigneeId: string): Task[] {
-  return seedTasks.filter((task) => task.assignee.id === assigneeId);
+  return seedTasks.filter((task) => task.assignee?.id === assigneeId);
 }
 
 export function getExperimentsByClient(clientId: string): ExperimentDetail[] {

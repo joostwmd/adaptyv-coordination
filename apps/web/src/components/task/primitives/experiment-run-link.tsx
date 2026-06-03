@@ -4,16 +4,28 @@ import {
   HoverCardTrigger,
 } from "@adaptyv-coordination/ui/components/hover-card";
 
-import type { ExperimentRunSummary, ExperimentSummary } from "@/types";
+import { useExperimentById } from "@/stores/usePrototypeStore";
 
 import { ExperimentRunHoverPreview } from "./experiment-run-hover-preview";
 
 type ExperimentRunLinkProps = {
-  run: ExperimentRunSummary;
-  experiment: ExperimentSummary;
+  experimentId: string;
+  runId: string;
 };
 
-export function ExperimentRunLink({ run, experiment }: ExperimentRunLinkProps) {
+export function ExperimentRunLink({
+  experimentId,
+  runId,
+}: ExperimentRunLinkProps) {
+  const experiment = useExperimentById(experimentId);
+  const run = experiment?.runs.find((entry) => entry.id === runId);
+
+  if (!experiment || !run) {
+    return null;
+  }
+
+  const { runs: _runs, ...summary } = experiment;
+
   return (
     <div className="flex flex-col gap-1">
       <span className="text-xs text-muted-foreground">Run</span>
@@ -25,7 +37,7 @@ export function ExperimentRunLink({ run, experiment }: ExperimentRunLinkProps) {
           R{run.revisionIndex} · {run.name}
         </HoverCardTrigger>
         <HoverCardContent side="top" align="start" className="w-72">
-          <ExperimentRunHoverPreview run={run} experiment={experiment} />
+          <ExperimentRunHoverPreview run={run} experiment={summary} />
         </HoverCardContent>
       </HoverCard>
     </div>

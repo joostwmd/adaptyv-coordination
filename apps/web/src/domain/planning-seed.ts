@@ -6,8 +6,12 @@ import {
   refreshAllTaskReadiness,
   scaffoldTasks,
 } from "@/domain/task";
-import { nextTaskId, resetTaskIdCounter } from "@/domain/task/scaffold";
-import type { Task } from "@/domain/task/types";
+import {
+  nextTaskId,
+  primaryRunForExperiment,
+  resetTaskIdCounter,
+} from "@/domain/task/scaffold";
+import type { Task } from "@/types";
 import type { Ticket } from "@/domain/ticket/types";
 import {
   createWorkUnitFromTasks,
@@ -79,6 +83,15 @@ function toSummary(experiment: ExperimentDetail) {
   return summary;
 }
 
+function scaffoldForExperiment(
+  experiment: ExperimentDetail,
+  workflow: WorkflowTemplate,
+): Task[] {
+  const run = primaryRunForExperiment(experiment);
+  if (!run) return [];
+  return scaffoldTasks(toSummary(experiment), run, workflow);
+}
+
 function daysAgo(days: number): string {
   const date = new Date();
   date.setDate(date.getDate() - days);
@@ -116,7 +129,7 @@ function scaffoldFirstStep(experiment: ExperimentDetail, createdDaysAgo = 12): T
   const firstStep = workflowSteps(workflow)[0];
   if (!firstStep) return [];
 
-  return scaffoldTasks(toSummary(experiment), {
+  return scaffoldForExperiment(experiment, {
     ...workflow,
     steps: [firstStep],
   }).map((task) => ({
@@ -136,7 +149,7 @@ function scaffoldPendingSecondStep(
   if (steps.length < 2) return scaffoldFirstStep(experiment, createdDaysAgo);
 
   return refreshAllTaskReadiness(
-    scaffoldTasks(toSummary(experiment), {
+    scaffoldForExperiment(experiment, {
       ...workflow,
       steps,
     }).map((task, index) => ({
@@ -169,7 +182,7 @@ function scaffoldThroughStep(
   const includedSteps = steps.slice(0, throughIndex + 1);
   const includedIds = new Set(includedSteps.map((step) => step.taskTemplateId));
 
-  const scaffolded = scaffoldTasks(toSummary(experiment), {
+  const scaffolded = scaffoldForExperiment(experiment, {
     ...workflow,
     steps: includedSteps,
   });
@@ -213,10 +226,12 @@ function cloneReadyTask(
   createdDaysAgo: number,
   nameSuffix: string,
 ): Task {
+  const run = primaryRunForExperiment(experiment);
   return {
     ...source,
     id: nextTaskId(),
-    experimentIds: [experiment.id],
+    experimentId: experiment.id,
+    runId: run?.id,
     name: `${nameSuffix} — ${experiment.code}`,
     dependsOn: [],
     readiness: "ready",
@@ -517,15 +532,15 @@ function buildCuratedWorkUnits(tasks: Task[]): WorkUnit[] {
       task.params.expression_time === EXPR_BATCH_A.expression_time,
   );
 
-  const acmeExprRuns = readyExprA.filter((task) =>
-    task.experimentIds.includes("exp-acme-expression"),
+  const acmeExprRuns = readyExprA.filter(
+    (task) => task.experimentId === "exp-acme-expression",
   );
   const thermoOverflowRuns = tasks.filter(
     (task) =>
       task.readiness === "ready" &&
       !task.workUnitId &&
       task.taskTemplateId === T.exprPlatePrep &&
-      task.experimentIds.includes("exp-fredy-thermo"),
+      task.experimentId === "exp-fredy-thermo",
   );
 
   const medcoreBliRuns = tasks.filter(
@@ -533,14 +548,14 @@ function buildCuratedWorkUnits(tasks: Task[]): WorkUnit[] {
       task.readiness === "ready" &&
       !task.workUnitId &&
       task.taskTemplateId === T.bliRun &&
-      task.experimentIds.includes("exp-medcore-screen"),
+      task.experimentId === "exp-medcore-screen",
   );
 
   const productionThermo = tasks.find(
     (task) =>
       task.readiness === "ready" &&
       task.taskTemplateId === T.thermoRun &&
-      task.experimentIds.includes("exp-production-1"),
+      task.experimentId === "exp-production-1",
   );
 
   const workUnits: WorkUnit[] = [];

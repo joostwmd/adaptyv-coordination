@@ -24,7 +24,7 @@ export function computeTaskPriorityScore(
   weights: PriorityWeights,
   referenceDate: string,
 ): number {
-  const experiment = experimentsById[task.experimentIds[0] ?? ""] ?? null;
+  const experiment = experimentsById[task.experimentId ?? ""] ?? null;
   const ctx = buildPlanningPriorityContext(task, experiment, referenceDate);
   return scoreTask(task, ctx, weights).total;
 }

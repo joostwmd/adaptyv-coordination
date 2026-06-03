@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { shallow } from 'zustand/shallow';
 import type { 
   StaffMember, 
   ExperimentDetail, 
@@ -8,38 +7,44 @@ import type {
   ExperimentRunSummary,
   TaskNote 
 } from "@/types";
+import { deriveRunTaskStats } from "@/types/task";
 import type { ContextItem } from "@/components/context/types";
-import { 
-  seedClients, 
-  seedStaff, 
-  seedExperiments, 
-  seedTasks, 
+import {
+  seedClients,
+  seedStaff,
+  seedExperiments,
+  seedTasks,
   seedContextItems,
-  getExperimentById as seedGetExperimentById,
-  getTasksByExperiment as seedGetTasksByExperiment,
-  getTasksByAssignee as seedGetTasksByAssignee,
-  getExperimentsByClient as seedGetExperimentsByClient
 } from "@/data/seedData";
 
+function syncRunStatsInExperiments(
+  experiments: ExperimentDetail[],
+  tasks: Task[],
+): ExperimentDetail[] {
+  return experiments.map((experiment) => ({
+    ...experiment,
+    runs: experiment.runs.map((run) => ({
+      ...run,
+      ...deriveRunTaskStats(run.id, tasks),
+    })),
+  }));
+}
+
 interface PrototypeState {
-  // Data (initialized with seeds)
   clients: ClientRef[];
   staff: StaffMember[];
   experiments: ExperimentDetail[];
   tasks: Task[];
   contextItems: ContextItem[];
   
-  // Client actions
   addClient: (client: Omit<ClientRef, 'id'>) => void;
   updateClient: (id: string, updates: Partial<ClientRef>) => void;
   deleteClient: (id: string) => void;
   
-  // Staff actions
   addStaff: (staff: Omit<StaffMember, 'id'>) => void;
   updateStaff: (id: string, updates: Partial<StaffMember>) => void;
   deleteStaff: (id: string) => void;
   
-  // Experiment actions
   addExperiment: (experiment: Omit<ExperimentDetail, 'id'>) => void;
   updateExperiment: (id: string, updates: Partial<ExperimentDetail>) => void;
   deleteExperiment: (id: string) => void;
@@ -47,7 +52,6 @@ interface PrototypeState {
   updateExperimentRun: (experimentId: string, runId: string, updates: Partial<ExperimentRunSummary>) => void;
   deleteExperimentRun: (experimentId: string, runId: string) => void;
   
-  // Task actions
   addTask: (task: Omit<Task, 'id'>) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
@@ -55,31 +59,27 @@ interface PrototypeState {
   updateTaskNote: (taskId: string, noteId: string, updates: Partial<TaskNote>) => void;
   deleteTaskNote: (taskId: string, noteId: string) => void;
   
-  // Context actions
   addContextItem: (item: Omit<ContextItem, 'id'>) => void;
   updateContextItem: (id: string, updates: Partial<ContextItem>) => void;
   deleteContextItem: (id: string) => void;
   
-  // Query helpers (similar to existing mock functions)
   getExperimentById: (id: string) => ExperimentDetail | undefined;
   getTasksByExperiment: (experimentId: string) => Task[];
+  getTasksByRun: (runId: string) => Task[];
   getTasksByAssignee: (assigneeId: string) => Task[];
   getExperimentsByClient: (clientId: string) => ExperimentDetail[];
   getContextItemsByType: (type: ContextItem['type']) => ContextItem[];
   
-  // Utility actions
   resetToSeeds: () => void;
 }
 
 export const usePrototypeStore = create<PrototypeState>((set, get) => ({
-  // Initialize with seed data
   clients: seedClients,
   staff: seedStaff,
   experiments: seedExperiments,
   tasks: seedTasks,
   contextItems: seedContextItems,
   
-  // Client actions
   addClient: (clientData) =>
     set((state) => ({
       clients: [
@@ -93,7 +93,6 @@ export const usePrototypeStore = create<PrototypeState>((set, get) => ({
       clients: state.clients.map((client) =>
         client.id === id ? { ...client, ...updates } : client
       ),
-      // Update experiments that reference this client
       experiments: state.experiments.map((exp) =>
         exp.client.id === id ? { ...exp, client: { ...exp.client, ...updates } } : exp
       ),
@@ -102,11 +101,9 @@ export const usePrototypeStore = create<PrototypeState>((set, get) => ({
   deleteClient: (id) =>
     set((state) => ({
       clients: state.clients.filter((client) => client.id !== id),
-      // Note: In a real app, you'd handle cascading deletes differently
       experiments: state.experiments.filter((exp) => exp.client.id !== id),
     })),
   
-  // Staff actions
   addStaff: (staffData) =>
     set((state) => ({
       staff: [
@@ -120,22 +117,23 @@ export const usePrototypeStore = create<PrototypeState>((set, get) => ({
       staff: state.staff.map((member) =>
         member.id === id ? { ...member, ...updates } : member
       ),
-      // Update tasks that reference this staff member
       tasks: state.tasks.map((task) =>
-        task.assignee.id === id ? { ...task, assignee: { ...task.assignee, ...updates } } : task
+        task.assignee?.id === id
+          ? { ...task, assignee: { ...task.assignee!, ...updates } }
+          : task
       ),
     })),
   
   deleteStaff: (id) =>
     set((state) => ({
       staff: state.staff.filter((member) => member.id !== id),
-      // Unassign tasks from deleted staff member (set to first available staff)
       tasks: state.tasks.map((task) =>
-        task.assignee.id === id ? { ...task, assignee: state.staff[0] || { id: 'unassigned', name: 'Unassigned' } } : task
+        task.assignee?.id === id
+          ? { ...task, assignee: undefined }
+          : task
       ),
     })),
   
-  // Experiment actions
   addExperiment: (experimentData) =>
     set((state) => {
       const newId = `exp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -152,20 +150,19 @@ export const usePrototypeStore = create<PrototypeState>((set, get) => ({
       experiments: state.experiments.map((exp) =>
         exp.id === id ? { ...exp, ...updates } : exp
       ),
-      // Update tasks that reference this experiment
-      tasks: state.tasks.map((task) =>
-        task.experiment.id === id 
-          ? { ...task, experiment: { ...task.experiment, ...updates } }
-          : task
-      ),
     })),
   
   deleteExperiment: (id) =>
-    set((state) => ({
-      experiments: state.experiments.filter((exp) => exp.id !== id),
-      // Delete associated tasks
-      tasks: state.tasks.filter((task) => task.experiment.id !== id),
-    })),
+    set((state) => {
+      const tasks = state.tasks.filter((task) => task.experimentId !== id);
+      return {
+        tasks,
+        experiments: syncRunStatsInExperiments(
+          state.experiments.filter((exp) => exp.id !== id),
+          tasks,
+        ),
+      };
+    }),
   
   addExperimentRun: (experimentId, runData) =>
     set((state) => ({
@@ -179,6 +176,9 @@ export const usePrototypeStore = create<PrototypeState>((set, get) => ({
                   ...runData,
                   id: `run-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                   experimentId,
+                  taskCount: 0,
+                  completedTaskCount: 0,
+                  failedTaskCount: 0,
                 },
               ],
             }
@@ -198,47 +198,61 @@ export const usePrototypeStore = create<PrototypeState>((set, get) => ({
             }
           : exp
       ),
-      // Update tasks that reference this run
-      tasks: state.tasks.map((task) =>
-        task.run.id === runId ? { ...task, run: { ...task.run, ...updates } } : task
-      ),
     })),
   
   deleteExperimentRun: (experimentId, runId) =>
-    set((state) => ({
-      experiments: state.experiments.map((exp) =>
-        exp.id === experimentId
-          ? { ...exp, runs: exp.runs.filter((run) => run.id !== runId) }
-          : exp
-      ),
-      // Delete tasks associated with this run
-      tasks: state.tasks.filter((task) => task.run.id !== runId),
-    })),
+    set((state) => {
+      const tasks = state.tasks.filter((task) => task.runId !== runId);
+      return {
+        tasks,
+        experiments: syncRunStatsInExperiments(
+          state.experiments.map((exp) =>
+            exp.id === experimentId
+              ? { ...exp, runs: exp.runs.filter((run) => run.id !== runId) }
+              : exp
+          ),
+          tasks,
+        ),
+      };
+    }),
   
-  // Task actions
   addTask: (taskData) =>
-    set((state) => ({
-      tasks: [
+    set((state) => {
+      const tasks = [
         ...state.tasks,
-        { 
-          ...taskData, 
+        {
+          ...taskData,
           id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           notes: taskData.notes || [],
+          dependsOn: taskData.dependsOn ?? [],
+          createdAt: taskData.createdAt ?? new Date().toISOString(),
         },
-      ],
-    })),
+      ];
+      return {
+        tasks,
+        experiments: syncRunStatsInExperiments(state.experiments, tasks),
+      };
+    }),
   
   updateTask: (id, updates) =>
-    set((state) => ({
-      tasks: state.tasks.map((task) =>
+    set((state) => {
+      const tasks = state.tasks.map((task) =>
         task.id === id ? { ...task, ...updates } : task
-      ),
-    })),
+      );
+      return {
+        tasks,
+        experiments: syncRunStatsInExperiments(state.experiments, tasks),
+      };
+    }),
   
   deleteTask: (id) =>
-    set((state) => ({
-      tasks: state.tasks.filter((task) => task.id !== id),
-    })),
+    set((state) => {
+      const tasks = state.tasks.filter((task) => task.id !== id);
+      return {
+        tasks,
+        experiments: syncRunStatsInExperiments(state.experiments, tasks),
+      };
+    }),
   
   addTaskNote: (taskId, noteData) =>
     set((state) => ({
@@ -282,7 +296,6 @@ export const usePrototypeStore = create<PrototypeState>((set, get) => ({
       ),
     })),
   
-  // Context actions
   addContextItem: (itemData) =>
     set((state) => ({
       contextItems: [
@@ -307,7 +320,6 @@ export const usePrototypeStore = create<PrototypeState>((set, get) => ({
       contextItems: state.contextItems.filter((item) => item.id !== id),
     })),
   
-  // Query helpers
   getExperimentById: (id) => {
     const state = get();
     return state.experiments.find((exp) => exp.id === id);
@@ -315,12 +327,17 @@ export const usePrototypeStore = create<PrototypeState>((set, get) => ({
   
   getTasksByExperiment: (experimentId) => {
     const state = get();
-    return state.tasks.filter((task) => task.experiment.id === experimentId);
+    return state.tasks.filter((task) => task.experimentId === experimentId);
+  },
+
+  getTasksByRun: (runId) => {
+    const state = get();
+    return state.tasks.filter((task) => task.runId === runId);
   },
   
   getTasksByAssignee: (assigneeId) => {
     const state = get();
-    return state.tasks.filter((task) => task.assignee.id === assigneeId);
+    return state.tasks.filter((task) => task.assignee?.id === assigneeId);
   },
   
   getExperimentsByClient: (clientId) => {
@@ -333,7 +350,6 @@ export const usePrototypeStore = create<PrototypeState>((set, get) => ({
     return state.contextItems.filter((item) => item.type === type);
   },
   
-  // Utility actions
   resetToSeeds: () =>
     set({
       clients: seedClients,
@@ -344,22 +360,23 @@ export const usePrototypeStore = create<PrototypeState>((set, get) => ({
     }),
 }));
 
-// Export selector hooks for common queries to optimize re-renders
 export const useExperiments = () => usePrototypeStore(state => state.experiments);
 export const useTasks = () => usePrototypeStore(state => state.tasks);
 export const useStaff = () => usePrototypeStore(state => state.staff);
 export const useClients = () => usePrototypeStore(state => state.clients);
 export const useContextItems = () => usePrototypeStore(state => state.contextItems);
 
-// Computed selectors
 export const useExperimentById = (id: string) => 
   usePrototypeStore((state) => state.experiments.find(exp => exp.id === id));
 
 export const useTasksByExperiment = (experimentId: string) =>
-  usePrototypeStore((state) => state.tasks.filter(task => task.experiment.id === experimentId));
+  usePrototypeStore((state) => state.tasks.filter(task => task.experimentId === experimentId));
+
+export const useTasksByRun = (runId: string) =>
+  usePrototypeStore((state) => state.tasks.filter(task => task.runId === runId));
 
 export const useTasksByAssignee = (assigneeId: string) =>
-  usePrototypeStore((state) => state.tasks.filter(task => task.assignee.id === assigneeId));
+  usePrototypeStore((state) => state.tasks.filter(task => task.assignee?.id === assigneeId));
 
 export const useExperimentsByClient = (clientId: string) =>
   usePrototypeStore((state) => state.experiments.filter(exp => exp.client.id === clientId));
@@ -367,12 +384,10 @@ export const useExperimentsByClient = (clientId: string) =>
 export const useContextItemsByType = (type: ContextItem['type']) =>
   usePrototypeStore((state) => state.contextItems.filter(item => item.type === type));
 
-// Use individual selectors to avoid object recreation
 export const useExperimentCount = () => usePrototypeStore(state => state.experiments.length);
 export const useTaskCount = () => usePrototypeStore(state => state.tasks.length);
 export const useStaffCount = () => usePrototypeStore(state => state.staff.length);
 export const useContextItemCount = () => usePrototypeStore(state => state.contextItems.length);
-// Individual status count selectors to avoid object recreation
 export const usePendingTaskCount = () => usePrototypeStore(state => 
   state.tasks.filter(task => task.status === 'pending').length
 );

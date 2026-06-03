@@ -98,7 +98,9 @@ export function suggestSplit(
   );
 
   const scored = tasks.map((task) => {
-    const exp = experimentsById[task.experimentIds[0] ?? ""];
+    const exp = task.experimentId
+      ? experimentsById[task.experimentId]
+      : undefined;
     const ctx = buildPlanningPriorityContext(task, exp ?? null, referenceDate);
     return { task, score: scoreTask(task, ctx, weights).total };
   });

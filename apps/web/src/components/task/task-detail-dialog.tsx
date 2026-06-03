@@ -5,7 +5,9 @@ import {
   DialogTitle,
 } from "@adaptyv-coordination/ui/components/dialog";
 
+import { useExperimentById } from "@/stores/usePrototypeStore";
 import type { Task } from "@/types";
+import { getTaskDisplayName } from "@/types/task";
 
 import { AssigneeRow } from "./primitives/assignee-row";
 import { ExperimentLink } from "./primitives/experiment-link";
@@ -24,6 +26,14 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
     return null;
   }
 
+  const experiment = useExperimentById(task.experimentId ?? "");
+  const summary = experiment
+    ? (() => {
+        const { runs: _runs, ...rest } = experiment;
+        return rest;
+      })()
+    : null;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
@@ -31,13 +41,18 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
           <div className="flex flex-wrap items-center gap-2 pr-6">
             <StatusBadge status={task.status} />
           </div>
-          <DialogTitle>{task.title}</DialogTitle>
+          <DialogTitle>{getTaskDisplayName(task)}</DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
-          <AssigneeRow assignee={task.assignee} />
-          <ExperimentRunLink run={task.run} experiment={task.experiment} />
-          <ExperimentLink experiment={task.experiment} />
+          {task.assignee ? <AssigneeRow assignee={task.assignee} /> : null}
+          {task.experimentId && task.runId ? (
+            <ExperimentRunLink
+              experimentId={task.experimentId}
+              runId={task.runId}
+            />
+          ) : null}
+          {summary ? <ExperimentLink experiment={summary} /> : null}
 
           <div className="flex flex-col gap-2">
             <p className="text-xs font-medium text-muted-foreground">

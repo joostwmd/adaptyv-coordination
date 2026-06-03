@@ -26,7 +26,9 @@ import {
   refreshAllTaskReadiness,
   scaffoldTasks,
 } from "@/domain/task";
-import type { Task } from "@/domain/task/types";
+import type { StandaloneTaskContext } from "@/domain/task/scaffold";
+import { primaryRunForExperiment } from "@/domain/task/scaffold";
+import type { Task } from "@/types";
 import { getWorkflowTemplate } from "@/domain/workflow";
 import { usePrototypeStore } from "./usePrototypeStore";
 
@@ -47,7 +49,7 @@ interface PlanningState {
   createStandaloneTask: (
     taskTemplateId: string,
     params?: Record<string, unknown>,
-    experimentIds?: string[],
+    context?: StandaloneTaskContext,
   ) => Task;
   createRerunFromTasks: (taskIds: string[]) => Task[];
 
@@ -157,20 +159,23 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     if (!experiment) return [];
 
     const { runs: _runs, ...summary } = experiment;
+    const run = primaryRunForExperiment(experiment);
+    if (!run) return [];
+
     const wf =
       getWorkflowTemplate(experiment.type, experiment.methodName) ??
       getWorkflowTemplate(experiment.type);
     if (!wf) return [];
 
-    const newTasks = scaffoldTasks(summary, wf);
+    const newTasks = scaffoldTasks(summary, run, wf);
     set((state) => ({
       tasks: syncReadiness([...state.tasks, ...newTasks]),
     }));
     return newTasks;
   },
 
-  createStandaloneTask: (taskTemplateId, params = {}, experimentIds = []) => {
-    const task = createStandaloneTask(taskTemplateId, params, experimentIds);
+  createStandaloneTask: (taskTemplateId, params = {}, context = {}) => {
+    const task = createStandaloneTask(taskTemplateId, params, context);
     set((state) => ({
       tasks: syncReadiness([...state.tasks, task]),
     }));
@@ -425,7 +430,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     })),
 
   getTasksByExperiment: (experimentId) =>
-    get().tasks.filter((t) => t.experimentIds.includes(experimentId)),
+    get().tasks.filter((t) => t.experimentId === experimentId),
 
   getTasksByWorkUnit: (workUnitId) => {
     const workUnit = get().workUnits.find((wu) => wu.id === workUnitId);

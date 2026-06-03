@@ -8,6 +8,8 @@ export {
   createRerunTasks,
   createStandaloneTask,
   nextTaskId,
+  primaryRunForExperiment,
   resetTaskIdCounter,
   scaffoldTasks,
 } from "./scaffold";
+export type { StandaloneTaskContext } from "./scaffold";

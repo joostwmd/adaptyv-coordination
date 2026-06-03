@@ -67,6 +67,7 @@ export type ExperimentListItem = {
   runs: ExperimentRunSummary[];
 };
 
+/** Experiment metadata without the runs collection (use ExperimentDetail for runs). */
 export type ExperimentSummary = Pick<
   ExperimentListItem,
   | "id"
@@ -80,7 +81,6 @@ export type ExperimentSummary = Pick<
   | "dueDate"
   | "client"
   | "status"
-  | "runs"
 >;
 
 export type ExperimentRunSummary = {
@@ -100,6 +100,8 @@ export type ExperimentRunSummary = {
 export type ExperimentDetail = ExperimentSummary & {
   runs: ExperimentRunSummary[];
 };
+
+/** Keep run taskCount fields in sync with tasks via deriveRunTaskStats from @/types/task. */
 
 export type ExperimentRunDetail = ExperimentRunSummary & {
   experiment: ExperimentSummary;

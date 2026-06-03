@@ -18,4 +18,12 @@ export {
   normalizeExperimentType,
 } from "./experiment";
 
-export type { Task, TaskNote, TaskStatus } from "./task";
+export type {
+  Task,
+  TaskNote,
+  TaskOrigin,
+  TaskReadiness,
+  TaskStatus,
+  RunTaskStats,
+} from "./task";
+export { deriveRunTaskStats, getTaskDisplayName } from "./task";

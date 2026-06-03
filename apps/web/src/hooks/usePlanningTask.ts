@@ -7,7 +7,7 @@ import {
   type PriorityWeights,
 } from "@/domain/priority";
 import { getTaskTemplate } from "@/domain/task-template/catalog";
-import type { Task } from "@/domain/task/types";
+import type { Task } from "@/types";
 import { usePlanningStore, usePlanningWeights } from "@/stores/usePlanningStore";
 import { usePrototypeStore } from "@/stores/usePrototypeStore";
 import type { ExperimentSummary } from "@/types";
@@ -36,7 +36,7 @@ export function enrichTask(
   referenceDate: string,
 ): EnrichedPlanningTask {
   const template = getTaskTemplate(task.taskTemplateId);
-  const expId = task.experimentIds[0];
+  const expId = task.experimentId;
   const experiment = expId ? (experimentsById[expId] ?? null) : null;
   const ctx = buildPlanningPriorityContext(task, experiment, referenceDate);
 

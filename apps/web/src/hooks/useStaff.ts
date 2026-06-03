@@ -54,6 +54,7 @@ export const useStaffWorkload = () => {
     
     // Count tasks for each staff member
     tasks.forEach((task) => {
+      if (!task.assignee) return;
       const memberWorkload = workload.get(task.assignee.id);
       if (memberWorkload) {
         memberWorkload.totalTasks++;
@@ -61,7 +62,7 @@ export const useStaffWorkload = () => {
           case 'pending':
             memberWorkload.pendingTasks++;
             break;
-          case 'success':
+          case 'completed':
             memberWorkload.successTasks++;
             break;
           case 'failed':
@@ -117,23 +118,31 @@ export const useStaffPerformance = () => {
 // Get staff member's recent activity (notes they've created)
 export const useStaffActivity = (staffId: string, limit = 10) => {
   const tasks = usePrototypeStore((state) => state.tasks);
-  
+  const experiments = usePrototypeStore((state) => state.experiments);
+
   return useMemo(() => {
-    const activities = tasks.flatMap((task) => 
+    const experimentsById = Object.fromEntries(
+      experiments.map((experiment) => [experiment.id, experiment]),
+    );
+
+    const activities = tasks.flatMap((task) =>
       task.notes
         .filter((note) => note.author.id === staffId)
         .map((note) => ({
           ...note,
           taskId: task.id,
-          taskTitle: task.title,
-          experimentCode: task.experiment.code,
-        }))
+          taskTitle: task.name ?? task.taskTemplateId,
+          experimentCode:
+            task.experimentId != null
+              ? experimentsById[task.experimentId]?.code ?? ""
+              : "",
+        })),
     );
     
     return activities
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, limit);
-  }, [tasks, staffId, limit]);
+  }, [tasks, experiments, staffId, limit]);
 };
 
 // Search staff by name

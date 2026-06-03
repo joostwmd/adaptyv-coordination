@@ -21,8 +21,8 @@ export function countExperimentsInWorkUnit(
 ): number {
   const ids = new Set<string>();
   for (const task of tasks) {
-    for (const expId of task.experimentIds) {
-      if (experimentsById[expId]) ids.add(expId);
+    if (task.experimentId && experimentsById[task.experimentId]) {
+      ids.add(task.experimentId);
     }
   }
   return ids.size;
@@ -34,7 +34,7 @@ export function getWorkUnitTemplateLabel(workUnit: WorkUnit): string {
 }
 
 export function getPrimaryExperimentId(task: Task): string | undefined {
-  return task.experimentIds[0];
+  return task.experimentId;
 }
 
 export function getExperimentsInWorkUnit(
@@ -45,12 +45,12 @@ export function getExperimentsInWorkUnit(
   const experiments: ExperimentSummary[] = [];
 
   for (const task of tasks) {
-    for (const expId of task.experimentIds) {
-      const experiment = experimentsById[expId];
-      if (experiment && !ids.has(experiment.id)) {
-        ids.add(experiment.id);
-        experiments.push(experiment);
-      }
+    const expId = task.experimentId;
+    if (!expId) continue;
+    const experiment = experimentsById[expId];
+    if (experiment && !ids.has(experiment.id)) {
+      ids.add(experiment.id);
+      experiments.push(experiment);
     }
   }
 

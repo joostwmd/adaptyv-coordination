@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { shallow } from 'zustand/shallow';
 import { usePrototypeStore, useTasks as useTasksStore, useTasksByExperiment, useTasksByAssignee } from '@/stores/usePrototypeStore';
 import type { Task, TaskNote, TaskStatus } from '@/types';
+import { getTaskDisplayName } from '@/types/task';
 
 // Main tasks hook with actions  
 export const useTasks = () => {
@@ -63,7 +63,7 @@ export const usePendingTasksByAssignee = (assigneeId: string) => {
   
   return useMemo(
     () => tasks.filter((task) => 
-      task.assignee.id === assigneeId && task.status === 'pending'
+      task.assignee?.id === assigneeId && task.status === 'pending'
     ),
     [tasks, assigneeId]
   );
@@ -76,7 +76,9 @@ export const useAssigneesFromTasks = () => {
   return useMemo(() => {
     const assigneeMap = new Map();
     tasks.forEach((task) => {
-      assigneeMap.set(task.assignee.id, task.assignee);
+      if (task.assignee) {
+        assigneeMap.set(task.assignee.id, task.assignee);
+      }
     });
     return Array.from(assigneeMap.values());
   }, [tasks]);
@@ -107,7 +109,7 @@ export const useRecentTaskNotes = (limit = 10) => {
       task.notes.map((note) => ({ 
         ...note, 
         taskId: task.id, 
-        taskTitle: task.title 
+        taskTitle: getTaskDisplayName(task),
       }))
     );
     
@@ -124,7 +126,14 @@ export const useTaskStats = () => {
   return useMemo(() => {
     const stats = {
       total: tasks.length,
-      byStatus: { pending: 0, success: 0, failed: 0 } as Record<TaskStatus, number>,
+      byStatus: {
+        pending: 0,
+        in_progress: 0,
+        completed: 0,
+        failed: 0,
+        blocked: 0,
+        cancelled: 0,
+      } satisfies Record<TaskStatus, number>,
       byAssignee: {} as Record<string, number>,
       totalNotes: 0,
       completionRate: 0,
@@ -132,12 +141,15 @@ export const useTaskStats = () => {
     
     tasks.forEach((task) => {
       stats.byStatus[task.status]++;
-      stats.byAssignee[task.assignee.name] = (stats.byAssignee[task.assignee.name] || 0) + 1;
+      if (task.assignee) {
+        stats.byAssignee[task.assignee.name] =
+          (stats.byAssignee[task.assignee.name] || 0) + 1;
+      }
       stats.totalNotes += task.notes.length;
     });
     
-    stats.completionRate = stats.total > 0 
-      ? Math.round((stats.byStatus.success / stats.total) * 100)
+    stats.completionRate = stats.total > 0
+      ? Math.round((stats.byStatus.completed / stats.total) * 100)
       : 0;
     
     return stats;
@@ -158,25 +170,36 @@ export const useHighPriorityTasks = () => {
   }, [tasks]);
 };
 
-// Search tasks by title or notes content
+// Search tasks by name or notes content
 export const useTaskSearch = (query: string) => {
   const tasks = useTasksStore();
-  
+  const experiments = usePrototypeStore((state) => state.experiments);
+
   return useMemo(() => {
     if (!query.trim()) return tasks;
-    
+
     const lowercaseQuery = query.toLowerCase();
-    return tasks.filter((task) => 
-      task.title.toLowerCase().includes(lowercaseQuery) ||
-      task.assignee.name.toLowerCase().includes(lowercaseQuery) ||
-      task.experiment.name.toLowerCase().includes(lowercaseQuery) ||
-      task.experiment.code.toLowerCase().includes(lowercaseQuery) ||
-      task.notes.some(note => 
-        note.body.toLowerCase().includes(lowercaseQuery) ||
-        note.author.name.toLowerCase().includes(lowercaseQuery)
-      )
+    const experimentsById = Object.fromEntries(
+      experiments.map((experiment) => [experiment.id, experiment]),
     );
-  }, [tasks, query]);
+
+    return tasks.filter((task) => {
+      const experiment = task.experimentId
+        ? experimentsById[task.experimentId]
+        : undefined;
+      return (
+        getTaskDisplayName(task).toLowerCase().includes(lowercaseQuery) ||
+        (task.assignee?.name.toLowerCase().includes(lowercaseQuery) ?? false) ||
+        (experiment?.name.toLowerCase().includes(lowercaseQuery) ?? false) ||
+        (experiment?.code.toLowerCase().includes(lowercaseQuery) ?? false) ||
+        task.notes.some(
+          (note) =>
+            note.body.toLowerCase().includes(lowercaseQuery) ||
+            note.author.name.toLowerCase().includes(lowercaseQuery),
+        )
+      );
+    });
+  }, [tasks, query, experiments]);
 };
 
 // Get tasks that need attention (pending with old notes or failed status)

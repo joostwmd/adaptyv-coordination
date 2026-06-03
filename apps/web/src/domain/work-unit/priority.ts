@@ -21,7 +21,9 @@ export function computeWorkUnitPriority(
   let driverTaskId = memberTasks[0]!.id;
 
   for (const task of memberTasks) {
-    const exp = experimentsById[task.experimentIds[0] ?? ""];
+    const exp = task.experimentId
+      ? experimentsById[task.experimentId]
+      : undefined;
     const ctx = buildPlanningPriorityContext(task, exp ?? null, referenceDate);
     const { total } = scoreTask(task, ctx, weights);
     if (total > bestScore) {
