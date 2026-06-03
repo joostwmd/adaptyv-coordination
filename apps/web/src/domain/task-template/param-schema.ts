@@ -1,10 +1,61 @@
 import type { ParamField, ParamSchema } from "./types";
 
-/** Lab-runner schema fields that are not run parameters (shown elsewhere in planning UI). */
+/** @deprecated Use planning param filters; kept for imports that only excluded notes. */
 export const RUN_PARAM_UI_EXCLUDED = new Set(["notes"]);
 
+/** Lab-runner fields hidden from planning Run settings (artifacts, traceability, layout). */
+const PLANNING_PARAM_EXCLUDED_NAMES = new Set([
+  "notes",
+  "raw_data_file",
+  "probe_lot",
+  "CFE Batch",
+  "chip_id",
+  "kit_size",
+  "kit_type",
+  "materials_plate",
+  "standards_plate",
+  "overhead",
+  "n",
+  "plates_count",
+  "target_concentration",
+  "property_1",
+  "property_2",
+  "property_3",
+]);
+
+function isVolumeOrLayoutField(name: string): boolean {
+  if (name === "volume" || name === "well_volume") return true;
+  if (name.endsWith("_volume") || name.endsWith("_volumes")) return true;
+  if (name.startsWith("temp_range_")) return true;
+  return false;
+}
+
+function isStockOrPlateRefField(name: string): boolean {
+  return name.endsWith("_stocks") || name.endsWith("_plate");
+}
+
+/** Whether a schema field should appear in planning Run settings UI. */
+export function isPlanningRelevantParamField(field: ParamField): boolean {
+  if (PLANNING_PARAM_EXCLUDED_NAMES.has(field.name)) return false;
+  if (field.type === "array") return false;
+  if (isVolumeOrLayoutField(field.name)) return false;
+  if (isStockOrPlateRefField(field.name)) return false;
+  return true;
+}
+
 export function getDisplayParamFields(schema: ParamSchema): ParamField[] {
-  return schema.fields.filter((f) => !RUN_PARAM_UI_EXCLUDED.has(f.name));
+  return schema.fields.filter(isPlanningRelevantParamField);
+}
+
+/** Fields to render: planning-relevant and either set or required-but-missing. */
+export function getPlanningParamFieldsForDisplay(
+  schema: ParamSchema,
+  params: Record<string, unknown>,
+): ParamField[] {
+  return getDisplayParamFields(schema).filter((field) => {
+    if (field.required && !paramFieldHasValue(params[field.name])) return true;
+    return paramFieldHasValue(params[field.name]);
+  });
 }
 
 export function formatParamValue(value: unknown): string {
@@ -30,10 +81,9 @@ export function getSummaryParamFields(
   params: Record<string, unknown>,
   maxFields: number,
 ): ParamField[] {
-  const fields = getDisplayParamFields(schema);
-  const withValues = fields.filter((f) => paramFieldHasValue(params[f.name]));
-  const withoutValues = fields.filter((f) => !paramFieldHasValue(params[f.name]));
-  return [...withValues, ...withoutValues].slice(0, maxFields);
+  return getDisplayParamFields(schema)
+    .filter((f) => paramFieldHasValue(params[f.name]))
+    .slice(0, maxFields);
 }
 
 export function getDefaultParams(schema: ParamSchema): Record<string, unknown> {
