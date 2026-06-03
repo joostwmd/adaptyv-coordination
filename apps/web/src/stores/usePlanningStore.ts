@@ -84,6 +84,10 @@ interface PlanningState {
 
   markTaskInLabos: (taskId: string) => void;
 
+  sendTicketToLabOs: (workUnitId: string) => void;
+  completeWorkUnitTasks: (workUnitId: string) => void;
+  failWorkUnitTasks: (workUnitId: string) => void;
+
   getTasksByExperiment: (experimentId: string) => Task[];
   getTasksByWorkUnit: (workUnitId: string) => Task[];
   getTicketByWorkUnitId: (workUnitId: string) => Ticket | undefined;
@@ -428,6 +432,62 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
         ),
       ),
     })),
+
+  sendTicketToLabOs: (workUnitId) =>
+    set((state) => {
+      const workUnit = state.workUnits.find((wu) => wu.id === workUnitId);
+      if (!workUnit) return state;
+
+      const taskIds = new Set(workUnit.taskIds);
+      const ticket = state.tickets.find((t) => t.workUnitId === workUnitId);
+
+      return {
+        tasks: syncReadiness(
+          state.tasks.map((task) =>
+            taskIds.has(task.id)
+              ? { ...task, readiness: "in_labos" as const, status: "in_progress" as const }
+              : task,
+          ),
+        ),
+        tickets: ticket
+          ? state.tickets.map((t) =>
+              t.id === ticket.id ? { ...t, status: "sent" as const } : t,
+            )
+          : state.tickets,
+      };
+    }),
+
+  completeWorkUnitTasks: (workUnitId) =>
+    set((state) => {
+      const workUnit = state.workUnits.find((wu) => wu.id === workUnitId);
+      if (!workUnit) return state;
+
+      const taskIds = new Set(workUnit.taskIds);
+      return {
+        tasks: syncReadiness(
+          state.tasks.map((task) =>
+            taskIds.has(task.id)
+              ? { ...task, status: "completed" as const }
+              : task,
+          ),
+        ),
+      };
+    }),
+
+  failWorkUnitTasks: (workUnitId) =>
+    set((state) => {
+      const workUnit = state.workUnits.find((wu) => wu.id === workUnitId);
+      if (!workUnit) return state;
+
+      const taskIds = new Set(workUnit.taskIds);
+      return {
+        tasks: syncReadiness(
+          state.tasks.map((task) =>
+            taskIds.has(task.id) ? { ...task, status: "failed" as const } : task,
+          ),
+        ),
+      };
+    }),
 
   getTasksByExperiment: (experimentId) =>
     get().tasks.filter((t) => t.experimentId === experimentId),

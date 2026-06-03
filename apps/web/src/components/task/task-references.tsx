@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
@@ -76,14 +77,15 @@ export function TaskReferences({
             <ExperimentHoverCard
               experiment={summary}
               trigger={
-                <button
-                  type="button"
+                <Link
+                  to="/experiments/$experimentId"
+                  params={{ experimentId: summary.id }}
                   className="w-fit rounded-sm text-left text-xs font-medium text-foreground underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={(event) => event.stopPropagation()}
                   onPointerDown={(event) => event.stopPropagation()}
                 >
                   {summary.name}
-                </button>
+                </Link>
               }
             />
           </div>
@@ -96,14 +98,15 @@ export function TaskReferences({
               run={run}
               experiment={summary}
               trigger={
-                <button
-                  type="button"
+                <Link
+                  to="/experiments/$experimentId"
+                  params={{ experimentId: summary.id }}
                   className="w-fit rounded-sm text-left text-xs font-medium text-foreground underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={(event) => event.stopPropagation()}
                   onPointerDown={(event) => event.stopPropagation()}
                 >
                   R{run.revisionIndex} · {run.name}
-                </button>
+                </Link>
               }
             />
           </div>
