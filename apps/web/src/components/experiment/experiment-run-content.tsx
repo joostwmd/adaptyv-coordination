@@ -27,17 +27,42 @@ export type ExperimentRunContentProps = {
   className?: string;
 };
 
-type PreviewFieldProps = {
+type RunMetaItemProps = {
   label: string;
   value: ReactNode;
-  className?: string;
 };
 
-function PreviewField({ label, value, className }: PreviewFieldProps) {
+function RunMetaItem({ label, value }: RunMetaItemProps) {
   return (
-    <div className={cn("min-w-0", className)}>
-      <dt className="text-[11px] leading-none text-muted-foreground">{label}</dt>
-      <dd className="mt-1 text-xs font-medium leading-snug text-foreground">{value}</dd>
+    <div className="inline-flex min-w-0 items-center gap-1.5 text-xs">
+      <span className="shrink-0 text-muted-foreground">{label}</span>
+      <span className="min-w-0 font-medium text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function RunMetaRow({
+  run,
+  experiment,
+  dateRange,
+}: {
+  run: ExperimentRunSummary;
+  experiment: ExperimentSummary;
+  dateRange: string | null;
+}) {
+  const created = new Date(run.createdAt).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border/50 pt-3">
+      <RunMetaItem label="Created" value={created} />
+      {dateRange ? <RunMetaItem label="Timeline" value={dateRange} /> : null}
+      {experiment.methodName ? (
+        <RunMetaItem label="Method" value={experiment.methodName} />
+      ) : null}
     </div>
   );
 }
@@ -110,23 +135,7 @@ export function ExperimentRunContent({
       </div>
 
       {!isCompact ? (
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border/50 pt-3">
-          <PreviewField label="Experiment" value={experiment.name} className="col-span-2" />
-          {dateRange ? (
-            <PreviewField label="Timeline" value={dateRange} className="col-span-2" />
-          ) : null}
-          <PreviewField
-            label="Created"
-            value={new Date(run.createdAt).toLocaleDateString(undefined, {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            })}
-          />
-          {experiment.methodName ? (
-            <PreviewField label="Method" value={experiment.methodName} />
-          ) : null}
-        </dl>
+        <RunMetaRow run={run} experiment={experiment} dateRange={dateRange} />
       ) : null}
 
       {showTasks ? (
