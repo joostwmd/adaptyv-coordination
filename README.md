@@ -11,9 +11,9 @@ The app is a TypeScript monorepo (React + TanStack Router on the web, Hono + tRP
 3. **Planning board** — Queue ready tasks, group work units, resolve blockers, drag-assign tickets to the day roster.
 4. **Tickets / LabOS** — Scheduled units become technician-facing execution work.
 
-## Reference implementations
+## Slices to copy from
 
-Two vertical slices set the bar for how new features should be structured: **planning board** and **run creation wizard** (experiment run → planning tasks). Both split **pure domain** from **feature UI** and **integration hooks/stores**, and both are covered by Vitest suites that are regularly hardened with [Stryker](https://stryker-mutator.io/) mutation testing (`pnpm mutate` in `apps/web`).
+When adding similar UI, these two areas are the closest thing we have to a worked example: **planning board** and **run creation wizard** (experiment run → planning tasks). They are not perfect, but they try to keep **domain** logic separate from **feature** UI and **hooks/stores** wiring. Vitest covers most of that logic; we also run [Stryker](https://stryker-mutator.io/) mutation tests on domain code from `apps/web` (`pnpm mutate`) and fix gaps when mutants survive.
 
 ### Planning board
 
@@ -26,12 +26,12 @@ Two vertical slices set the bar for how new features should be structured: **pla
 | **Hooks** | Derived board views and stable action bundles for DnD | `apps/web/src/hooks/usePlanningBoard.ts`, `usePlanningDayBoard.ts`, `usePlanningBoardActions.ts`, `usePlanningTask.ts`, `useTicketExecution.ts` |
 | **Features** | Layout zones, cards, DnD primitives, priority UI | `apps/web/src/features/planning/board/*`, `cards/*`, `priority/*`, `screens/planning-screen.tsx` |
 
-**Why it works well.**
+**Patterns we aimed for (still evolving).**
 
-- **Pure selectors** — Functions like `classifyReadyTasks`, `getTicketsByPersonForDay`, and `getKanbanRoster` take plain data and return typed structures; no React or Zustand inside the domain.
-- **Explicit DnD contract** — `PlanningDragData` / `PlanningDropData` types and `dnd-policy.ts` keep drag rules in one testable place instead of scattered `onDragEnd` handlers.
-- **Store boundaries** — The store orchestrates work-unit and ticket lifecycle; experiment/run creation is extracted to `experiment-run-actions.ts` with injectable deps for testing.
-- **UI composition** — `PlanningBoard` only arranges resizable zones (`QueueZone`, `UnitsZone`, `DailyKanbanZone`); cards and drop targets reuse shared shell/draggable components.
+- **Selectors without React** — Helpers like `classifyReadyTasks`, `getTicketsByPersonForDay`, and `getKanbanRoster` take plain inputs so we can test them without rendering; the store/hooks still do more than we would like in places.
+- **DnD rules in one module** — `PlanningDragData` / `PlanningDropData` and `dnd-policy.ts` centralize drop handling so we are less likely to duplicate logic in each zone; edge cases still show up in manual testing.
+- **Smaller store surface for runs** — Work-unit and ticket updates live in the main store; experiment/run creation is pulled into `experiment-run-actions.ts` with injectable deps so tests do not need the full Zustand tree.
+- **Zones stay mostly presentational** — `PlanningBoard` mostly lays out `QueueZone`, `UnitsZone`, and `DailyKanbanZone`; shared cards and drag primitives try to keep zone files shorter.
 
 ### Run creation wizard (task creation)
 
@@ -44,16 +44,16 @@ Two vertical slices set the bar for how new features should be structured: **pla
 | **Hooks** | Wizard state machine, toasts, store invocation | `apps/web/src/hooks/useRunCreationWizardState.ts` |
 | **Features** | Stepper shell, step pickers, per-task config forms | `apps/web/src/features/experiments/detail/run-creation/run-creation-wizard.tsx`, `run-creation-step-select.tsx`, `run-creation-configure-panel.tsx`, `run-creation-task-config-form.tsx`, `constants.ts` |
 
-**Why it works well.**
+**Patterns we aimed for (still evolving).**
 
-- **Result types end-to-end** — `validateRunCreationPayload` and `buildRunCreationResult` return discriminated unions (`ok` / `incompleteStepKeys` / reasons) so the hook and store cannot silently proceed with invalid drafts.
-- **Draft model separated from UI** — `RunCreationDraft` and `buildInitialDrafts` / `updateTaskDraft` keep configuration state serializable and easy to test without mounting forms.
-- **Workflow as data** — `resolveWorkflowForExperiment` and `buildSelectableRunSteps` map experiment metadata to selectable steps; the wizard does not hard-code protocol lists.
-- **Thin feature layer** — `RunCreationWizard` wires the shared Stepper to hook outputs; field components (`run-creation-param-field`, plate stock picker) stay dumb and driven by `SelectableRunStep` + draft slices.
+- **Validation as plain results** — `validateRunCreationPayload` and `buildRunCreationResult` return simple `ok` / error shapes so the hook can bail early; we still duplicate some checks between domain and store.
+- **Drafts outside the forms** — `RunCreationDraft` with `buildInitialDrafts` / `updateTaskDraft` lets us test configuration without mounting every field component.
+- **Workflow from experiment data** — `resolveWorkflowForExperiment` and `buildSelectableRunSteps` derive steps from metadata instead of a single hard-coded list; not every protocol edge case is covered yet.
+- **Wizard UI mostly wiring** — `RunCreationWizard` connects the Stepper to `useRunCreationWizardState`; param fields and the plate picker receive step + draft props rather than owning business rules.
 
-### Testing and mutation quality
+### Tests and mutation runs
 
-Both slices maintain broad **Vitest** coverage at the domain and integration layers (stores, hooks, and policy modules). **Stryker** mutates all of `apps/web/src/domain/**/*.ts` (see `apps/web/stryker.config.mjs`); surviving mutants are reviewed via `.stryker-output/survivors.md`. That loop keeps assertions meaningful—especially for queue classification, DnD actions, draft completeness, and run-creation validation—rather than only checking happy paths.
+We rely on **Vitest** for domain modules, stores, hooks, and policy code in these slices. **Stryker** targets `apps/web/src/domain/**/*.ts` (`apps/web/stryker.config.mjs`); when mutants survive, we note them in `.stryker-output/survivors.md` and add or tighten tests where it seems worth the effort. Mutation testing has helped catch weak assertions around queue classification, DnD, drafts, and validation, but coverage is uneven and some UI paths are barely tested.
 
 Representative test locations:
 
