@@ -8,7 +8,10 @@
     "build": "vite build",
     "serve": "vite preview",
     "start": "vite",
-    "check-types": "vite build && tsc --noEmit"
+    "check-types": "vite build && tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "mutate": "stryker run"
   },
   "dependencies": {
     "@adaptyv-coordination/api": "workspace:*",
@@ -36,6 +39,8 @@
   },
   "devDependencies": {
     "@adaptyv-coordination/config": "workspace:*",
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/vitest-runner": "^9.6.1",
     "@tanstack/react-query-devtools": "^5.91.1",
     "@tanstack/react-router-devtools": "^1.166.13",
     "@tanstack/router-plugin": "^1.167.22",
@@ -44,8 +49,10 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "^6.0.1",
     "postcss": "^8.5.10",
+    "stryker-reporter-llm": "^0.1.0",
     "tailwindcss": "^4.2.2",
     "typescript": "catalog:",
-    "vite": "^8.0.8"
+    "vite": "^8.0.8",
+    "vitest": "^4.1.8"
   }
 }
