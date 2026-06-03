@@ -1,6 +1,5 @@
 export type {
   Task,
-  TaskNote,
   TaskOrigin,
   TaskReadiness,
   TaskStatus,

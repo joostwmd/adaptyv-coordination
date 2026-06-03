@@ -115,7 +115,7 @@ export const useStaffPerformance = () => {
   }, [workload]);
 };
 
-// Get staff member's recent activity (notes they've created)
+// Recent tasks assigned to this staff member
 export const useStaffActivity = (staffId: string, limit = 10) => {
   const tasks = usePrototypeStore((state) => state.tasks);
   const experiments = usePrototypeStore((state) => state.experiments);
@@ -125,21 +125,18 @@ export const useStaffActivity = (staffId: string, limit = 10) => {
       experiments.map((experiment) => [experiment.id, experiment]),
     );
 
-    const activities = tasks.flatMap((task) =>
-      task.notes
-        .filter((note) => note.author.id === staffId)
-        .map((note) => ({
-          ...note,
-          taskId: task.id,
-          taskTitle: task.name ?? task.taskTemplateId,
-          experimentCode:
-            task.experimentId != null
-              ? experimentsById[task.experimentId]?.code ?? ""
-              : "",
-        })),
-    );
-    
-    return activities
+    return tasks
+      .filter((task) => task.assignee?.id === staffId)
+      .map((task) => ({
+        id: task.id,
+        createdAt: task.createdAt,
+        taskId: task.id,
+        taskTitle: task.name ?? task.taskTemplateId,
+        experimentCode:
+          task.experimentId != null
+            ? (experimentsById[task.experimentId]?.code ?? "")
+            : "",
+      }))
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, limit);
   }, [tasks, experiments, staffId, limit]);

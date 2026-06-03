@@ -49,7 +49,6 @@ function buildTask(
     status: context.status ?? "pending",
     dependsOn: context.dependsOn ?? [],
     readiness: context.readiness ?? "ready",
-    notes: [],
     createdAt: new Date().toISOString(),
   };
 }

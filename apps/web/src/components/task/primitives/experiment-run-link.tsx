@@ -1,12 +1,5 @@
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@adaptyv-coordination/ui/components/hover-card";
-
+import { ExperimentRunHoverCard } from "@/components/experiment/experiment-run-hover-card";
 import { useExperimentById } from "@/stores/usePrototypeStore";
-
-import { ExperimentRunHoverPreview } from "./experiment-run-hover-preview";
 
 type ExperimentRunLinkProps = {
   experimentId: string;
@@ -29,17 +22,19 @@ export function ExperimentRunLink({
   return (
     <div className="flex flex-col gap-1">
       <span className="text-xs text-muted-foreground">Run</span>
-      <HoverCard>
-        <HoverCardTrigger
-          className="w-fit cursor-default text-xs font-medium underline-offset-4 hover:underline"
-          onClick={(event) => event.stopPropagation()}
-        >
-          R{run.revisionIndex} · {run.name}
-        </HoverCardTrigger>
-        <HoverCardContent side="top" align="start" className="w-72">
-          <ExperimentRunHoverPreview run={run} experiment={summary} />
-        </HoverCardContent>
-      </HoverCard>
+      <ExperimentRunHoverCard
+        run={run}
+        experiment={summary}
+        trigger={
+          <button
+            type="button"
+            className="w-fit cursor-default text-xs font-medium underline-offset-4 hover:underline"
+            onClick={(event) => event.stopPropagation()}
+          >
+            R{run.revisionIndex} · {run.name}
+          </button>
+        }
+      />
     </div>
   );
 }

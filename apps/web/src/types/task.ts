@@ -20,13 +20,6 @@ export type TaskReadiness =
   | "batched"
   | "in_labos";
 
-export type TaskNote = {
-  id: string;
-  author: StaffMember;
-  body: string;
-  createdAt: string;
-};
-
 export type Task = {
   id: string;
   taskTemplateId: string;
@@ -47,7 +40,6 @@ export type Task = {
   dependsOn: string[];
 
   assignee?: StaffMember;
-  notes: TaskNote[];
   createdAt: string;
 };
 

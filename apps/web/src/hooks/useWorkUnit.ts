@@ -15,6 +15,12 @@ import {
 } from "@/hooks/usePlanningTask";
 import { usePlanningStore, usePlanningWeights } from "@/stores/usePlanningStore";
 
+export function useWorkUnit(workUnitId: string | undefined): WorkUnit | null {
+  return usePlanningStore((state) =>
+    workUnitId ? (state.workUnits.find((wu) => wu.id === workUnitId) ?? null) : null,
+  );
+}
+
 export type EnrichedWorkUnit = {
   workUnit: WorkUnit;
   tasks: Task[];

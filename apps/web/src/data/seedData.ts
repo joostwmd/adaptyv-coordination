@@ -43,13 +43,12 @@ const TEMPLATE = {
 } as const;
 
 function seedTask(
-  partial: Omit<Task, "notes" | "dependsOn" | "createdAt" | "params" | "origin"> &
-    Partial<Pick<Task, "notes" | "dependsOn" | "createdAt" | "params" | "origin">>,
+  partial: Omit<Task, "dependsOn" | "createdAt" | "params" | "origin"> &
+    Partial<Pick<Task, "dependsOn" | "createdAt" | "params" | "origin">>,
 ): Task {
   return {
     params: {},
     dependsOn: [],
-    notes: [],
     origin: "template",
     createdAt: "2026-06-01T10:00:00.000Z",
     ...partial,
@@ -481,14 +480,6 @@ export const seedTasks: Task[] = [
     readiness: "in_labos",
     dependsOn: ["task-tnq-b2-spr-run"],
     assignee: seedStaff[1],
-    notes: [
-      {
-        id: "note-7",
-        author: seedStaff[0],
-        body: "Use the same SPR chip lot as the previous Fredy program.",
-        createdAt: "2026-05-27T13:00:00.000Z",
-      },
-    ],
     createdAt: "2026-05-20T15:00:00.000Z",
   }),
   // TNQ rev2 — in progress
@@ -513,20 +504,6 @@ export const seedTasks: Task[] = [
     readiness: "ready",
     dependsOn: ["task-tnq-r1-spr-prep"],
     assignee: seedStaff[0],
-    notes: [
-      {
-        id: "note-1",
-        author: seedStaff[1],
-        body: "Compare peak shapes against baseline before signing off.",
-        createdAt: "2026-05-30T10:00:00.000Z",
-      },
-      {
-        id: "note-2",
-        author: seedStaff[0],
-        body: "Will need Marcus to confirm if the tailing factor is within spec.",
-        createdAt: "2026-05-30T14:30:00.000Z",
-      },
-    ],
     createdAt: "2026-05-30T09:00:00.000Z",
   }),
   // R3X production thermo
@@ -539,14 +516,6 @@ export const seedTasks: Task[] = [
     status: "completed",
     readiness: "in_labos",
     assignee: seedStaff[2],
-    notes: [
-      {
-        id: "note-3",
-        author: seedStaff[2],
-        body: "Slot confirmed with lab ops for next Tuesday.",
-        createdAt: "2026-05-28T09:00:00.000Z",
-      },
-    ],
     createdAt: "2026-06-01T09:00:00.000Z",
   }),
   seedTask({
@@ -571,14 +540,6 @@ export const seedTasks: Task[] = [
     status: "completed",
     readiness: "in_labos",
     assignee: seedStaff[4],
-    notes: [
-      {
-        id: "note-8",
-        author: seedStaff[4],
-        body: "Cloning strategy approved by client. Starting vector preparation.",
-        createdAt: "2026-06-01T09:00:00.000Z",
-      },
-    ],
     createdAt: "2026-05-16T08:00:00.000Z",
   }),
   seedTask({
@@ -603,14 +564,6 @@ export const seedTasks: Task[] = [
     status: "pending",
     readiness: "ready",
     assignee: seedStaff[5],
-    notes: [
-      {
-        id: "note-9",
-        author: seedStaff[5],
-        body: "Yield exceeded expectations at 95 mg/L. Ready for scale-up.",
-        createdAt: "2026-06-01T16:30:00.000Z",
-      },
-    ],
     createdAt: "2026-06-01T15:00:00.000Z",
   }),
   // BioPharma epitope
@@ -647,14 +600,6 @@ export const seedTasks: Task[] = [
     status: "completed",
     readiness: "in_labos",
     assignee: seedStaff[2],
-    notes: [
-      {
-        id: "note-10",
-        author: seedStaff[2],
-        body: "All stability criteria met. Report submitted to client.",
-        createdAt: "2026-05-25T14:00:00.000Z",
-      },
-    ],
     createdAt: "2026-06-01T12:00:00.000Z",
   }),
   // BioPharma binding failed
@@ -668,26 +613,6 @@ export const seedTasks: Task[] = [
     readiness: "blocked",
     blockedReason: "missing_materials",
     assignee: seedStaff[3],
-    notes: [
-      {
-        id: "note-4",
-        author: seedStaff[3],
-        body: "Client confirmed delay — ETA pushed by two weeks.",
-        createdAt: "2026-05-29T11:15:00.000Z",
-      },
-      {
-        id: "note-5",
-        author: seedStaff[1],
-        body: "Escalated to account manager. Task blocked until materials arrive.",
-        createdAt: "2026-05-29T16:00:00.000Z",
-      },
-      {
-        id: "note-6",
-        author: seedStaff[3],
-        body: "Marked as failed for this planning cycle.",
-        createdAt: "2026-05-30T08:00:00.000Z",
-      },
-    ],
     createdAt: "2026-05-25T08:00:00.000Z",
   }),
   seedTask({

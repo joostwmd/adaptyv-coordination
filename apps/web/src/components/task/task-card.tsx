@@ -1,75 +1,58 @@
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@adaptyv-coordination/ui/components/card";
-import { Button } from "@adaptyv-coordination/ui/components/button";
+import { Card, CardContent } from "@adaptyv-coordination/ui/components/card";
+import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
-import {
-  EXPERIMENT_PRIORITY_LABEL,
-  formatExperimentPriority,
-} from "@/components/experiment";
-import { useExperimentById } from "@/stores/usePrototypeStore";
-import type { Task } from "@/types";
-import { getTaskDisplayName } from "@/types/task";
+import type { ExperimentRunSummary, ExperimentSummary, Task } from "@/types";
 
-import { AssigneeRow } from "./primitives/assignee-row";
-import { ExperimentLink } from "./primitives/experiment-link";
-import { ExperimentRunLink } from "./primitives/experiment-run-link";
-import { NotesThreadPreview } from "./primitives/notes-thread-preview";
-import { StatusBadge } from "./primitives/status-badge";
+import { TaskContent } from "./task-content";
 
 type TaskCardProps = {
   task: Task;
-  onView: (task: Task) => void;
+  onView?: (task: Task) => void;
+  variant?: "default" | "embedded";
+  run?: ExperimentRunSummary;
+  experiment?: ExperimentSummary;
+  showPlanningLinks?: boolean;
 };
 
-export function TaskCard({ task, onView }: TaskCardProps) {
-  const experiment = useExperimentById(task.experimentId ?? "");
-  const summary = experiment
-    ? (() => {
-        const { runs: _runs, ...rest } = experiment;
-        return rest;
-      })()
-    : null;
+export function TaskCard({
+  task,
+  onView,
+  variant = "default",
+  run,
+  experiment,
+  showPlanningLinks = true,
+}: TaskCardProps) {
+  const isEmbedded = variant === "embedded";
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <CardTitle className="min-w-0 flex-1">{getTaskDisplayName(task)}</CardTitle>
-          <StatusBadge status={task.status} />
-        </div>
-      </CardHeader>
-
-      <CardContent className="flex flex-col gap-3">
-        {task.assignee ? <AssigneeRow assignee={task.assignee} /> : null}
-        {summary ? (
-          <p className="text-xs/relaxed">
-            <span className="text-muted-foreground">{EXPERIMENT_PRIORITY_LABEL} </span>
-            <span className="font-medium">
-              {formatExperimentPriority(summary.priority)}
-            </span>
-            <span className="text-muted-foreground"> ({summary.code})</span>
-          </p>
-        ) : null}
-        {task.experimentId && task.runId ? (
-          <ExperimentRunLink
-            experimentId={task.experimentId}
-            runId={task.runId}
-          />
-        ) : null}
-        {summary ? <ExperimentLink experiment={summary} /> : null}
-        <NotesThreadPreview notes={task.notes} />
+    <Card
+      className={cn(
+        isEmbedded && "shadow-none",
+        onView && "cursor-pointer transition-colors hover:bg-muted/30",
+      )}
+      onClick={onView ? () => onView(task) : undefined}
+      onKeyDown={
+        onView
+          ? (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onView(task);
+              }
+            }
+          : undefined
+      }
+      role={onView ? "button" : undefined}
+      tabIndex={onView ? 0 : undefined}
+    >
+      <CardContent className={cn(isEmbedded ? "px-4 py-3" : "pt-6")}>
+        <TaskContent
+          task={task}
+          variant={variant}
+          run={run}
+          experiment={experiment}
+          showPlanningLinks={showPlanningLinks}
+        />
       </CardContent>
-
-      <CardFooter>
-        <Button variant="ghost" size="sm" onClick={() => onView(task)}>
-          View task
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

@@ -7,7 +7,10 @@ import {
   EXPERIMENT_PRIORITY_LABEL,
   formatExperimentPriority,
 } from "@/components/experiment/experiment-priority";
+import { ExperimentRunCard } from "@/components/experiment/experiment-run-card";
 import { ExperimentRunCreationPanel } from "@/components/experiment/experiment-run-creation-panel";
+import { TaskDetailDialog } from "@/components/task/task-detail-dialog";
+import type { Task } from "@/types";
 import type { ExperimentDetail } from "@/types/experiment";
 import {
   EXPERIMENT_CATEGORY_LABEL,
@@ -20,21 +23,6 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@adaptyv-coordination/ui/components/resizable";
-
-function getRunStatusVariant(
-  status: string,
-): "default" | "secondary" | "outline" | "destructive" {
-  switch (status) {
-    case "completed":
-      return "default";
-    case "in_progress":
-      return "secondary";
-    case "failed":
-      return "destructive";
-    default:
-      return "outline";
-  }
-}
 
 const RUN_CREATION_OPEN_LAYOUT = {
   "experiment-context": 38,
@@ -50,6 +38,9 @@ function ExperimentDetailContent({
   experiment,
   onOpenCreation,
 }: ExperimentDetailContentProps) {
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const { runs: _runs, ...experimentSummary } = experiment;
+
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
       <Link
@@ -106,23 +97,17 @@ function ExperimentDetailContent({
 
           {experiment.runs.length > 0 ? (
             <div className="space-y-3">
-              {experiment.runs.map((run) => (
-                <div
-                  key={run.id}
-                  className="flex items-center justify-between rounded-md border p-3"
-                >
-                  <div>
-                    <div className="font-medium">{run.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      Revision {run.revisionIndex}
-                    </div>
-                  </div>
-                  <Badge variant={getRunStatusVariant(run.status)}>
-                    {run.status.charAt(0).toUpperCase() +
-                      run.status.slice(1)}
-                  </Badge>
-                </div>
-              ))}
+              {[...experiment.runs]
+                .sort((a, b) => b.revisionIndex - a.revisionIndex)
+                .map((run, index) => (
+                  <ExperimentRunCard
+                    key={run.id}
+                    run={run}
+                    experiment={experimentSummary}
+                    defaultExpanded={index === 0}
+                    onTaskView={setSelectedTask}
+                  />
+                ))}
             </div>
           ) : (
             <div className="py-8 text-center text-muted-foreground">
@@ -143,6 +128,14 @@ function ExperimentDetailContent({
           )}
         </div>
       </div>
+
+      <TaskDetailDialog
+        task={selectedTask}
+        open={selectedTask !== null}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setSelectedTask(null);
+        }}
+      />
     </div>
   );
 }

@@ -12,7 +12,7 @@ import { Badge } from "@adaptyv-coordination/ui/components/badge";
 import type { Task } from "@/domain/task/types";
 import { usePlanningBoard } from "@/hooks/usePlanningBoard";
 
-import { TaskCard } from "../task-card";
+import { PlanningTaskCard } from "../planning-task-card";
 
 type NeedsAttentionDrawerProps = {
   onTaskOpen: (task: Task) => void;
@@ -38,7 +38,7 @@ function TaskSection({
       ) : (
         <div className="space-y-2">
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onOpen={onTaskOpen} variant="compact" />
+            <PlanningTaskCard key={task.id} task={task} onOpen={onTaskOpen} variant="compact" />
           ))}
         </div>
       )}

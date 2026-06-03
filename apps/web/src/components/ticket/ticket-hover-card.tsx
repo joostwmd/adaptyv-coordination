@@ -6,26 +6,28 @@ import {
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 import type { ReactElement } from "react";
 
-import type { ExperimentSummary } from "@/types";
+import type { Ticket } from "@/domain/ticket/types";
+import type { StaffMember } from "@/types";
 
-import { ExperimentContent } from "./experiment-content";
+import { TicketContent } from "./ticket-content";
 
-type ExperimentHoverCardProps = {
-  experiment: ExperimentSummary;
-  /** Element rendered as the hover trigger (e.g. Link, button, span). */
+type TicketHoverCardProps = {
+  ticket: Ticket;
+  assignee?: StaffMember | null;
   trigger: ReactElement;
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
   contentClassName?: string;
 };
 
-export function ExperimentHoverCard({
-  experiment,
+export function TicketHoverCard({
+  ticket,
+  assignee,
   trigger,
   side = "top",
   align = "start",
   contentClassName,
-}: ExperimentHoverCardProps) {
+}: TicketHoverCardProps) {
   return (
     <HoverCard>
       <HoverCardTrigger render={trigger} />
@@ -34,7 +36,7 @@ export function ExperimentHoverCard({
         align={align}
         className={cn("w-72 p-3", contentClassName)}
       >
-        <ExperimentContent experiment={experiment} />
+        <TicketContent ticket={ticket} assignee={assignee} />
       </HoverCardContent>
     </HoverCard>
   );

@@ -112,20 +112,6 @@ export const MOCK_TASKS: Task[] = [
     assignee: MOCK_STAFF[0]!,
     run: MOCK_EXPERIMENTS[0]!.runs[1]!,
     experiment: toSummary(MOCK_EXPERIMENTS[0]!),
-    notes: [
-      {
-        id: "note-1",
-        author: MOCK_STAFF[1]!,
-        body: "Compare peak shapes against baseline before signing off.",
-        createdAt: "2026-05-30T10:00:00.000Z",
-      },
-      {
-        id: "note-2",
-        author: MOCK_STAFF[0]!,
-        body: "Will need Marcus to confirm if the tailing factor is within spec.",
-        createdAt: "2026-05-30T14:30:00.000Z",
-      },
-    ],
   },
   {
     id: "task-2",
@@ -134,14 +120,6 @@ export const MOCK_TASKS: Task[] = [
     assignee: MOCK_STAFF[2]!,
     run: MOCK_EXPERIMENTS[1]!.runs[0]!,
     experiment: toSummary(MOCK_EXPERIMENTS[1]!),
-    notes: [
-      {
-        id: "note-3",
-        author: MOCK_STAFF[2]!,
-        body: "Slot confirmed with lab ops for next Tuesday.",
-        createdAt: "2026-05-28T09:00:00.000Z",
-      },
-    ],
   },
   {
     id: "task-3",
@@ -150,26 +128,6 @@ export const MOCK_TASKS: Task[] = [
     assignee: MOCK_STAFF[3]!,
     run: MOCK_EXPERIMENTS[2]!.runs[0]!,
     experiment: toSummary(MOCK_EXPERIMENTS[2]!),
-    notes: [
-      {
-        id: "note-4",
-        author: MOCK_STAFF[3]!,
-        body: "Client confirmed delay — ETA pushed by two weeks.",
-        createdAt: "2026-05-29T11:15:00.000Z",
-      },
-      {
-        id: "note-5",
-        author: MOCK_STAFF[1]!,
-        body: "Escalated to account manager. Task blocked until materials arrive.",
-        createdAt: "2026-05-29T16:00:00.000Z",
-      },
-      {
-        id: "note-6",
-        author: MOCK_STAFF[3]!,
-        body: "Marked as failed for this planning cycle.",
-        createdAt: "2026-05-30T08:00:00.000Z",
-      },
-    ],
   },
   {
     id: "task-4",
@@ -178,14 +136,6 @@ export const MOCK_TASKS: Task[] = [
     assignee: MOCK_STAFF[1]!,
     run: MOCK_EXPERIMENTS[0]!.runs[0]!,
     experiment: toSummary(MOCK_EXPERIMENTS[0]!),
-    notes: [
-      {
-        id: "note-7",
-        author: MOCK_STAFF[0]!,
-        body: "Use the same SPR chip lot as the previous Fredy program.",
-        createdAt: "2026-05-27T13:00:00.000Z",
-      },
-    ],
   },
 ];
 

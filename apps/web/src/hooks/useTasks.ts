@@ -1,7 +1,34 @@
 import { useMemo } from 'react';
-import { usePrototypeStore, useTasks as useTasksStore, useTasksByExperiment, useTasksByAssignee } from '@/stores/usePrototypeStore';
-import type { Task, TaskNote, TaskStatus } from '@/types';
+import { usePrototypeStore, useTasks as useTasksStore } from '@/stores/usePrototypeStore';
+import type { Task, TaskStatus } from '@/types';
 import { getTaskDisplayName } from '@/types/task';
+
+const EMPTY_TASKS: Task[] = [];
+
+/** Stable task list for a run — avoids Zustand getSnapshot returning a new array every read. */
+export function useTasksByRun(runId: string): Task[] {
+  const tasks = useTasksStore();
+  return useMemo(() => {
+    const filtered = tasks.filter((task) => task.runId === runId);
+    return filtered.length > 0 ? filtered : EMPTY_TASKS;
+  }, [tasks, runId]);
+}
+
+export function useTasksByExperiment(experimentId: string): Task[] {
+  const tasks = useTasksStore();
+  return useMemo(() => {
+    const filtered = tasks.filter((task) => task.experimentId === experimentId);
+    return filtered.length > 0 ? filtered : EMPTY_TASKS;
+  }, [tasks, experimentId]);
+}
+
+export function useTasksByAssignee(assigneeId: string): Task[] {
+  const tasks = useTasksStore();
+  return useMemo(() => {
+    const filtered = tasks.filter((task) => task.assignee?.id === assigneeId);
+    return filtered.length > 0 ? filtered : EMPTY_TASKS;
+  }, [tasks, assigneeId]);
+}
 
 // Main tasks hook with actions  
 export const useTasks = () => {
@@ -30,12 +57,6 @@ export const useTask = (id: string) => {
     deleteTask: () => deleteTask(id),
   };
 };
-
-// Tasks filtered by experiment
-export { useTasksByExperiment };
-
-// Tasks filtered by assignee
-export { useTasksByAssignee };
 
 // Tasks filtered by status
 export const useTasksByStatus = (status: TaskStatus) => {
@@ -84,41 +105,6 @@ export const useAssigneesFromTasks = () => {
   }, [tasks]);
 };
 
-// Task notes management
-export const useTaskNotes = (taskId: string) => {
-  const task = usePrototypeStore((state) => state.tasks.find(t => t.id === taskId));
-  const addTaskNote = usePrototypeStore((state) => state.addTaskNote);
-  const updateTaskNote = usePrototypeStore((state) => state.updateTaskNote);
-  const deleteTaskNote = usePrototypeStore((state) => state.deleteTaskNote);
-  
-  return {
-    notes: task?.notes || [],
-    addNote: (note: Omit<TaskNote, 'id'>) => addTaskNote(taskId, note),
-    updateNote: (noteId: string, updates: Partial<TaskNote>) => 
-      updateTaskNote(taskId, noteId, updates),
-    deleteNote: (noteId: string) => deleteTaskNote(taskId, noteId),
-  };
-};
-
-// Get recent notes across all tasks
-export const useRecentTaskNotes = (limit = 10) => {
-  const tasks = useTasksStore();
-  
-  return useMemo(() => {
-    const allNotes = tasks.flatMap((task) => 
-      task.notes.map((note) => ({ 
-        ...note, 
-        taskId: task.id, 
-        taskTitle: getTaskDisplayName(task),
-      }))
-    );
-    
-    return allNotes
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, limit);
-  }, [tasks, limit]);
-};
-
 // Task statistics
 export const useTaskStats = () => {
   const tasks = useTasksStore();
@@ -135,7 +121,6 @@ export const useTaskStats = () => {
         cancelled: 0,
       } satisfies Record<TaskStatus, number>,
       byAssignee: {} as Record<string, number>,
-      totalNotes: 0,
       completionRate: 0,
     };
     
@@ -145,7 +130,6 @@ export const useTaskStats = () => {
         stats.byAssignee[task.assignee.name] =
           (stats.byAssignee[task.assignee.name] || 0) + 1;
       }
-      stats.totalNotes += task.notes.length;
     });
     
     stats.completionRate = stats.total > 0
@@ -163,14 +147,11 @@ export const useHighPriorityTasks = () => {
   return useMemo(() => {
     // In a real app, you'd have due dates or priority fields
     // For now, we'll consider failed tasks as high priority
-    return tasks.filter((task) => 
-      task.status === 'failed' || 
-      task.notes.length > 3 // Tasks with many notes might need attention
-    );
+    return tasks.filter((task) => task.status === 'failed');
   }, [tasks]);
 };
 
-// Search tasks by name or notes content
+// Search tasks by name, assignee, or experiment
 export const useTaskSearch = (query: string) => {
   const tasks = useTasksStore();
   const experiments = usePrototypeStore((state) => state.experiments);
@@ -191,36 +172,17 @@ export const useTaskSearch = (query: string) => {
         getTaskDisplayName(task).toLowerCase().includes(lowercaseQuery) ||
         (task.assignee?.name.toLowerCase().includes(lowercaseQuery) ?? false) ||
         (experiment?.name.toLowerCase().includes(lowercaseQuery) ?? false) ||
-        (experiment?.code.toLowerCase().includes(lowercaseQuery) ?? false) ||
-        task.notes.some(
-          (note) =>
-            note.body.toLowerCase().includes(lowercaseQuery) ||
-            note.author.name.toLowerCase().includes(lowercaseQuery),
-        )
+        (experiment?.code.toLowerCase().includes(lowercaseQuery) ?? false)
       );
     });
   }, [tasks, query, experiments]);
 };
 
-// Get tasks that need attention (pending with old notes or failed status)
+// Get tasks that need attention (failed status)
 export const useTasksNeedingAttention = () => {
   const tasks = useTasksStore();
-  
-  return useMemo(() => {
-    const now = new Date();
-    const twoDaysAgo = new Date(now.getTime() - (2 * 24 * 60 * 60 * 1000));
-    
-    return tasks.filter((task) => {
-      if (task.status === 'failed') return true;
-      
-      if (task.status === 'pending' && task.notes.length > 0) {
-        const lastNoteDate = new Date(task.notes[task.notes.length - 1].createdAt);
-        return lastNoteDate < twoDaysAgo;
-      }
-      
-      return false;
-    });
-  }, [tasks]);
+
+  return useMemo(() => tasks.filter((task) => task.status === "failed"), [tasks]);
 };
 
 // Bulk task operations

@@ -19,6 +19,14 @@ import { usePlanningStore } from "@/stores/usePlanningStore";
 import { usePrototypeStore } from "@/stores/usePrototypeStore";
 import type { StaffMember } from "@/types";
 
+export function useTicketByWorkUnit(workUnitId: string | undefined): Ticket | null {
+  return usePlanningStore((state) =>
+    workUnitId
+      ? (state.tickets.find((ticket) => ticket.workUnitId === workUnitId) ?? null)
+      : null,
+  );
+}
+
 export type EnrichedTicket = {
   ticket: Ticket;
   workUnit: WorkUnit;

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -5,15 +6,12 @@ import {
   DialogTitle,
 } from "@adaptyv-coordination/ui/components/dialog";
 
+import { ExperimentDetailDialog } from "@/components/experiment";
 import { useExperimentById } from "@/stores/usePrototypeStore";
 import type { Task } from "@/types";
 import { getTaskDisplayName } from "@/types/task";
 
-import { AssigneeRow } from "./primitives/assignee-row";
-import { ExperimentLink } from "./primitives/experiment-link";
-import { ExperimentRunLink } from "./primitives/experiment-run-link";
-import { NoteItem } from "./primitives/note-item";
-import { StatusBadge } from "./primitives/status-badge";
+import { TaskContent } from "./task-content";
 
 type TaskDetailDialogProps = {
   task: Task | null;
@@ -22,50 +20,49 @@ type TaskDetailDialogProps = {
 };
 
 export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogProps) {
-  if (!task) {
-    return null;
-  }
-
-  const experiment = useExperimentById(task.experimentId ?? "");
+  const experiment = useExperimentById(task?.experimentId ?? "");
   const summary = experiment
     ? (() => {
         const { runs: _runs, ...rest } = experiment;
         return rest;
       })()
     : null;
+  const [experimentDialogOpen, setExperimentDialogOpen] = useState(false);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <div className="flex flex-wrap items-center gap-2 pr-6">
-            <StatusBadge status={task.status} />
-          </div>
-          <DialogTitle>{getTaskDisplayName(task)}</DialogTitle>
-        </DialogHeader>
-
-        <div className="flex flex-col gap-4">
-          {task.assignee ? <AssigneeRow assignee={task.assignee} /> : null}
-          {task.experimentId && task.runId ? (
-            <ExperimentRunLink
-              experimentId={task.experimentId}
-              runId={task.runId}
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        {task ? (
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>{getTaskDisplayName(task)}</DialogTitle>
+            </DialogHeader>
+            <TaskContent
+              task={task}
+              experiment={summary}
+              showPlanningLinks
+              showExperiment
+              showRun
             />
-          ) : null}
-          {summary ? <ExperimentLink experiment={summary} /> : null}
-
-          <div className="flex flex-col gap-2">
-            <p className="text-xs font-medium text-muted-foreground">
-              Notes ({task.notes.length})
-            </p>
-            <div className="flex max-h-64 flex-col gap-2 overflow-y-auto">
-              {task.notes.map((note) => (
-                <NoteItem key={note.id} note={note} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+            {summary ? (
+              <button
+                type="button"
+                className="text-xs font-medium text-primary underline-offset-4 hover:underline"
+                onClick={() => setExperimentDialogOpen(true)}
+              >
+                View experiment details
+              </button>
+            ) : null}
+          </DialogContent>
+        ) : null}
+      </Dialog>
+      {summary ? (
+        <ExperimentDetailDialog
+          experiment={summary}
+          open={experimentDialogOpen}
+          onOpenChange={setExperimentDialogOpen}
+        />
+      ) : null}
+    </>
   );
 }

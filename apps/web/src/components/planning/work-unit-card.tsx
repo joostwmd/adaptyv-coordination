@@ -1,10 +1,5 @@
 import { useState, type ReactNode } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@adaptyv-coordination/ui/components/card";
+import { Card, CardContent, CardHeader } from "@adaptyv-coordination/ui/components/card";
 import {
   Collapsible,
   CollapsibleContent,
@@ -17,10 +12,11 @@ import { motion } from "motion/react";
 import type { Task } from "@/domain/task/types";
 import type { WorkUnit } from "@/domain/work-unit/types";
 import { useWorkUnitView } from "@/hooks/useWorkUnit";
+import { WorkUnitContent } from "@/components/work-unit/work-unit-content";
+import { WorkUnitHoverCard } from "@/components/work-unit/work-unit-hover-card";
 
-import { WORK_UNIT_STATUS_CONFIG } from "./constants";
 import { PriorityIndicator } from "./priority-indicator";
-import { TaskCard } from "./task-card";
+import { PlanningTaskCard } from "./planning-task-card";
 
 type WorkUnitCardProps = {
   workUnit: WorkUnit;
@@ -49,14 +45,13 @@ export function WorkUnitCard({
   if (!view) return null;
 
   const isSuggested = variant === "suggested";
-  const statusConfig = WORK_UNIT_STATUS_CONFIG[workUnit.status];
   const isSingleTaskSuggested = isSuggested && view.tasks.length === 1;
 
   const taskList = view.enrichedTasks.map(({ task }) =>
     renderTask ? (
       <div key={task.id}>{renderTask(task)}</div>
     ) : (
-      <TaskCard
+      <PlanningTaskCard
         key={task.id}
         task={task}
         onOpen={onTaskOpen}
@@ -74,34 +69,26 @@ export function WorkUnitCard({
       )}
     >
       <CardHeader className="gap-2 pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1 space-y-1">
-            {isSuggested && showEyebrow ? (
-              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                {previewLabel ?? "Suggested unit"}
-              </p>
-            ) : null}
-            <CardTitle
-              className={cn(
-                "text-base leading-snug",
-                isSuggested && "text-muted-foreground",
-              )}
-            >
-              {view.templateLabel}
-            </CardTitle>
-            <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
-              <span>{statusConfig.label}</span>
-              <span aria-hidden>·</span>
-              <span>
-                {view.experimentCount} experiment
-                {view.experimentCount === 1 ? "" : "s"}
-              </span>
-              <span aria-hidden>·</span>
-              <span>
-                {view.tasks.length} task{view.tasks.length === 1 ? "" : "s"}
-              </span>
-            </p>
-          </div>
+        {isSuggested && showEyebrow ? (
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            {previewLabel ?? "Suggested unit"}
+          </p>
+        ) : null}
+        <div className="flex items-start gap-2">
+          <WorkUnitHoverCard
+            workUnit={workUnit}
+            trigger={
+              <button
+                type="button"
+                className={cn(
+                  "min-w-0 flex-1 rounded-sm text-left outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  isSuggested && "text-muted-foreground",
+                )}
+              >
+                <WorkUnitContent workUnit={workUnit} variant="compact" />
+              </button>
+            }
+          />
           {view.priority ? (
             <PriorityIndicator priority={view.priority} context="workUnit" />
           ) : null}

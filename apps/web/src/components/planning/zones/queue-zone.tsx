@@ -16,7 +16,7 @@ import { usePrototypeStore } from "@/stores/usePrototypeStore";
 import { PlanningSuggestionShell } from "../primitives/planning-suggestion-shell";
 import { ZoneDropTarget } from "../dnd/zone-drop-target";
 import { WorkUnitCard } from "../work-unit-card";
-import { TaskCard } from "../task-card";
+import { PlanningTaskCard } from "../planning-task-card";
 import {
   AnimatedBoardItem,
   AnimatedBoardList,
@@ -189,7 +189,7 @@ export function QueueZone({ onTaskOpen }: QueueZoneProps) {
                       )
                     }
                   >
-                    <TaskCard task={task} onOpen={onTaskOpen} variant="compact" />
+                    <PlanningTaskCard task={task} onOpen={onTaskOpen} variant="compact" />
                   </PlanningSuggestionShell>
                 </AnimatedBoardItem>
               ))

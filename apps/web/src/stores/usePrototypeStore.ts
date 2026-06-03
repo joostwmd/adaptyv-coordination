@@ -5,7 +5,6 @@ import type {
   Task, 
   ClientRef,
   ExperimentRunSummary,
-  TaskNote 
 } from "@/types";
 import { deriveRunTaskStats } from "@/types/task";
 import type { ContextItem } from "@/components/context/types";
@@ -55,9 +54,6 @@ interface PrototypeState {
   addTask: (task: Omit<Task, 'id'>) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
-  addTaskNote: (taskId: string, note: Omit<TaskNote, 'id'>) => void;
-  updateTaskNote: (taskId: string, noteId: string, updates: Partial<TaskNote>) => void;
-  deleteTaskNote: (taskId: string, noteId: string) => void;
   
   addContextItem: (item: Omit<ContextItem, 'id'>) => void;
   updateContextItem: (id: string, updates: Partial<ContextItem>) => void;
@@ -223,7 +219,6 @@ export const usePrototypeStore = create<PrototypeState>((set, get) => ({
         {
           ...taskData,
           id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          notes: taskData.notes || [],
           dependsOn: taskData.dependsOn ?? [],
           createdAt: taskData.createdAt ?? new Date().toISOString(),
         },
@@ -253,48 +248,6 @@ export const usePrototypeStore = create<PrototypeState>((set, get) => ({
         experiments: syncRunStatsInExperiments(state.experiments, tasks),
       };
     }),
-  
-  addTaskNote: (taskId, noteData) =>
-    set((state) => ({
-      tasks: state.tasks.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              notes: [
-                ...task.notes,
-                {
-                  ...noteData,
-                  id: `note-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                  createdAt: noteData.createdAt || new Date().toISOString(),
-                },
-              ],
-            }
-          : task
-      ),
-    })),
-  
-  updateTaskNote: (taskId, noteId, updates) =>
-    set((state) => ({
-      tasks: state.tasks.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              notes: task.notes.map((note) =>
-                note.id === noteId ? { ...note, ...updates } : note
-              ),
-            }
-          : task
-      ),
-    })),
-  
-  deleteTaskNote: (taskId, noteId) =>
-    set((state) => ({
-      tasks: state.tasks.map((task) =>
-        task.id === taskId
-          ? { ...task, notes: task.notes.filter((note) => note.id !== noteId) }
-          : task
-      ),
-    })),
   
   addContextItem: (itemData) =>
     set((state) => ({
@@ -368,15 +321,6 @@ export const useContextItems = () => usePrototypeStore(state => state.contextIte
 
 export const useExperimentById = (id: string) => 
   usePrototypeStore((state) => state.experiments.find(exp => exp.id === id));
-
-export const useTasksByExperiment = (experimentId: string) =>
-  usePrototypeStore((state) => state.tasks.filter(task => task.experimentId === experimentId));
-
-export const useTasksByRun = (runId: string) =>
-  usePrototypeStore((state) => state.tasks.filter(task => task.runId === runId));
-
-export const useTasksByAssignee = (assigneeId: string) =>
-  usePrototypeStore((state) => state.tasks.filter(task => task.assignee?.id === assigneeId));
 
 export const useExperimentsByClient = (clientId: string) =>
   usePrototypeStore((state) => state.experiments.filter(exp => exp.client.id === clientId));
