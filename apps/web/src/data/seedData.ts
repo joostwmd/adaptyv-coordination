@@ -1,3 +1,5 @@
+import { buildRequiredPlatesForTaskTemplate } from "@/domain/plate/requirements";
+import { getTaskTemplate } from "@/domain/task-template/catalog";
 import type {
   StaffMember,
   ExperimentDetail,
@@ -44,14 +46,23 @@ const TEMPLATE = {
 
 function seedTask(
   partial: Omit<Task, "dependsOn" | "createdAt" | "params" | "origin"> &
-    Partial<Pick<Task, "dependsOn" | "createdAt" | "params" | "origin">>,
+    Partial<Pick<Task, "dependsOn" | "createdAt" | "params" | "origin" | "requiredPlates">>,
 ): Task {
+  const template = getTaskTemplate(partial.taskTemplateId);
+  const requiredPlates =
+    partial.requiredPlates ??
+    (template
+      ? buildRequiredPlatesForTaskTemplate(template, partial.taskTemplateId)
+      : undefined);
+
   return {
     params: {},
     dependsOn: [],
     origin: "template",
     createdAt: "2026-06-01T10:00:00.000Z",
     ...partial,
+    requiredPlates:
+      requiredPlates && requiredPlates.length > 0 ? requiredPlates : undefined,
   };
 }
 

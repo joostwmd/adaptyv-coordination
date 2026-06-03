@@ -1,5 +1,6 @@
 import { getDefaultParams } from "@/domain/task-template/param-schema";
 import { getTaskTemplate } from "@/domain/task-template/catalog";
+import { buildRequiredPlatesForTaskTemplate } from "@/domain/plate/requirements";
 import type { WorkflowTemplate } from "@/domain/workflow/types";
 import type { ExperimentRunSummary, ExperimentSummary } from "@/types";
 import type { Task, TaskOrigin } from "./types";
@@ -23,6 +24,7 @@ function buildTask(
     experimentId?: string;
     runId?: string;
     params?: Record<string, unknown>;
+    requiredPlates?: Task["requiredPlates"];
     dependsOn?: string[];
     parentTaskId?: string;
     name?: string;
@@ -37,6 +39,10 @@ function buildTask(
     ...context.params,
   };
 
+  const requiredPlates =
+    context.requiredPlates ??
+    (template ? buildRequiredPlatesForTaskTemplate(template, taskTemplateId) : undefined);
+
   return {
     id: context.id ?? nextTaskId(),
     taskTemplateId,
@@ -46,6 +52,8 @@ function buildTask(
     experimentId: context.experimentId,
     runId: context.runId,
     params,
+    requiredPlates:
+      requiredPlates && requiredPlates.length > 0 ? requiredPlates : undefined,
     status: context.status ?? "pending",
     dependsOn: context.dependsOn ?? [],
     readiness: context.readiness ?? "ready",
@@ -112,6 +120,7 @@ export function createRerunTasks(sourceTasks: Task[]): Task[] {
       experimentId: source.experimentId,
       runId: source.runId,
       params: { ...source.params },
+      requiredPlates: source.requiredPlates?.map((p) => ({ ...p })),
       parentTaskId: source.id,
       dependsOn: [],
       name: `Rerun: ${source.name ?? source.taskTemplateId}`,

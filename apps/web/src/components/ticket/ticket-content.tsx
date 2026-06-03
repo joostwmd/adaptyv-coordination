@@ -5,6 +5,9 @@ import { ScheduledTime } from "@/components/planning/primitives/scheduled-time";
 import { CollapsibleTaskList } from "@/components/task/collapsible-task-list";
 import type { TaskReferenceKey } from "@/components/task/task-references";
 import { WorkUnitContentHeader } from "@/components/work-unit/work-unit-content-header";
+import { WorkUnitMetadataRow } from "@/components/work-unit/work-unit-metadata-row";
+import { WorkUnitParameterSummary } from "@/components/work-unit/work-unit-parameter-summary";
+import { WorkUnitRequiredPlatesSummary } from "@/components/work-unit/work-unit-required-plates-summary";
 import type { Ticket } from "@/domain/ticket/types";
 import { useTicketView } from "@/hooks/useTicket";
 import { useWorkUnit } from "@/hooks/useWorkUnit";
@@ -50,12 +53,19 @@ export function TicketContent({
       aria-label={`Ticket ${ticket.id}`}
     >
       {workUnit && workUnitView ? (
-        <WorkUnitContentHeader
-          workUnit={workUnit}
-          view={workUnitView}
-          variant="default"
-          headerEnd={headerEnd}
-        />
+        <>
+          <WorkUnitContentHeader
+            workUnit={workUnit}
+            view={workUnitView}
+            variant="default"
+            headerEnd={headerEnd}
+          />
+          <WorkUnitMetadataRow workUnit={workUnit} view={workUnitView} />
+          <div className="flex flex-col gap-3">
+            <WorkUnitParameterSummary workUnit={workUnit} tasks={workUnitView.tasks} />
+            <WorkUnitRequiredPlatesSummary tasks={workUnitView.tasks} />
+          </div>
+        </>
       ) : null}
 
       <TicketAssignmentRow ticket={ticket} assignee={assignee} />

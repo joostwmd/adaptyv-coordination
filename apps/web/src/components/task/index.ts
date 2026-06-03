@@ -1,6 +1,7 @@
 export { TaskCard } from "./task-card";
 export type { TaskCardProps } from "./task-card";
 export { TaskContent } from "./task-content";
+export { RequiredPlatesSummary } from "./required-plates-summary";
 export { CollapsibleTaskList } from "./collapsible-task-list";
 export { TaskReferences } from "./task-references";
 export type { TaskReferenceKey } from "./task-references";

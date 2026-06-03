@@ -39,7 +39,12 @@ export function ParameterSummary({
   const isFlat = variant === "flat";
 
   return (
-    <div className={cn(!isFlat && "rounded-md border border-border/60 bg-background/80", isFlat ? "" : showHeading ? "p-3" : "p-2.5")}>
+    <div
+      className={cn(
+        !isFlat && "rounded-lg border border-border/60 bg-background/80",
+        isFlat ? "" : showHeading ? "p-3" : "p-2.5",
+      )}
+    >
       {showHeading ? (
         <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-foreground">
           Run settings

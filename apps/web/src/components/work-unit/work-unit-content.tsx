@@ -1,7 +1,6 @@
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 import type { ReactNode } from "react";
 
-import { getWorkUnitTemplateLabel } from "@/components/planning/utils";
 import { CollapsibleTaskList } from "@/components/task/collapsible-task-list";
 import type { TaskReferenceKey } from "@/components/task/task-references";
 import type { WorkUnit } from "@/domain/work-unit/types";
@@ -9,22 +8,9 @@ import type { Task } from "@/types";
 import { useWorkUnitView } from "@/hooks/useWorkUnit";
 
 import { WorkUnitContentHeader } from "./work-unit-content-header";
+import { WorkUnitMetadataRow } from "./work-unit-metadata-row";
 import { WorkUnitParameterSummary } from "./work-unit-parameter-summary";
-
-type PreviewFieldProps = {
-  label: string;
-  value: ReactNode;
-  className?: string;
-};
-
-function PreviewField({ label, value, className }: PreviewFieldProps) {
-  return (
-    <div className={cn("min-w-0", className)}>
-      <dt className="text-[11px] leading-none text-muted-foreground">{label}</dt>
-      <dd className="mt-1 text-xs font-medium leading-snug text-foreground">{value}</dd>
-    </div>
-  );
-}
+import { WorkUnitRequiredPlatesSummary } from "./work-unit-required-plates-summary";
 
 export type WorkUnitContentProps = {
   workUnit: WorkUnit;
@@ -66,31 +52,17 @@ export function WorkUnitContent({
         headerEnd={headerEnd}
       />
 
-      {!isCompact && !showTasks ? (
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border/50 pt-3">
-          <PreviewField
-            label="Template"
-            value={getWorkUnitTemplateLabel(workUnit)}
-            className="col-span-2"
-          />
-          {view.driverTaskTitle ? (
-            <PreviewField
-              label="Driver task"
-              value={view.driverTaskTitle}
-              className="col-span-2"
-            />
-          ) : null}
-          <PreviewField label="Batch key" value={workUnit.workUnitKey} className="col-span-2" />
-        </dl>
-      ) : null}
+      <WorkUnitMetadataRow workUnit={workUnit} view={view} />
 
       {!isCompact ? (
-        <WorkUnitParameterSummary
-          workUnit={workUnit}
-          tasks={view.tasks}
-          variant="flat"
-          showHeading={true}
-        />
+        <div className="flex flex-col gap-3">
+          <WorkUnitParameterSummary
+            workUnit={workUnit}
+            tasks={view.tasks}
+            showHeading
+          />
+          <WorkUnitRequiredPlatesSummary tasks={view.tasks} />
+        </div>
       ) : null}
 
       {showTasks ? (

@@ -11,6 +11,7 @@ export type PlanningMetaOverride = {
   stage?: TaskStage;
   batchKeyFields?: string[];
   resourceProfile?: ResourceProfile;
+  requiredPlateTypes?: string[];
 };
 
 function inferStage(name: string): TaskStage {
@@ -127,5 +128,6 @@ export function mergePlanningMeta(
     stage: override?.stage ?? inferred.stage,
     batchKeyFields: override?.batchKeyFields ?? inferred.batchKeyFields,
     resourceProfile: override?.resourceProfile ?? inferred.resourceProfile,
+    requiredPlateTypes: override?.requiredPlateTypes,
   };
 }

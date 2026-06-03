@@ -1,6 +1,7 @@
 import { cn } from "@adaptyv-coordination/ui/lib/utils";
 
 import { ParameterSummary } from "@/components/planning/parameter-summary";
+import { RequiredPlatesSummary } from "@/components/task/required-plates-summary";
 import { PriorityIndicator } from "@/components/planning/priority-indicator";
 import { ReadinessBadge } from "@/components/planning/readiness-badge";
 import { TaskTypeBadge } from "@/components/planning/task-type-badge";
@@ -49,7 +50,14 @@ export function TaskContent({
         </div>
       </div>
 
-      <ParameterSummary task={task} showHeading={!isCompact} />
+      <div className="flex flex-col gap-3">
+        <RequiredPlatesSummary
+          task={task}
+          showHeading={!isCompact}
+          variant={isCompact ? "card" : "card"}
+        />
+        <ParameterSummary task={task} showHeading={!isCompact} />
+      </div>
 
       <TaskReferences
         task={task}

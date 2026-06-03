@@ -24,5 +24,6 @@ export type {
   TaskReadiness,
   TaskStatus,
   RunTaskStats,
+  PlateRequirement,
 } from "./task";
 export { deriveRunTaskStats, getTaskDisplayName } from "./task";

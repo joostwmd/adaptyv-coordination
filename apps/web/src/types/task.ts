@@ -1,7 +1,10 @@
 import type { BlockedReason } from "@/domain/blocked-reason";
+import type { PlateRequirement } from "@/domain/plate/types";
 import { getTaskTemplate } from "@/domain/task-template/catalog";
 
 import type { StaffMember } from "./staff";
+
+export type { PlateRequirement };
 
 export type TaskStatus =
   | "pending"
@@ -31,7 +34,10 @@ export type Task = {
   experimentId?: string;
   /** Experiment run revision; omitted when not tied to a run. */
   runId?: string;
+  /** Run settings / protocol parameters (temperature, buffer, etc.). */
   params: Record<string, unknown>;
+  /** Physical input plates to load before execution. */
+  requiredPlates?: PlateRequirement[];
 
   status: TaskStatus;
   readiness: TaskReadiness;

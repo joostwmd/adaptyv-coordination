@@ -44,4 +44,6 @@ export type TaskTemplate = TaskTemplateBase & {
   stage: TaskStage;
   batchKeyFields: string[];
   resourceProfile: ResourceProfile;
+  /** Plate types technicians must load as inputs (upstream material). */
+  requiredPlateTypes?: string[];
 };
