@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { BlockedReason } from "@/domain/blocked-reason";
-import { buildPlanningSeedData } from "@/domain/seed";
+import { buildPlanningSeedData } from "@/data/prototype-mock-data";
 import { DEFAULT_PLANNING_DAY } from "@/domain/planning/constants";
 import {
   clampPlanningDay,

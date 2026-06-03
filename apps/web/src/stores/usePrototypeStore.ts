@@ -14,7 +14,7 @@ import {
   seedExperiments,
   seedTasks,
   seedContextItems,
-} from "@/data/seedData";
+} from "@/data/prototype-mock-data";
 
 function syncRunStatsInExperiments(
   experiments: ExperimentDetail[],
