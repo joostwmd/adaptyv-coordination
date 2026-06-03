@@ -8,8 +8,10 @@ export const Route = createFileRoute("/experiments/")({
 
 function ExperimentsIndexPage() {
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
-      <ExperimentsTable />
+    <div className="h-full min-h-0 overflow-y-auto">
+      <div className="container mx-auto max-w-7xl px-4 py-8">
+        <ExperimentsTable />
+      </div>
     </div>
   );
 }
