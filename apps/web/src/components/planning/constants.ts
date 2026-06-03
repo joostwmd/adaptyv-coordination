@@ -16,7 +16,7 @@ export const TASK_READINESS_CONFIG: Record<
   ready: { label: "Ready", variant: "secondary" },
   batched: { label: "In work unit", variant: "outline" },
   in_labos: {
-    label: "In LabOS",
+    label: "Done in LabOS",
     variant: "outline",
     className: "border-green-500/50 text-green-700 dark:text-green-400",
   },
