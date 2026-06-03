@@ -1,4 +1,19 @@
-export { ReadinessBadge } from "@/components/lab/readiness-badge";
-export { TaskTypeBadge } from "@/components/lab/task-type-badge";
-export { PriorityIndicator } from "@/components/lab/priority-indicator";
-export { ParameterSummary } from "@/components/lab/parameter-summary";
+import { Badge } from "@adaptyv-coordination/ui/components/badge";
+import { cn } from "@adaptyv-coordination/ui/lib/utils";
+
+import { TASK_READINESS_CONFIG } from "./constants";
+import type { TaskReadiness } from "@/domain/task/types";
+
+type ReadinessBadgeProps = {
+  readiness: TaskReadiness;
+  className?: string;
+};
+
+export function ReadinessBadge({ readiness, className }: ReadinessBadgeProps) {
+  const config = TASK_READINESS_CONFIG[readiness];
+  return (
+    <Badge variant={config.variant} className={cn(config.className, className)}>
+      {config.label}
+    </Badge>
+  );
+}
